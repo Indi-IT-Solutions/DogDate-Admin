@@ -1,0 +1,88 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Dependency directories
+node_modules/
+
+# Build output
+build/
+dist/
+
+# Misc
+.DS_Store
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+
+# Editor directories and files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Testing
+coverage/
+
+# Yarn
+.yarn/
+.pnp.*
+
+# ESLint cache
+.eslintcache
+
+# Parcel-bundler cache
+.cache/
+
+# Next.js
+.next/
+out/
+
+# Nuxt.js
+.nuxt/
+static/
+
+# Gatsby files
+.cache/
+
+# Stylelint cache
+.stylelintcache
+
+# TypeScript
+*.tsbuildinfo
+
+# Jest
+jest-html-reporters-*.html
+.jest/
+
+# React Native specific
+*.keystore
+*.iml
+android/.gradle/
+android/app/build/
+ios/Pods/
+ios/build/
+*.xcworkspace
+
+# Firebase
+.firebase/
+firebase-debug.log
+
+# IntelliJ IDEA
+*.iml
+.idea/
+
+# Storybook
+storybook-static/
+
+# Tailwind JIT
+*.css
+
+# Temporary files
+*.tmp
+*.temp
