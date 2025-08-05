@@ -119,7 +119,7 @@ const SubscriptionPackages: React.FC = () => {
         {
             id: 1,
             type: "Breeding",
-            title: "Free Plan",
+            title: "Free",
             amount: "$0",
             interval: "One time",
             matches: "3/day",
@@ -144,7 +144,7 @@ const SubscriptionPackages: React.FC = () => {
         {
             id: 3,
             type: "Playmates",
-            title: "Free Plan",
+            title: "Free",
             amount: "$4.99",
             interval: "Yearly",
             matches: 100,

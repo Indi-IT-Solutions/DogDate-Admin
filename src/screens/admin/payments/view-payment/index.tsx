@@ -115,7 +115,7 @@ const ViewPayment: React.FC = () => {
                                     {/* Amount */}
                                     <div className="tablefilelist_grid">
                                         <h4>Amount</h4>
-                                        <p>₹{paymentRecord.amount}</p>
+                                        <p>${paymentRecord.amount}</p>
                                     </div>
                                     {/* Status */}
                                     <div className="tablefilelist_grid">

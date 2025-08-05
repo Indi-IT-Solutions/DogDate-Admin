@@ -84,7 +84,7 @@ const UserView: React.FC = () => {
             name: "Amount",
             selector: (row: Payments) => row.amount,
             cell: (row: Payments) => (
-                <span className="text-dark" style={{ fontWeight: 600 }}>₹{row.amount}</span>
+                <span className="text-dark" style={{ fontWeight: 600 }}>${row.amount}</span>
             ),
             width: "110px",
         },
