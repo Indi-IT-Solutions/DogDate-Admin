@@ -28,11 +28,11 @@ const Users: React.FC = () => {
       sortable: true,
     },
     {
-      name: "Image",
-      width: "100px",
+      name: "User",
+      width: "290px",
       selector: (row: User) => row.img,
       cell: (row: User) => (
-        <div className="d-flex align-items-center">
+        <div className="d-flex align-items-center gap-2">
           <img
             src={row.img}
             alt={row.name}
@@ -41,16 +41,10 @@ const Users: React.FC = () => {
             height={35}
             style={{ objectFit: "cover" }}
           />
+          <div> <strong>{row.name}</strong><br /><small>{row.email}</small><br /><small>{row.phoneNumber}</small></div>
         </div>
       ),
     },
-    {
-      name: "Name",
-      width: "240px",
-      selector: (row: User) => <div><strong>{row.name}</strong><br /><small>{row.email}</small><br /><small>{row.phoneNumber}</small></div>,
-      sortable: true,
-    },
-
     {
       name: "Type",
       selector: (row: User) => row.type,

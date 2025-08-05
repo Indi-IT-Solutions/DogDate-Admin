@@ -299,97 +299,89 @@ const UserView: React.FC = () => {
                             </Col>
                             <Col md={8}>
                                 <div className="talefile_list">
+                                    <Row>
+                                        <Col lg={6}>
+                                            {/* Name */}
+                                            <div className="tablefilelist_grid">
+                                                <h4>Name</h4>
+                                                <p>Albert Stevano</p>
+                                            </div>
 
-                                    {/* Name */}
-                                    <div className="tablefilelist_grid">
-                                        <h4>Name</h4>
-                                        <p>Albert Stevano</p>
-                                    </div>
+                                            {/* Email */}
+                                            <div className="tablefilelist_grid">
+                                                <h4>Email</h4>
+                                                <p>emma.thompson@example.com</p>
+                                            </div>
 
-                                    {/* Email */}
-                                    <div className="tablefilelist_grid">
-                                        <h4>Email</h4>
-                                        <p>emma.thompson@example.com</p>
-                                    </div>
+                                            {/* Age & Gender */}
+                                            <div className="tablefilelist_grid">
+                                                <h4>Age Range</h4>
+                                                <p>26 yr</p>
+                                            </div>
+                                            {/* Age & Gender */}
+                                            <div className="tablefilelist_grid">
+                                                <h4>Phone number</h4>
+                                                <p>1234567890</p>
+                                            </div>
 
-                                    {/* Age & Gender */}
-                                    <div className="tablefilelist_grid">
-                                        <h4>Age Range</h4>
-                                        <p>26 yr</p>
-                                    </div>
-                                    {/* Age & Gender */}
-                                    <div className="tablefilelist_grid">
-                                        <h4>Phone number</h4>
-                                        <p>1234567890</p>
-                                    </div>
+                                            {/* Location */}
+                                            <div className="tablefilelist_grid">
+                                                <h4>Location (Partial Postcode)</h4>
+                                                <p>New York, USA 10001</p>
+                                            </div>
+                                            {/* About */}
+                                            <div className="tablefilelist_grid">
+                                                <h4>About</h4>
+                                                <div className="about-box">
+                                                    <p>
+                                                        Fashion enthusiast with a passion for style and creativity. Always exploring the latest trends and expressing myself through fashion.
+                                                    </p>
+                                                </div>
+                                            </div>
 
-                                    {/* Location */}
-                                    <div className="tablefilelist_grid">
-                                        <h4>Location (Partial Postcode)</h4>
-                                        <p>New York, USA 10001</p>
-                                    </div>
+                                        </Col>
+                                        <Col lg={6}>
 
-                                    {/* About */}
-                                    <div className="tablefilelist_grid">
-                                        <h4>About</h4>
-                                        <div className="about-box">
-                                            <p>
-                                                Fashion enthusiast with a passion for style and creativity. Always exploring the latest trends and expressing myself through fashion.
-                                            </p>
-                                        </div>
-                                    </div>
 
-                                    {/* Interests */}
-                                    <div className="tablefilelist_grid">
-                                        <h4 className="mb-2">Lifestyle & Interests</h4>
-                                        <h6 style={{ fontSize: '12px' }}>Hobbies</h6>
-                                        <div className="d-flex gap-2 mb-3">
-                                            <span className="badge bg-primary">Reading</span>
-                                            <span className="badge bg-primary">Traveling</span>
-                                            <span className="badge bg-primary">Cooking</span>
-                                            <span className="badge bg-primary">Photography</span>
-                                            <span className="badge bg-primary">Gardening</span>
-                                            <span className="badge bg-primary">Yoga</span>
-                                            <span className="badge bg-primary">Hiking</span>
-                                        </div>
-                                        <h6 style={{ fontSize: '12px' }}>Meet Up Availability</h6>
-                                        <div className="d-flex gap-2">
-                                            <span className="badge bg-primary">Mornings</span>
-                                            <span className="badge bg-primary">Afternoons</span>
-                                            <span className="badge bg-primary">Evenings</span>
-                                            <span className="badge bg-primary">Weekdays</span>
-                                            <span className="badge bg-primary">Weekends</span>
-                                        </div>
-                                    </div>
+                                            {/* Interests */}
+                                            <div className="tablefilelist_grid">
+                                                <h4 className="mb-2">Lifestyle & Interests</h4>
+                                                <h6 style={{ fontSize: '12px' }}>Hobbies</h6>
+                                                <div className="d-flex gap-2 mb-3 flex-wrap">
+                                                    <span className="badge bg-primary">Reading</span>
+                                                    <span className="badge bg-primary">Traveling</span>
+                                                    <span className="badge bg-primary">Cooking</span>
+                                                    <span className="badge bg-primary">Photography</span>
+                                                    <span className="badge bg-primary">Gardening</span>
+                                                    <span className="badge bg-primary">Yoga</span>
+                                                    <span className="badge bg-primary">Hiking</span>
+                                                </div>
+                                                <h6 style={{ fontSize: '12px' }}>Meet Up Availability</h6>
+                                                <div className="d-flex gap-2 flex-wrap">
+                                                    <span className="badge bg-warning">Mornings</span>
+                                                    <span className="badge bg-warning">Afternoons</span>
+                                                    <span className="badge bg-warning">Evenings</span>
+                                                    <span className="badge bg-warning">Weekdays</span>
+                                                    <span className="badge bg-warning">Weekends</span>
+                                                </div>
+                                            </div>
 
-                                    {/* Type */}
-                                    <div className="tablefilelist_grid">
-                                        <h4>Type</h4>
-                                        <p><span className="badge bg-warning">Normal</span></p>
-                                    </div>
+                                            {/* Type */}
+                                            <div className="tablefilelist_grid">
+                                                <h4>Type</h4>
+                                                <p><span className="badge bg-info">Normal</span></p>
+                                            </div>
 
-                                    {/* Status */}
-                                    <div className="tablefilelist_grid">
-                                        <h4>Status</h4>
-                                        <p><span className="badge bg-success">Active</span></p>
-                                    </div>
+                                            {/* Status */}
+                                            <div className="tablefilelist_grid">
+                                                <h4>Status</h4>
+                                                <p><span className="badge bg-success">Active</span></p>
+                                            </div>
 
-                                    <div className="mt-4">
-                                        <h5 className="mb-3">Vaccination Certification</h5>
-                                        <Row>
-                                            {['Breed certification', 'Vaccination certification', 'Flea Documents'].map((doc, idx) => (
-                                                <Col md={4} key={idx}>
-                                                    <Card>
-                                                        <Card.Body className="text-center">
-                                                            <Icon icon="mdi:file-document-outline" width={32} className="mb-2" />
-                                                            <p style={{ fontSize: '14px' }}>{doc}</p>
-                                                            <Button variant="outline-primary" size="sm">View</Button>
-                                                        </Card.Body>
-                                                    </Card>
-                                                </Col>
-                                            ))}
-                                        </Row>
-                                    </div>
+                                        </Col>
+                                    </Row>
+
+
 
                                 </div>
                             </Col>
@@ -400,75 +392,147 @@ const UserView: React.FC = () => {
                         <hr className="my-4" />
 
                         <h4>Dog Details</h4>
+
                         <div className="talefile_list mt-4">
-                            <Row className="gy-3">
-                                <Col md={6}>
-                                    <div className="tablefilelist_grid">
-                                        <h4>Dog Name</h4>
-                                        <p>Rocky</p>
-                                    </div>
-                                    <div className="tablefilelist_grid">
-                                        <h4>Breed</h4>
-                                        <p>Labrador</p>
-                                    </div>
-                                    <div className="tablefilelist_grid">
-                                        <h4>Breed Classification</h4>
-                                        <p>Sporting</p>
-                                    </div>
-                                    <div className="tablefilelist_grid">
-                                        <h4>Gender</h4>
-                                        <p>Male</p>
-                                    </div>
-                                    <div className="tablefilelist_grid">
-                                        <h4>Age</h4>
-                                        <p>3 years</p>
-                                    </div>
-                                    <div className="tablefilelist_grid">
-                                        <h4>Color</h4>
-                                        <p>Golden</p>
-                                    </div>
-                                    <div className="tablefilelist_grid">
-                                        <h4>Character</h4>
-                                        <p>Friendly</p>
-                                    </div>
-                                    <div className="tablefilelist_grid">
-                                        <h4>Personality</h4>
-                                        <p>Playful, loves attention, good with kids</p>
+                            <Row>
+                                <Col md={4}>
+                                    <div className="talefile_box talefile_box2 d-flex flex-wrap gap-2 p-2 justify-content-center align-items-center" style={{ borderRadius: 16 }}>
+                                        {[
+                                            "https://images.unsplash.com/photo-1518717758536-85ae29035b6d?auto=format&fit=facearea&w=400&h=400&facepad=2",
+                                            "https://images.unsplash.com/photo-1507146426996-ef05306b995a?auto=format&fit=facearea&w=400&h=400&facepad=2",
+                                            "https://images.unsplash.com/photo-1518717758536-85ae29035b6d?auto=format&fit=facearea&w=400&h=400&facepad=2",
+                                            "https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=facearea&w=400&h=400&facepad=2",
+                                            "https://images.unsplash.com/photo-1518717758536-85ae29035b6d?auto=format&fit=facearea&w=400&h=400&facepad=2"
+                                        ].map((src, idx) => (
+                                            <img
+                                                key={idx}
+                                                className="talefile_img shadow"
+                                                src={src}
+                                                alt={`Dog Image ${idx + 1}`}
+                                                style={{
+
+                                                    objectFit: "cover",
+                                                    borderRadius: 12,
+                                                    border: "2px solid #4BBFF9"
+                                                }}
+                                            />
+                                        ))}
                                     </div>
                                 </Col>
+                                <Col md={8}>
+                                    <Row className="gy-3">
+                                        <Col md={6}>
+                                            <div className="tablefilelist_grid">
+                                                <h4>Dog Name</h4>
+                                                <p>Rocky</p>
+                                            </div>
+                                            <div className="tablefilelist_grid">
+                                                <h4>Breed</h4>
+                                                <p>Labrador</p>
+                                            </div>
+                                            <div className="tablefilelist_grid">
+                                                <h4>Breed Classification</h4>
+                                                <p>Sporting</p>
+                                            </div>
+                                            <div className="tablefilelist_grid">
+                                                <h4>Gender</h4>
+                                                <p>Male</p>
+                                            </div>
+                                            <div className="tablefilelist_grid">
+                                                <h4>Age</h4>
+                                                <p>3 years</p>
+                                            </div>
+                                            <div className="tablefilelist_grid">
+                                                <h4>Color</h4>
+                                                <p>Golden</p>
+                                            </div>
+                                            <div className="tablefilelist_grid">
+                                                <h4>Character</h4>
+                                                <p>Friendly</p>
+                                            </div>
+                                            <div className="tablefilelist_grid">
+                                                <h4>Personality</h4>
+                                                <p>Playful, loves attention, good with kids</p>
+                                            </div>
 
-                                <Col md={6}>
-                                    <div className="tablefilelist_grid">
-                                        <h4>What’s Your Dog Like?</h4>
-                                        <p>Walks in the Park, Agility Training, Playing with Toys</p>
-                                    </div>
-                                    <div className="tablefilelist_grid">
-                                        <h4>Breed Certification</h4>
-                                        <p>Uploaded</p>
+                                        </Col>
+
+                                        <Col md={6}>
+                                            <div className="tablefilelist_grid">
+                                                <h4>What’s Your Dog Like?</h4>
+                                                <p>Walks in the Park, Agility Training, Playing with Toys</p>
+                                            </div>
+                                            <div className="tablefilelist_grid">
+                                                <h4>Breed Certification</h4>
+                                                <p>Uploaded</p>
+                                            </div>
+
+                                            <div className="tablefilelist_grid">
+                                                <h4>Other Documents</h4>
+                                                <p>Inbreeding Coefficient Certificate</p>
+                                            </div>
+                                            <div className="tablefilelist_grid">
+                                                <h4>Dog Date Tagline</h4>
+                                                <p>“The best cuddle buddy!”</p>
+                                            </div>
+                                            <div className="tablefilelist_grid">
+                                                <h4>Favorite Dog Treat</h4>
+                                                <p>Peanut Butter Biscuits</p>
+                                            </div>
+                                            <div className="tablefilelist_grid">
+                                                <h4>Breeding Price</h4>
+                                                <p>$100</p>
+                                            </div>
+                                            <div className="tablefilelist_grid">
+                                                <h4>Available for Breeding?</h4>
+                                                <p>Yes</p>
+                                            </div>
+                                        </Col>
+                                    </Row>
+
+                                    {/* Pedigree Section */}
+                                    <div className="mt-1">
+                                        <Row className="gy-3">
+                                            <Col md={12}>
+                                                <div className="tablefilelist_grid">
+                                                    <h4>Pedigree Name</h4>
+                                                    <p>Chopped Pedigree </p>
+                                                </div>
+                                            </Col>
+                                            <Col md={12}>
+                                                <div className="d-flex align-items-center gap-3">
+                                                    <div className="d-flex flex-column align-items-center">
+                                                        <Icon icon="mdi:file-document-outline" width={40} className="mb-2 text-primary" />
+                                                        <span style={{ fontSize: '13px' }}>Pedigree_Document.pdf</span>
+                                                    </div>
+                                                    <div className="d-flex flex-column align-items-center">
+                                                        <Icon icon="mdi:image-outline" width={40} className="mb-2 text-primary" />
+                                                        <span style={{ fontSize: '13px' }}>Pedigree_Image.jpg</span>
+                                                    </div>
+                                                </div>
+                                            </Col>
+                                        </Row>
                                     </div>
 
-                                    <div className="tablefilelist_grid">
-                                        <h4>Other Documents</h4>
-                                        <p>Inbreeding Coefficient Certificate</p>
-                                    </div>
-                                    <div className="tablefilelist_grid">
-                                        <h4>Dog Date Tagline</h4>
-                                        <p>“The best cuddle buddy!”</p>
-                                    </div>
-                                    <div className="tablefilelist_grid">
-                                        <h4>Favorite Dog Treat</h4>
-                                        <p>Peanut Butter Biscuits</p>
-                                    </div>
-                                    <div className="tablefilelist_grid">
-                                        <h4>Breeding Price</h4>
-                                        <p>$100</p>
-                                    </div>
-                                    <div className="tablefilelist_grid">
-                                        <h4>Available for Breeding?</h4>
-                                        <p>Yes</p>
+                                    <div className="mt-4">
+                                        <h5 className="mb-3">Vaccination Certification</h5>
+                                        <Row>
+                                            {['Breed certification', 'Vaccination certification', 'Flea Documents'].map((doc, idx) => (
+                                                <Col md={4} key={idx}>
+                                                    <Card >
+                                                        <Card.Body className="text-center" >
+                                                            <Icon icon="mdi:file-document-outline" width={32} className="mb-2" />
+                                                            <p style={{ fontSize: '14px' }}>{doc}</p>
+                                                            <Button variant="outline-primary" size="sm">View</Button>
+                                                        </Card.Body>
+                                                    </Card>
+                                                </Col>
+                                            ))}
+                                        </Row>
                                     </div>
                                 </Col>
                             </Row>
+
                         </div>
 
                     </div>

@@ -1485,6 +1485,17 @@ Form {
       border-radius: 20px;
     }
 
+    &.talefile_box2 {
+      justify-content: flex-start;
+
+      .talefile_img {
+        width: 105px;
+        height: 130px;
+        object-fit: cover;
+        border-radius: 20px;
+      }
+    }
+
     &.talefile_box1 {
       width: 100%;
       height: 250px;

@@ -41,7 +41,7 @@ const Account: React.FC = () => {
 
     const columns = [
         {
-            name: "Image",
+            name: "User",
             width: "310px",
             selector: (row: Users) => row.img,
             cell: (row: Users) => (
@@ -64,7 +64,7 @@ const Account: React.FC = () => {
             sortable: true,
         },
         {
-            name: "Details",
+            name: "Dog",
             selector: (row: Users) => row.dog_img,
             width: "200px",
             cell: (row: Users) => (
