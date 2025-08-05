@@ -1,76 +1,97 @@
+import { IMAGES } from "@/contants/images";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import React, { useState } from "react";
-import { Row, Col, OverlayTrigger, Tooltip } from "react-bootstrap";
+import { Row, Col, OverlayTrigger, Tooltip, Image } from "react-bootstrap";
 import DataTable from "react-data-table-component";
 import { Link } from "react-router-dom";
 
+interface DogInfo {
+    name: string;
+    breed: string;
+    image: string;
+}
+
+interface UserInfo {
+    name: string;
+    email: string;
+    image: string;
+}
 
 interface Payments {
     id: number;
-    date: string;
-    transactionId: string;
-    user: string;
-    dogName: string;
-    meetupWith: string;
-    planType: string;
-    planName: string;
-    paymentMethod: string;
+    type: "Breeding" | "Playmates" | "Registration";
+    recurring: boolean;
+    dog: DogInfo;
+    user: UserInfo;
     amount: number;
+    paidOn: string;
     status: "Success" | "Failed";
 }
-
-
 
 const Payments: React.FC = () => {
     const [searchText, setSearchText] = useState<string>("");
 
-
     const paymentsColumns = [
         {
-            name: "Transaction ID",
-            selector: (row: Payments) => row.transactionId,
-            width: "150px",
-        },
-        {
-            name: "Date",
-            selector: (row: Payments) => row.date,
+            name: "Payment ID",
+            selector: (row: Payments) => row.id,
             width: "120px",
-        },
-        // {
-        //     name: "User",
-        //     selector: (row: Payments) => row.user,
-        //     width: "150px",
-        // },
-        {
-            name: "Dog Name",
-            selector: (row: Payments) => row.dogName,
-            width: "120px",
-        },
-        {
-            name: "Meetup With",
-            selector: (row: Payments) => row.meetupWith,
-            width: "180px",
         },
         {
             name: "Type",
-            selector: (row: Payments) => row.planType,
+            selector: (row: Payments) => row.type,
+            width: "120px",
         },
-        // {
-        //     name: "Plan Name",
-        //     selector: (row: Payments) => row.planName,
-        // },
-        // {
-        //     name: "Payment Method",
-        //     selector: (row: Payments) => row.paymentMethod,
-        //     width: "150px",
-        // },
+
+        {
+            name: "Dog",
+            width: "220px",
+            cell: (row: Payments) => (
+                <div className="d-flex align-items-center">
+                    <Image
+                        src={row.dog.image}
+                        roundedCircle
+                        width={40}
+                        height={40}
+                        alt={row.dog.name}
+                        style={{ objectFit: "cover", marginRight: 10, border: "1px solid #eee" }}
+                    />
+                    <div>
+                        <div style={{ fontWeight: 600 }}>{row.dog.name}</div>
+                        <div className="text-muted" style={{ fontSize: 12 }}>{row.dog.breed}</div>
+                    </div>
+                </div>
+            ),
+        },
+        {
+            name: "User",
+            width: "260px",
+            cell: (row: Payments) => (
+                <div className="d-flex align-items-center">
+                    <Image
+                        src={row.user.image}
+                        roundedCircle
+                        width={40}
+                        height={40}
+                        alt={row.user.name}
+                        style={{ objectFit: "cover", marginRight: 10, border: "1px solid #eee" }}
+                    />
+                    <div>
+                        <div style={{ fontWeight: 600 }}>{row.user.name}</div>
+                        <div className="text-muted" style={{ fontSize: 12 }}>{row.user.email}</div>
+                    </div>
+                </div>
+            ),
+        },
         {
             name: "Amount",
             selector: (row: Payments) => row.amount,
             cell: (row: Payments) => (
                 <span className="text-dark" style={{ fontWeight: 600 }}>₹{row.amount}</span>
             ),
+            width: "110px",
         },
+
         {
             name: "Status",
             cell: (row: Payments) => (
@@ -99,46 +120,58 @@ const Payments: React.FC = () => {
 
     const [paymentsData] = useState<Payments[]>([
         {
-            id: 1,
-            date: "30 Jul 2025",
-            transactionId: "TXN123456789",
-            user: "Priya Mehta",
-            dogName: "Bruno",
-            meetupWith: "Max (John Carter)",
-            planType: "Breeding",
-            planName: "Premium",
-            paymentMethod: "Debit Card",
+            id: 1001,
+            type: "Breeding",
+            recurring: true,
+            dog: {
+                name: "Bruno",
+                breed: "Labrador Retriever",
+                image: IMAGES.Dog
+            },
+            user: {
+                name: "Priya Mehta",
+                email: "priya.mehta@email.com",
+                image: "https://randomuser.me/api/portraits/women/44.jpg"
+            },
             amount: 499,
-            status: "Success",
-
+            paidOn: "30 Jul 2025",
+            status: "Success"
         },
         {
-            id: 2,
-            date: "20 Jul 2025",
-            transactionId: "TXN234567890",
-            user: "John Carter",
-            dogName: "Bella",
-            meetupWith: "Coco (Emma Ray)",
-            planType: "Playmate",
-            planName: "Basic",
-            paymentMethod: "Credit Card",
+            id: 1002,
+            type: "Playmates",
+            recurring: false,
+            dog: {
+                name: "Bella",
+                breed: "Golden Retriever",
+                image: IMAGES.Dog
+            },
+            user: {
+                name: "John Carter",
+                email: "john.carter@email.com",
+                image: "https://randomuser.me/api/portraits/men/32.jpg"
+            },
             amount: 199,
-            status: "Success",
-
+            paidOn: "20 Jul 2025",
+            status: "Success"
         },
         {
-            id: 3,
-            date: "10 Jul 2025",
-            transactionId: "TXN345678901",
-            user: "Emma Ray",
-            dogName: "Coco",
-            meetupWith: "Tiger (Arjun Singh)",
-            planType: "Playmate",
-            planName: "Premium",
-            paymentMethod: "Debit Card",
+            id: 1003,
+            type: "Registration",
+            recurring: false,
+            dog: {
+                name: "Coco",
+                breed: "Poodle",
+                image: IMAGES.Dog
+            },
+            user: {
+                name: "Emma Ray",
+                email: "emma.ray@email.com",
+                image: "https://randomuser.me/api/portraits/women/65.jpg"
+            },
             amount: 299,
-            status: "Failed",
-
+            paidOn: "10 Jul 2025",
+            status: "Failed"
         }
     ]);
 

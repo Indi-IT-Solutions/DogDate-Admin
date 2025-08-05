@@ -555,6 +555,12 @@ Form {
   background-repeat: no-repeat;
   background-size: cover;
   background-position: center;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+    /* Chrome, Safari */
+  }
 
   .sidebarlogo_div {
     text-align: center;
@@ -1098,6 +1104,26 @@ Form {
     .btn-primary {
       height: 48px;
       font-size: 14px !important;
+    }
+  }
+
+  &.edit_modal {
+    .modal-body {
+      .form-label {
+        font-size: 14px;
+        margin-bottom: 0.2em;
+      }
+
+      input.form-control,
+      .form-select {
+        height: 45px;
+        font-size: 14px;
+      }
+
+      textarea.form-control {
+        height: 100px;
+        font-size: 14px;
+      }
     }
   }
 }

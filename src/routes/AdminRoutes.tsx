@@ -15,6 +15,12 @@ import ViewPayment from "@/screens/admin/payments/view-payment";
 import UserView from "@/screens/admin/users/view-user";
 import Report from "@/screens/admin/report";
 import Dogs from "@/screens/admin/dogs";
+import ViewDog from "@/screens/admin/dogs/view-dog";
+import FAQs from "@/screens/admin/faqs";
+import DogBreeds from "@/screens/admin/pages/dog-breeds";
+import DogCharacters from "@/screens/admin/pages/dog-characters";
+import Hobbies from "@/screens/admin/pages/hobbies";
+import DogLikes from "@/screens/admin/pages/dog-likes";
 
 const AdminRoutes = () => {
   return (
@@ -118,7 +124,54 @@ const AdminRoutes = () => {
           </Layout>
         }
       />
-
+      <Route
+        path="/dogs/view-dog"
+        element={
+          <Layout title={"View Dog"}>
+            <ViewDog />
+          </Layout>
+        }
+      />
+      <Route
+        path="/faqs"
+        element={
+          <Layout title={"FAQs"}>
+            <FAQs />
+          </Layout>
+        }
+      />
+      <Route
+        path="/pages/dog-breeds"
+        element={
+          <Layout title={"Dog Breeds"}>
+            <DogBreeds />
+          </Layout>
+        }
+      />
+      <Route
+        path="/pages/dog-characters"
+        element={
+          <Layout title={"Dog Characters"}>
+            <DogCharacters />
+          </Layout>
+        }
+      />
+      <Route
+        path="/pages/hobbies"
+        element={
+          <Layout title={"Hobbies"}>
+            <Hobbies />
+          </Layout>
+        }
+      />
+      <Route
+        path="/pages/dog-likes"
+        element={
+          <Layout title={"Dog Likes"}>
+            <DogLikes />
+          </Layout>
+        }
+      />
     </Routes>
   );
 };

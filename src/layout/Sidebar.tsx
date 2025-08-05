@@ -79,23 +79,18 @@ const Sidebar: React.FC = () => {
       link: "/dogs",
       icon: "lucide:dog",
     },
-    {
-      id: "Pages",
-      title: "Pages",
-      link: "/pages/content-management",
-      icon: "bx:file",
-    },
-    // {
-    //   id: "Subscription Packages",
-    //   title: "Subscription Packages",
-    //   link: "/subscription-packages",
-    //   icon: "streamline:subscription-cashflow",
-    // },
+
     {
       id: "Payments",
       title: "Payments",
       link: "/payments",
       icon: "fluent:payment-28-regular",
+    },
+    {
+      id: "Subscription Packages",
+      title: "Subscription Packages",
+      link: "/subscription-packages",
+      icon: "streamline:subscription-cashflow",
     },
     {
       id: "Contact",
@@ -108,6 +103,45 @@ const Sidebar: React.FC = () => {
       title: "Reported Users",
       link: "/report",
       icon: "mdi:alert-circle-outline",
+    },
+    {
+      id: "Pages",
+      title: "Pages",
+      icon: "bx:file",
+      link: "/pages",
+      submenu: [
+        {
+          id: "DogBreeds",
+          title: "Dog Breeds",
+          link: "/pages/dog-breeds",
+        },
+        {
+          id: "DogCharacters",
+          title: "Dog Characters",
+          link: "/pages/dog-characters",
+        },
+        {
+          id: "Hobbies",
+          title: "Hobbies",
+          link: "/pages/hobbies",
+        },
+        {
+          id: "DogLikes",
+          title: "Dog Likes",
+          link: "/pages/dog-likes",
+        },
+        {
+          id: "ContentManagementMain",
+          title: "Content Management",
+          link: "/pages/content-management",
+        },
+      ],
+    },
+    {
+      id: "FAQ's",
+      title: "FAQs",
+      link: "/faqs",
+      icon: "mdi:faq",
     },
     {
       id: "ProfileSettings",

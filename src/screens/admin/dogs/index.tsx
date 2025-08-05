@@ -225,7 +225,7 @@ const Dogs: React.FC = () => {
                         placement="top"
                         overlay={<Tooltip id={`view-tooltip-${row.id}`}>View</Tooltip>}
                     >
-                        <Link to={`/admin/dogs/${row.id}`}>
+                        <Link to={`/dogs/view-dog`}>
                             <Icon icon="ri:eye-line" width={20} height={20} className="text-primary" />
                         </Link>
                     </OverlayTrigger>

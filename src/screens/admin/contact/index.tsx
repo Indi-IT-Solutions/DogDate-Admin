@@ -27,7 +27,7 @@ const ContactUs: React.FC = () => {
             sortable: true,
         },
         {
-            name: "Full Name",
+            name: "Name",
             selector: (row: ReportData) => row.name,
             width: "180px",
             sortable: true,
@@ -139,7 +139,7 @@ const ContactUs: React.FC = () => {
                     <div className="modaldelete_div">
                         <Form>
                             <Form.Group className="mb-3 form-group">
-                                <Form.Label>Full Name</Form.Label>
+                                <Form.Label>Name</Form.Label>
                                 <Form.Control
                                     type="text"
                                     placeholder="Enter your name"

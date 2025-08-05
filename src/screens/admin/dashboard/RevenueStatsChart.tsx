@@ -29,7 +29,7 @@ const RevenueStatsChart: React.FC = () => {
                         labelFormatter={(label) => `Month: ${label}`}
                     />
                     <Legend />
-                    <Bar dataKey="income" fill="#94EB00" name="Total Income (USD)" />
+                    <Bar dataKey="income" fill="#4bbff9" name="Total Income (USD)" />
                 </BarChart>
             </ResponsiveContainer>
         </div>
