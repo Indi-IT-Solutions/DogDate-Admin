@@ -1,48 +1,67 @@
 import { Icon } from "@iconify/react/dist/iconify.js";
 import { Row, Col } from "react-bootstrap";
+import { DashboardStats } from "@/services";
 
-const Data = [
-    {
-        title: "Total Users",
-        value: "40,689",
-        icon: "lucide:users",
-        bgColor: "#DAD9FF",
-        iconColor: "#7878FF"
-    },
-    {
-        title: "Total Dogs",
-        value: "1,289",
-        icon: "mdi:dog",
-        bgColor: "#FFF3D5",
-        iconColor: "#FEC53D"
-    },
-    {
-        title: "Breedings Completed",
-        value: "469",
-        icon: "mdi:dog-service",
-        bgColor: "#D5E9FF",
-        iconColor: "#0F66CC"
-    },
-    {
-        title: "Playmates Completed",
-        value: "892",
-        icon: "mdi:dog-side",
-        bgColor: "#FFE1E1",
-        iconColor: "#FF4D4D"
-    },
-    {
-        title: "Revenue",
-        value: "$68,456",
-        icon: "qlementine-icons:money-16",
-        bgColor: "#D8FFE1",
-        iconColor: "#1F8F39"
-    }
-];
+interface StatsProps {
+    data?: DashboardStats;
+}
 
-const Stats = () => {
+const defaultStats = {
+    total_users: 0,
+    total_dogs: 0,
+    breedings_completed: 0,
+    playmates_completed: 0,
+    total_revenue: 0,
+    total_active_users: 0,
+    total_inactive_users: 0,
+    total_approved_dogs: 0,
+    total_pending_dogs: 0,
+    recent_registrations: [],
+    recent_dog_registrations: []
+};
+
+const Stats: React.FC<StatsProps> = ({ data = defaultStats }) => {
+    const statsData = [
+        {
+            title: "Total Users",
+            value: data.total_users.toLocaleString(),
+            icon: "lucide:users",
+            bgColor: "#DAD9FF",
+            iconColor: "#7878FF"
+        },
+        {
+            title: "Total Dogs",
+            value: data.total_dogs.toLocaleString(),
+            icon: "mdi:dog",
+            bgColor: "#FFF3D5",
+            iconColor: "#FEC53D"
+        },
+        {
+            title: "Breedings Completed",
+            value: data.breedings_completed.toLocaleString(),
+            icon: "mdi:dog-service",
+            bgColor: "#D5E9FF",
+            iconColor: "#0F66CC"
+        },
+        {
+            title: "Playmates Completed",
+            value: data.playmates_completed.toLocaleString(),
+            icon: "mdi:dog-side",
+            bgColor: "#FFE1E1",
+            iconColor: "#FF4D4D"
+        },
+        {
+            title: "Revenue",
+            value: `$${data.total_revenue.toLocaleString()}`,
+            icon: "qlementine-icons:money-16",
+            bgColor: "#D8FFE1",
+            iconColor: "#1F8F39"
+        }
+    ];
+
     return (
         <Row className="g-3 stats-row">
-            {Data.map((stat, index) => (
+            {statsData.map((stat, index) => (
                 <Col className="col-md-4 mb-0" key={index}>
                     <div className="card">
                         <div className="card-body d-flex justify-content-between align-items-center">

@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  dogdate-admin:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3001:80"
+    environment:
+      - NODE_ENV=production
+    volumes:
+      # Mount nginx logs for debugging (optional)
+      - ./logs:/var/log/nginx
+    restart: unless-stopped
+    networks:
+      - dogdate-network
+
+  # Optional: Add a development service
+  dogdate-admin-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - VITE_API_BASE_URL=http://localhost:8080
+    volumes:
+      - .:/app
+      - /app/node_modules
+    profiles:
+      - dev
+
+networks:
+  dogdate-network:
+    driver: bridge
+
+volumes:
+  logs: 

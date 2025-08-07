@@ -1,10 +1,11 @@
 import { IMAGES } from "@/contants/images";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import DataTable from "react-data-table-component";
-import { Button, Card, Col, Modal, OverlayTrigger, Row, Tab, Tabs, Tooltip } from "react-bootstrap";
-import { Link } from "react-router-dom";
+import { Button, Card, Col, Modal, OverlayTrigger, Row, Tab, Tabs, Tooltip, Alert, Spinner } from "react-bootstrap";
+import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import Matches from "../matches";
+import { UserService, type User } from "@/services";
 
 interface Payments {
     id: number;
@@ -33,10 +34,176 @@ interface Dog {
 }
 
 const UserView: React.FC = () => {
+    const [searchParams] = useSearchParams();
+    const navigate = useNavigate();
+    const userId = searchParams.get('id');
+
+    // State for user data
+    const [userData, setUserData] = useState<User | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string>("");
+
+    // State for dogs data
+    const [dogsData, setDogsData] = useState<any[]>([]);
+    const [dogsLoading, setDogsLoading] = useState(false);
+    const [dogsError, setDogsError] = useState<string>("");
+    const [dogsPagination, setDogsPagination] = useState({
+        currentPage: 1,
+        totalRows: 0,
+        perPage: 10
+    });
+
+    // Other states
     const [key, setKey] = useState<string>("dogs");
     const [searchText, setSearchText] = useState<string>("");
     const [show, setShow] = useState(false);
     const handleClose = () => setShow(false);
+
+    // Fetch user data
+    const fetchUserData = async () => {
+        if (!userId) {
+            setError("User ID is required");
+            setLoading(false);
+            return;
+        }
+
+        try {
+            setLoading(true);
+            setError("");
+
+            console.log('🔍 Fetching user data for ID:', userId);
+            const response = await UserService.getUserById(userId);
+
+            console.log('📋 User response:', response);
+
+            if (response.status === 1 && response.data) {
+                setUserData(response.data);
+            } else {
+                setError(response.message || "Failed to fetch user data");
+            }
+        } catch (err: any) {
+            console.error("Error fetching user data:", err);
+            setError(err.message || "An error occurred while fetching user data");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Fetch user's dogs
+    const fetchUserDogs = async (page: number = 1, limit: number = 10, search?: string) => {
+        if (!userId) return;
+
+        try {
+            setDogsLoading(true);
+            setDogsError("");
+
+            const filters = {
+                page,
+                limit,
+                search: search || undefined,
+            };
+
+            console.log('🔍 Fetching dogs for user:', userId, filters);
+            const response = await UserService.getUserDogs(userId, filters);
+
+            console.log('🐕 Dogs response:', response);
+
+            if (response.status === 1) {
+                setDogsData(response.data || []);
+                setDogsPagination({
+                    currentPage: response.meta?.page || 1,
+                    totalRows: response.meta?.total || 0,
+                    perPage: response.meta?.limit || 10
+                });
+            } else {
+                setDogsError(response.message || "Failed to fetch user's dogs");
+                setDogsData([]);
+            }
+        } catch (err: any) {
+            console.error("Error fetching user's dogs:", err);
+            setDogsError(err.message || "An error occurred while fetching dogs");
+            setDogsData([]);
+        } finally {
+            setDogsLoading(false);
+        }
+    };
+
+    // Load user data on component mount
+    useEffect(() => {
+        fetchUserData();
+    }, [userId]);
+
+    // Fetch dogs when Dogs tab is selected
+    useEffect(() => {
+        if (key === "dogs" && userId) {
+            fetchUserDogs(1, 10);
+        }
+    }, [key, userId]);
+
+    // Handle search for dogs with debounce
+    useEffect(() => {
+        if (key === "dogs") {
+            const timeoutId = setTimeout(() => {
+                if (searchText !== undefined) {
+                    fetchUserDogs(1, dogsPagination.perPage, searchText);
+                }
+            }, 500);
+            return () => clearTimeout(timeoutId);
+        }
+    }, [searchText, key]);
+
+    // Handle case where no user ID is provided
+    useEffect(() => {
+        if (!userId) {
+            setError("No user ID provided in URL");
+            setLoading(false);
+        }
+    }, [userId]);
+
+    // Helper functions for displaying data
+    const getStatusBadge = (status: string) => {
+        const variant = status === 'active' ? 'bg-success' :
+            status === 'inactive' ? 'bg-warning' : 'bg-danger';
+        return <span className={`badge ${variant}`}>{status.charAt(0).toUpperCase() + status.slice(1)}</span>;
+    };
+
+    const getRegisterTypeBadge = (type: string) => {
+        const variant = type === 'normal' ? 'bg-info' :
+            type === 'google' ? 'bg-danger' : 'bg-dark';
+        return <span className={`badge ${variant}`}>{type.charAt(0).toUpperCase() + type.slice(1)}</span>;
+    };
+
+    const formatDate = (dateString: string) => {
+        return new Date(dateString).toLocaleDateString();
+    };
+
+    // Helper function to safely extract names from populated fields
+    const extractNames = (items: any[]) => {
+        if (!items || !Array.isArray(items)) return [];
+        return items.map(item => {
+            if (typeof item === 'string') return item; // ObjectId as string
+            if (item && typeof item === 'object') {
+                // Handle nested object with name property
+                if (item.name && typeof item.name === 'string') return item.name;
+                if (item.name && typeof item.name === 'object' && item.name.name) return item.name.name;
+                // If it's an object but no name property, return the _id or first available string value
+                if (item._id) return item._id.toString();
+            }
+            return 'Unknown'; // Fallback
+        });
+    };
+
+    // Helper function to safely get string value from potentially nested objects
+    const safeGetString = (value: any): string => {
+        if (!value) return 'N/A';
+        if (typeof value === 'string') return value;
+        if (typeof value === 'object') {
+            if (value.name && typeof value.name === 'string') return value.name;
+            if (value.name && typeof value.name === 'object' && value.name.name) return value.name.name;
+            if (value._id) return value._id.toString();
+        }
+        return 'Unknown';
+    };
 
     const paymentsColumns = [
         {
@@ -119,15 +286,14 @@ const UserView: React.FC = () => {
         },
     ];
 
-
     const dogsColumns = [
         {
             name: "Dog",
-            cell: (row: Dog) => (
+            cell: (row: any) => (
                 <div className="d-flex gap-3 align-items-center py-2">
                     <img
-                        src={row.image}
-                        alt={row.name}
+                        src={IMAGES.Dog} // Use default image for now
+                        alt={row.dog_name || 'Dog'}
                         className="rounded"
                         width={50}
                         height={50}
@@ -135,11 +301,11 @@ const UserView: React.FC = () => {
                     />
                     <div>
                         <div className="d-flex align-items-center gap-2">
-                            <strong>{row.name}</strong>
+                            <strong>{row.dog_name || 'Unknown'}</strong>
                         </div>
-                        <small className="text-muted">{row.type}</small>
+                        <small className="text-muted">{row.profile_type || 'N/A'}</small>
                         <div>
-                            <small className="text-muted">{row.breed}</small>
+                            <small className="text-muted">{safeGetString(row.breed) || 'Unknown breed'}</small>
                         </div>
                     </div>
                 </div>
@@ -148,26 +314,46 @@ const UserView: React.FC = () => {
         },
         {
             name: "Gender",
-            selector: (row: Dog) => row.gender,
+            selector: (row: any) => row.gender || 'N/A',
         },
         {
             name: "Age",
-            selector: (row: Dog) => row.age,
+            selector: (row: any) => row.age ? `${row.age} yrs` : 'N/A',
         },
         {
             name: "Color",
-            selector: (row: Dog) => row.color,
+            selector: (row: any) => row.colour || 'N/A',  // Fixed: using 'colour' from schema
+        },
+        {
+            name: "Character",
+            cell: (row: any) => (
+                <div className="d-flex gap-1 flex-wrap">
+                    {row.character && row.character.length > 0 ? (
+                        row.character.slice(0, 2).map((char: any, index: number) => (
+                            <span key={index} className="badge bg-info" style={{ fontSize: '10px' }}>
+                                {safeGetString(char)}
+                            </span>
+                        ))
+                    ) : (
+                        <span className="text-muted" style={{ fontSize: '12px' }}>None</span>
+                    )}
+                    {row.character && row.character.length > 2 && (
+                        <span className="text-muted" style={{ fontSize: '10px' }}>+{row.character.length - 2}</span>
+                    )}
+                </div>
+            ),
+            width: "150px"
         },
         {
             name: "Added on",
-            selector: (row: Dog) => row.addedOn,
+            selector: (row: any) => formatDate(row.created_at),
         },
         {
             name: "Status",
             width: "100px",
-            cell: (row: Dog) => (
-                <span className={`badge ${row.status === "Active" ? "bg-success" : "bg-danger"}`}>
-                    {row.status}
+            cell: (row: any) => (
+                <span className={`badge ${row.status === "active" ? "bg-success" : "bg-danger"}`}>
+                    {row.status?.charAt(0).toUpperCase() + row.status?.slice(1) || 'Unknown'}
                 </span>
             ),
         },
@@ -175,12 +361,12 @@ const UserView: React.FC = () => {
             name: "Actions",
             center: true,
             sortable: false,
-            cell: () => (
+            cell: (row: any) => (
                 <OverlayTrigger
                     placement="top"
                     overlay={<Tooltip id="view-tooltip">View</Tooltip>}
                 >
-                    <Link to="/dogs/view-dog">
+                    <Link to={`/dogs/view-dog?id=${row._id}`}>
                         <Icon icon="ri:eye-line" width={20} height={20} className="text-primary" />
                     </Link>
                 </OverlayTrigger>
@@ -188,88 +374,8 @@ const UserView: React.FC = () => {
         },
     ];
 
-    // Dog related content update
-    const [paymentsData] = useState<Payments[]>([
-        {
-            id: 1001,
-            type: "Breeding",
-            recurring: true,
-            dog: {
-                image: IMAGES.Dog,
-                name: "Bruno",
-                breed: "Labrador Retriever"
-            },
-            amount: 499,
-            paidOn: "2025-07-30",
-            status: "Success"
-        },
-        {
-            id: 1002,
-            type: "Playmates",
-            recurring: false,
-            dog: {
-                image: IMAGES.Dog,
-                name: "Bella",
-                breed: "Pomeranian"
-            },
-            amount: 199,
-            paidOn: "2025-07-20",
-            status: "Success"
-        },
-        {
-            id: 1003,
-            type: "Breeding",
-            recurring: false,
-            dog: {
-                image: IMAGES.Dog,
-                name: "Coco",
-                breed: "German Shepherd"
-            },
-            amount: 299,
-            paidOn: "2025-07-10",
-            status: "Failed"
-        }
-    ]);
-
-
-    const [dogsData] = useState<Dog[]>([
-        {
-            id: 1,
-            image: IMAGES.Dog,
-            name: "Charlie",
-            type: "Breeding",
-            breed: "Labrador Retriever",
-            gender: "Male",
-            age: "3 yrs",
-            color: "Yellow",
-            addedOn: "2024-01-15",
-            status: "Active",
-        },
-        {
-            id: 2,
-            image: IMAGES.Dog,
-            name: "Luna",
-            type: "Playmates",
-            breed: "Pomeranian",
-            gender: "Female",
-            age: "2 yrs",
-            color: "White",
-            addedOn: "2024-02-10",
-            status: "Active",
-        },
-        {
-            id: 3,
-            image: IMAGES.Dog,
-            name: "Max",
-            type: "Breeding",
-            breed: "German Shepherd",
-            gender: "Male",
-            age: "4 yrs",
-            color: "Black and Tan",
-            addedOn: "2023-12-05",
-            status: "Active",
-        },
-    ]);
+    // Static data for payments (will be replaced with API calls later)
+    const [paymentsData] = useState<Payments[]>([]);
 
     const filteredPaymentsData = paymentsData.filter((item) =>
         JSON.stringify(item).toLowerCase().includes(searchText.toLowerCase())
@@ -279,11 +385,70 @@ const UserView: React.FC = () => {
         JSON.stringify(item).toLowerCase().includes(searchText.toLowerCase())
     );
 
+    // Loading state
+    if (loading) {
+        return (
+            <Card>
+                <Card.Body className="text-center py-5">
+                    <Spinner animation="border" role="status" className="mb-3">
+                        <span className="visually-hidden">Loading...</span>
+                    </Spinner>
+                    <p>Loading user details...</p>
+                </Card.Body>
+            </Card>
+        );
+    }
+
+    // Error state
+    if (error) {
+        return (
+            <Card>
+                <Card.Header className="d-flex align-items-center justify-content-between flex-wrap">
+                    <h5>User Details</h5>
+                    <Link className="btn btn-primary px-4 py-2 h-auto" to="/users">
+                        Back
+                    </Link>
+                </Card.Header>
+                <Card.Body>
+                    <Alert variant="danger" className="text-center">
+                        <Icon icon="mdi:alert" width={48} height={48} className="mb-2" />
+                        <h6>Error Loading User</h6>
+                        <p>{error}</p>
+                        <Button variant="outline-primary" onClick={fetchUserData}>
+                            Try Again
+                        </Button>
+                    </Alert>
+                </Card.Body>
+            </Card>
+        );
+    }
+
+    // No user data
+    if (!userData) {
+        return (
+            <Card>
+                <Card.Header className="d-flex align-items-center justify-content-between flex-wrap">
+                    <h5>User Details</h5>
+                    <Link className="btn btn-primary px-4 py-2 h-auto" to="/users">
+                        Back
+                    </Link>
+                </Card.Header>
+                <Card.Body>
+                    <Alert variant="warning" className="text-center">
+                        <Icon icon="mdi:account-off" width={48} height={48} className="mb-2" />
+                        <h6>User Not Found</h6>
+                        <p>The requested user could not be found.</p>
+                    </Alert>
+                </Card.Body>
+            </Card>
+        );
+    }
+
     return (
         <React.Fragment>
             <Card>
                 <Card.Header className="d-flex align-items-center justify-content-between flex-wrap">
-                    <h5>User Details</h5>
+                    <h5>User Details - {userData.name}</h5>
                     <Link className="btn btn-primary px-4 py-2 h-auto" to="/users">
                         Back
                     </Link>
@@ -304,235 +469,151 @@ const UserView: React.FC = () => {
                                             {/* Name */}
                                             <div className="tablefilelist_grid">
                                                 <h4>Name</h4>
-                                                <p>Albert Stevano</p>
+                                                <p>{userData.name || 'N/A'}</p>
                                             </div>
 
                                             {/* Email */}
                                             <div className="tablefilelist_grid">
                                                 <h4>Email</h4>
-                                                <p>emma.thompson@example.com</p>
+                                                <p>{userData.email || 'N/A'}</p>
                                             </div>
 
                                             {/* Age & Gender */}
                                             <div className="tablefilelist_grid">
-                                                <h4>Age Range</h4>
-                                                <p>26 yr</p>
+                                                <h4>Age</h4>
+                                                <p>{userData.age || 'N/A'}</p>
                                             </div>
-                                            {/* Age & Gender */}
+
+                                            {/* Gender */}
+                                            <div className="tablefilelist_grid">
+                                                <h4>Gender</h4>
+                                                <p>{userData.gender ? userData.gender.charAt(0).toUpperCase() + userData.gender.slice(1) : 'N/A'}</p>
+                                            </div>
+
+                                            {/* Phone number */}
                                             <div className="tablefilelist_grid">
                                                 <h4>Phone number</h4>
-                                                <p>1234567890</p>
+                                                <p>{userData.phone_number ? `+${userData.country_code || ''} ${userData.phone_number}` : 'N/A'}</p>
                                             </div>
 
                                             {/* Location */}
                                             <div className="tablefilelist_grid">
-                                                <h4>Location (Partial Postcode)</h4>
-                                                <p>New York, USA 10001</p>
+                                                <h4>Location</h4>
+                                                <p>{userData.address?.city || userData.address?.full_address || 'N/A'}</p>
                                             </div>
+
                                             {/* About */}
                                             <div className="tablefilelist_grid">
                                                 <h4>About</h4>
                                                 <div className="about-box">
-                                                    <p>
-                                                        Fashion enthusiast with a passion for style and creativity. Always exploring the latest trends and expressing myself through fashion.
-                                                    </p>
+                                                    <p>{userData.about || 'No description provided'}</p>
                                                 </div>
                                             </div>
 
                                         </Col>
                                         <Col lg={6}>
-
-
                                             {/* Interests */}
                                             <div className="tablefilelist_grid">
                                                 <h4 className="mb-2">Lifestyle & Interests</h4>
                                                 <h6 style={{ fontSize: '12px' }}>Hobbies</h6>
                                                 <div className="d-flex gap-2 mb-3 flex-wrap">
-                                                    <span className="badge bg-primary">Reading</span>
-                                                    <span className="badge bg-primary">Traveling</span>
-                                                    <span className="badge bg-primary">Cooking</span>
-                                                    <span className="badge bg-primary">Photography</span>
-                                                    <span className="badge bg-primary">Gardening</span>
-                                                    <span className="badge bg-primary">Yoga</span>
-                                                    <span className="badge bg-primary">Hiking</span>
+                                                    {userData.hobbies && userData.hobbies.length > 0 ? (
+                                                        extractNames(userData.hobbies).map((hobby, index) => (
+                                                            <span key={index} className="badge bg-primary">{hobby}</span>
+                                                        ))
+                                                    ) : (
+                                                        <span className="text-muted">No hobbies listed</span>
+                                                    )}
                                                 </div>
                                                 <h6 style={{ fontSize: '12px' }}>Meet Up Availability</h6>
                                                 <div className="d-flex gap-2 flex-wrap">
-                                                    <span className="badge bg-warning">Mornings</span>
-                                                    <span className="badge bg-warning">Afternoons</span>
-                                                    <span className="badge bg-warning">Evenings</span>
-                                                    <span className="badge bg-warning">Weekdays</span>
-                                                    <span className="badge bg-warning">Weekends</span>
+                                                    {userData.meetup_availability && userData.meetup_availability.length > 0 ? (
+                                                        extractNames(userData.meetup_availability).map((availability, index) => (
+                                                            <span key={index} className="badge bg-warning">{availability}</span>
+                                                        ))
+                                                    ) : (
+                                                        <span className="text-muted">No availability set</span>
+                                                    )}
                                                 </div>
                                             </div>
 
                                             {/* Type */}
                                             <div className="tablefilelist_grid">
-                                                <h4>Type</h4>
-                                                <p><span className="badge bg-info">Normal</span></p>
+                                                <h4>Registration Type</h4>
+                                                <p>{getRegisterTypeBadge(userData.register_type)}</p>
                                             </div>
 
                                             {/* Status */}
                                             <div className="tablefilelist_grid">
                                                 <h4>Status</h4>
-                                                <p><span className="badge bg-success">Active</span></p>
+                                                <p>{getStatusBadge(userData.status)}</p>
+                                            </div>
+
+                                            {/* Created Date */}
+                                            <div className="tablefilelist_grid">
+                                                <h4>Member Since</h4>
+                                                <p>{formatDate(userData.created_at)}</p>
                                             </div>
 
                                         </Col>
                                     </Row>
-
-
-
                                 </div>
                             </Col>
-
-
                         </Row>
 
                         <hr className="my-4" />
 
-                        <h4>Dog Details</h4>
+                        <h4>Additional Information</h4>
 
                         <div className="talefile_list mt-4">
                             <Row>
-                                <Col md={4}>
-                                    <div className="talefile_box talefile_box2 d-flex flex-wrap gap-2 p-2 justify-content-center align-items-center" style={{ borderRadius: 16 }}>
-                                        {[
-                                            "https://images.unsplash.com/photo-1518717758536-85ae29035b6d?auto=format&fit=facearea&w=400&h=400&facepad=2",
-                                            "https://images.unsplash.com/photo-1507146426996-ef05306b995a?auto=format&fit=facearea&w=400&h=400&facepad=2",
-                                            "https://images.unsplash.com/photo-1518717758536-85ae29035b6d?auto=format&fit=facearea&w=400&h=400&facepad=2",
-                                            "https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=facearea&w=400&h=400&facepad=2",
-                                            "https://images.unsplash.com/photo-1518717758536-85ae29035b6d?auto=format&fit=facearea&w=400&h=400&facepad=2"
-                                        ].map((src, idx) => (
-                                            <img
-                                                key={idx}
-                                                className="talefile_img shadow"
-                                                src={src}
-                                                alt={`Dog Image ${idx + 1}`}
-                                                style={{
-
-                                                    objectFit: "cover",
-                                                    borderRadius: 12,
-                                                    border: "2px solid #4BBFF9"
-                                                }}
-                                            />
-                                        ))}
+                                <Col md={6}>
+                                    <div className="tablefilelist_grid">
+                                        <h4>Email Notifications</h4>
+                                        <p>{userData.email_notifications ?
+                                            <span className="badge bg-success">Enabled</span> :
+                                            <span className="badge bg-secondary">Disabled</span>}
+                                        </p>
+                                    </div>
+                                    <div className="tablefilelist_grid">
+                                        <h4>Push Notifications</h4>
+                                        <p>{userData.push_notifications ?
+                                            <span className="badge bg-success">Enabled</span> :
+                                            <span className="badge bg-secondary">Disabled</span>}
+                                        </p>
+                                    </div>
+                                    <div className="tablefilelist_grid">
+                                        <h4>Profile Completed</h4>
+                                        <p>{userData.submit_personal_details ?
+                                            <span className="badge bg-success">Yes</span> :
+                                            <span className="badge bg-warning">Incomplete</span>}
+                                        </p>
                                     </div>
                                 </Col>
-                                <Col md={8}>
-                                    <Row className="gy-3">
-                                        <Col md={6}>
-                                            <div className="tablefilelist_grid">
-                                                <h4>Dog Name</h4>
-                                                <p>Rocky</p>
-                                            </div>
-                                            <div className="tablefilelist_grid">
-                                                <h4>Breed</h4>
-                                                <p>Labrador</p>
-                                            </div>
-                                            <div className="tablefilelist_grid">
-                                                <h4>Breed Classification</h4>
-                                                <p>Sporting</p>
-                                            </div>
-                                            <div className="tablefilelist_grid">
-                                                <h4>Gender</h4>
-                                                <p>Male</p>
-                                            </div>
-                                            <div className="tablefilelist_grid">
-                                                <h4>Age</h4>
-                                                <p>3 years</p>
-                                            </div>
-                                            <div className="tablefilelist_grid">
-                                                <h4>Color</h4>
-                                                <p>Golden</p>
-                                            </div>
-                                            <div className="tablefilelist_grid">
-                                                <h4>Character</h4>
-                                                <p>Friendly</p>
-                                            </div>
-                                            <div className="tablefilelist_grid">
-                                                <h4>Personality</h4>
-                                                <p>Playful, loves attention, good with kids</p>
-                                            </div>
-
-                                        </Col>
-
-                                        <Col md={6}>
-                                            <div className="tablefilelist_grid">
-                                                <h4>What’s Your Dog Like?</h4>
-                                                <p>Walks in the Park, Agility Training, Playing with Toys</p>
-                                            </div>
-                                            <div className="tablefilelist_grid">
-                                                <h4>Breed Certification</h4>
-                                                <p>Uploaded</p>
-                                            </div>
-
-                                            <div className="tablefilelist_grid">
-                                                <h4>Other Documents</h4>
-                                                <p>Inbreeding Coefficient Certificate</p>
-                                            </div>
-                                            <div className="tablefilelist_grid">
-                                                <h4>Dog Date Tagline</h4>
-                                                <p>“The best cuddle buddy!”</p>
-                                            </div>
-                                            <div className="tablefilelist_grid">
-                                                <h4>Favorite Dog Treat</h4>
-                                                <p>Peanut Butter Biscuits</p>
-                                            </div>
-                                            <div className="tablefilelist_grid">
-                                                <h4>Breeding Price</h4>
-                                                <p>$100</p>
-                                            </div>
-                                            <div className="tablefilelist_grid">
-                                                <h4>Available for Breeding?</h4>
-                                                <p>Yes</p>
-                                            </div>
-                                        </Col>
-                                    </Row>
-
-                                    {/* Pedigree Section */}
-                                    <div className="mt-1">
-                                        <Row className="gy-3">
-                                            <Col md={12}>
-                                                <div className="tablefilelist_grid">
-                                                    <h4>Pedigree Name</h4>
-                                                    <p>Chopped Pedigree </p>
-                                                </div>
-                                            </Col>
-                                            <Col md={12}>
-                                                <div className="d-flex align-items-center gap-3">
-                                                    <div className="d-flex flex-column align-items-center">
-                                                        <Icon icon="mdi:file-document-outline" width={40} className="mb-2 text-primary" />
-                                                        <span style={{ fontSize: '13px' }}>Pedigree_Document.pdf</span>
-                                                    </div>
-                                                    <div className="d-flex flex-column align-items-center">
-                                                        <Icon icon="mdi:image-outline" width={40} className="mb-2 text-primary" />
-                                                        <span style={{ fontSize: '13px' }}>Pedigree_Image.jpg</span>
-                                                    </div>
-                                                </div>
-                                            </Col>
-                                        </Row>
+                                <Col md={6}>
+                                    <div className="tablefilelist_grid">
+                                        <h4>Registration Priority</h4>
+                                        <p>
+                                            <span className={`badge ${userData.registration_priority_status === 'completed' ? 'bg-success' :
+                                                userData.registration_priority_status === 'selected' ? 'bg-warning' : 'bg-secondary'
+                                                }`}>
+                                                {userData.registration_priority_status.replace('_', ' ').toUpperCase()}
+                                            </span>
+                                        </p>
                                     </div>
-
-                                    <div className="mt-4">
-                                        <h5 className="mb-3">Vaccination Certification</h5>
-                                        <Row>
-                                            {['Breed certification', 'Vaccination certification', 'Flea Documents'].map((doc, idx) => (
-                                                <Col md={4} key={idx}>
-                                                    <Card >
-                                                        <Card.Body className="text-center" >
-                                                            <Icon icon="mdi:file-document-outline" width={32} className="mb-2" />
-                                                            <p style={{ fontSize: '14px' }}>{doc}</p>
-                                                            <Button variant="outline-primary" size="sm">View</Button>
-                                                        </Card.Body>
-                                                    </Card>
-                                                </Col>
-                                            ))}
-                                        </Row>
+                                    <div className="tablefilelist_grid">
+                                        <h4>Terms Accepted</h4>
+                                        <p>{userData.terms_and_conditions ?
+                                            <span className="badge bg-success">Yes</span> :
+                                            <span className="badge bg-danger">No</span>}
+                                        </p>
+                                    </div>
+                                    <div className="tablefilelist_grid">
+                                        <h4>Last Updated</h4>
+                                        <p>{formatDate(userData.updated_at)}</p>
                                     </div>
                                 </Col>
                             </Row>
-
                         </div>
 
                     </div>
@@ -542,7 +623,7 @@ const UserView: React.FC = () => {
             <Card className="mt-3">
                 <Card.Body>
                     <Tabs
-                        id="boxer-status-tabs"
+                        id="user-details-tabs"
                         className="customtabs mb-2"
                         activeKey={key}
                         onSelect={(k: any) => setKey(k || "dogs")}
@@ -551,6 +632,12 @@ const UserView: React.FC = () => {
                         <Tab eventKey="dogs" title="Dogs">
                             <Row>
                                 <Col md={12}>
+                                    {dogsError && (
+                                        <Alert variant="danger" className="mb-3">
+                                            {dogsError}
+                                        </Alert>
+                                    )}
+
                                     <div className="text-end mb-3">
                                         <input
                                             type="text"
@@ -560,19 +647,35 @@ const UserView: React.FC = () => {
                                             onChange={(e) => setSearchText(e.target.value)}
                                         />
                                     </div>
+
                                     <DataTable
                                         columns={dogsColumns as any}
                                         data={filteredDogsData}
                                         pagination
                                         responsive
                                         className="custom-table"
+                                        progressPending={dogsLoading}
+                                        progressComponent={<div>Loading dogs...</div>}
                                         noDataComponent={
                                             <div className="text-center py-4">
                                                 <Icon icon="mdi:dog" width={48} height={48} className="text-muted mb-2" />
-                                                <p className="text-muted">No dogs found for this user</p>
+                                                <p className="text-muted">
+                                                    {dogsLoading ? 'Loading dogs...' : 'No dogs found for this user'}
+                                                </p>
+                                                {!dogsLoading && dogsPagination.totalRows === 0 && (
+                                                    <small className="text-muted">This user hasn't added any dogs yet</small>
+                                                )}
                                             </div>
                                         }
                                     />
+
+                                    {dogsPagination.totalRows > 0 && (
+                                        <div className="mt-3 text-center">
+                                            <small className="text-muted">
+                                                Showing {filteredDogsData.length} of {dogsPagination.totalRows} dogs
+                                            </small>
+                                        </div>
+                                    )}
                                 </Col>
                             </Row>
                         </Tab>
@@ -591,7 +694,7 @@ const UserView: React.FC = () => {
                                     <div className="text-end mb-3">
                                         <input
                                             type="text"
-                                            placeholder="Search..."
+                                            placeholder="Search payments..."
                                             className="searchfield"
                                             value={searchText}
                                             onChange={(e) => setSearchText(e.target.value)}
@@ -603,12 +706,17 @@ const UserView: React.FC = () => {
                                         pagination
                                         responsive
                                         className="custom-table"
+                                        noDataComponent={
+                                            <div className="text-center py-4">
+                                                <Icon icon="mdi:credit-card-off" width={48} height={48} className="text-muted mb-2" />
+                                                <p className="text-muted">No payments found for this user</p>
+                                                <small className="text-muted">This feature will be implemented to show user's payment history</small>
+                                            </div>
+                                        }
                                     />
                                 </Col>
                             </Row>
                         </Tab>
-
-
 
                     </Tabs>
                 </Card.Body>

@@ -1,16 +1,23 @@
 import React from 'react';
 import { BarChart, Bar, XAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { RevenueData } from '@/services';
 
-const RevenueStatsChart: React.FC = () => {
-    // Updated sample data for monthly total income in USD
-    const data = [
-        { month: 'Jan', income: 5400 },
-        { month: 'Feb', income: 6100 },
-        { month: 'Mar', income: 7200 },
-        { month: 'Apr', income: 6800 },
-        { month: 'May', income: 7900 },
-        { month: 'Jun', income: 8500 },
+interface RevenueStatsChartProps {
+    data?: RevenueData[];
+}
+
+const RevenueStatsChart: React.FC<RevenueStatsChartProps> = ({ data }) => {
+    // Default fallback data
+    const defaultData = [
+        { month: 'Jan', income: 0, subscriptions: 0, total_transactions: 0 },
+        { month: 'Feb', income: 0, subscriptions: 0, total_transactions: 0 },
+        { month: 'Mar', income: 0, subscriptions: 0, total_transactions: 0 },
+        { month: 'Apr', income: 0, subscriptions: 0, total_transactions: 0 },
+        { month: 'May', income: 0, subscriptions: 0, total_transactions: 0 },
+        { month: 'Jun', income: 0, subscriptions: 0, total_transactions: 0 },
     ];
+
+    const chartData = data && data.length > 0 ? data : defaultData;
 
     return (
         <div>
@@ -18,18 +25,32 @@ const RevenueStatsChart: React.FC = () => {
                 <h3 className="mb-0">Revenue Stats <span style={{ fontWeight: 400, fontSize: 14, color: '#888' }}>(Total Income per Month, USD)</span></h3>
             </div>
             <ResponsiveContainer width="100%" height={400}>
-                <BarChart data={data}>
+                <BarChart data={chartData}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="month" />
-
                     <Tooltip
                         cursor={{ fill: 'rgba(148, 235, 0, 0.1)' }}
                         contentStyle={{ backgroundColor: '#000000', color: '#ffffff' }}
-                        formatter={(value) => [`$${value.toLocaleString()}`, 'Total Income']}
+                        formatter={(value, name) => {
+                            switch (name) {
+                                case 'income':
+                                    return [`$${Number(value).toLocaleString()}`, 'Total Income'];
+                                case 'subscriptions':
+                                    return [value, 'Subscriptions'];
+                                case 'total_transactions':
+                                    return [value, 'Total Transactions'];
+                                default:
+                                    return [value, name];
+                            }
+                        }}
                         labelFormatter={(label) => `Month: ${label}`}
                     />
                     <Legend />
-                    <Bar dataKey="income" fill="#4bbff9" name="Total Income (USD)" />
+                    <Bar
+                        dataKey="income"
+                        fill="#4bbff9"
+                        name="Total Income (USD)"
+                    />
                 </BarChart>
             </ResponsiveContainer>
         </div>

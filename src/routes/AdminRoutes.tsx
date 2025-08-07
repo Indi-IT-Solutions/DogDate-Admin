@@ -21,155 +21,217 @@ import DogBreeds from "@/screens/admin/pages/dog-breeds";
 import DogCharacters from "@/screens/admin/pages/dog-characters";
 import Hobbies from "@/screens/admin/pages/hobbies";
 import DogLikes from "@/screens/admin/pages/dog-likes";
+import ProtectedRoute from "../components/ProtectedRoute";
+import PublicRoute from "../components/PublicRoute";
 
 const AdminRoutes = () => {
   return (
     <Routes>
-      <Route path="/" element={<Login />} />
-      <Route path="/forgot-password" element={<ForgotPassword />} />
-      <Route path="/reset-password" element={<ResetPassword />} />
+      {/* Public Routes - only accessible when NOT logged in */}
+      <Route
+        path="/"
+        element={
+          <PublicRoute>
+            <Login />
+          </PublicRoute>
+        }
+      />
+      <Route
+        path="/forgot-password"
+        element={
+          <PublicRoute>
+            <ForgotPassword />
+          </PublicRoute>
+        }
+      />
+      <Route
+        path="/reset-password"
+        element={
+          <PublicRoute>
+            <ResetPassword />
+          </PublicRoute>
+        }
+      />
+
+      {/* Protected Routes - only accessible when logged in */}
       <Route
         path="/dashboard"
         element={
-          <Layout title={"Dashboard"}>
-            <Dashboard />
-          </Layout>
+          <ProtectedRoute>
+            <Layout title={"Dashboard"}>
+              <Dashboard />
+            </Layout>
+          </ProtectedRoute>
         }
       />
       <Route
         path="/users"
         element={
-          <Layout title={"Users"}>
-            <Users />
-          </Layout>
+          <ProtectedRoute>
+            <Layout title={"Users"}>
+              <Users />
+            </Layout>
+          </ProtectedRoute>
         }
       />
       <Route
         path="/users/view-user"
         element={
-          <Layout title={"Users"}>
-            <UserView />
-          </Layout>
+          <ProtectedRoute>
+            <Layout title={"Users"}>
+              <UserView />
+            </Layout>
+          </ProtectedRoute>
         }
       />
       <Route
         path="/users/edit-user"
         element={
-          <Layout title={"Users"}>
-            <EditUser />
-          </Layout>
+          <ProtectedRoute>
+            <Layout title={"Users"}>
+              <EditUser />
+            </Layout>
+          </ProtectedRoute>
         }
       />
       <Route
         path="/subscription-packages"
         element={
-          <Layout title={"Subscription Packages"}>
-            <SubscriptionPackages />
-          </Layout>
+          <ProtectedRoute>
+            <Layout title={"Subscription Packages"}>
+              <SubscriptionPackages />
+            </Layout>
+          </ProtectedRoute>
         }
       />
       <Route
         path="/payments"
         element={
-          <Layout title={"Payments"}>
-            <Payments />
-          </Layout>
+          <ProtectedRoute>
+            <Layout title={"Payments"}>
+              <Payments />
+            </Layout>
+          </ProtectedRoute>
         }
       />
       <Route
         path="/payments/view-payment"
         element={
-          <Layout title={"Payment View"}>
-            <ViewPayment />
-          </Layout>
+          <ProtectedRoute>
+            <Layout title={"Payment View"}>
+              <ViewPayment />
+            </Layout>
+          </ProtectedRoute>
         }
       />
       <Route
         path="/contact"
         element={
-          <Layout title={"Contact"}>
-            <ContactUs />
-          </Layout>
+          <ProtectedRoute>
+            <Layout title={"Contact"}>
+              <ContactUs />
+            </Layout>
+          </ProtectedRoute>
         }
       />
       <Route
         path="/pages/content-management"
         element={
-          <Layout title={"Pages"}>
-            <Pages />
-          </Layout>
+          <ProtectedRoute>
+            <Layout title={"Pages"}>
+              <Pages />
+            </Layout>
+          </ProtectedRoute>
         }
       />
       <Route
         path="/profile-settings"
         element={
-          <Layout title={"Profile Settings"}>
-            <ProfileSettings />
-          </Layout>
+          <ProtectedRoute>
+            <Layout title={"Profile Settings"}>
+              <ProfileSettings />
+            </Layout>
+          </ProtectedRoute>
         }
       />
       <Route
         path="/report"
         element={
-          <Layout title={"Report"}>
-            <Report />
-          </Layout>
+          <ProtectedRoute>
+            <Layout title={"Report"}>
+              <Report />
+            </Layout>
+          </ProtectedRoute>
         }
       />
       <Route
         path="/dogs"
         element={
-          <Layout title={"Dogs"}>
-            <Dogs />
-          </Layout>
+          <ProtectedRoute>
+            <Layout title={"Dogs"}>
+              <Dogs />
+            </Layout>
+          </ProtectedRoute>
         }
       />
       <Route
         path="/dogs/view-dog"
         element={
-          <Layout title={"View Dog"}>
-            <ViewDog />
-          </Layout>
+          <ProtectedRoute>
+            <Layout title={"View Dog"}>
+              <ViewDog />
+            </Layout>
+          </ProtectedRoute>
         }
       />
       <Route
         path="/faqs"
         element={
-          <Layout title={"FAQs"}>
-            <FAQs />
-          </Layout>
+          <ProtectedRoute>
+            <Layout title={"FAQs"}>
+              <FAQs />
+            </Layout>
+          </ProtectedRoute>
         }
       />
       <Route
         path="/pages/dog-breeds"
         element={
-          <Layout title={"Dog Breeds"}>
-            <DogBreeds />
-          </Layout>
+          <ProtectedRoute>
+            <Layout title={"Dog Breeds"}>
+              <DogBreeds />
+            </Layout>
+          </ProtectedRoute>
         }
       />
       <Route
         path="/pages/dog-characters"
         element={
-          <Layout title={"Dog Characters"}>
-            <DogCharacters />
-          </Layout>
+          <ProtectedRoute>
+            <Layout title={"Dog Characters"}>
+              <DogCharacters />
+            </Layout>
+          </ProtectedRoute>
         }
       />
       <Route
         path="/pages/hobbies"
         element={
-          <Layout title={"Hobbies"}>
-            <Hobbies />
-          </Layout>
+          <ProtectedRoute>
+            <Layout title={"Hobbies"}>
+              <Hobbies />
+            </Layout>
+          </ProtectedRoute>
         }
       />
       <Route
         path="/pages/dog-likes"
         element={
-          <Layout title={"Dog Likes"}>
-            <DogLikes />
-          </Layout>
+          <ProtectedRoute>
+            <Layout title={"Dog Likes"}>
+              <DogLikes />
+            </Layout>
+          </ProtectedRoute>
         }
       />
     </Routes>

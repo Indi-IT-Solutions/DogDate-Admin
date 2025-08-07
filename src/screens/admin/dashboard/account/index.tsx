@@ -4,87 +4,119 @@ import DataTable from "react-data-table-component";
 import { IMAGES } from "@/contants/images";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import { Link } from "react-router-dom";
+import { DashboardService, type AccountRequest } from "@/services";
 
-interface Users {
-    id: number;
-    name: string;
-    img: string;
-    email: string;
-    phonenumber: string;
-    message: string;
-    created: any;
-    location: any;
-    dog_img: any;
-    dogname: any;
-    dogcategories: any;
-    dogbreed: any;
-    plan: string;
+interface AccountProps {
+    data?: AccountRequest[];
+    onRefresh?: () => Promise<void>;
 }
 
-const Account: React.FC = () => {
-    // const [searchText, setSearchText] = useState<string>("");
+const Account: React.FC<AccountProps> = ({ data = [], onRefresh }) => {
     const [reason, setReason] = useState<string>("");
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [selectedRequest, setSelectedRequest] = useState<AccountRequest | null>(null);
+
     // Modal
     const [show, setShow] = useState(false);
-    const handleClose = () => setShow(false);
+    const handleClose = () => {
+        setShow(false);
+        setSelectedRequest(null);
+        setReason("");
+    };
+
     const [modalType, setModalType] = useState<string>("");
-    const handleShow = (type: string) => {
+    const handleShow = (type: string, request: AccountRequest) => {
         setModalType(type);
+        setSelectedRequest(request);
         setShow(true);
     };
 
-    const handleConfirm = (reason: string) => {
-        console.log(reason);
-        handleClose();
-    };
+    const handleConfirm = async () => {
+        if (!selectedRequest) return;
 
+        try {
+            setIsSubmitting(true);
+            let response;
+
+            if (modalType === "accept") {
+                response = await DashboardService.approveAccountRequest(selectedRequest._id);
+            } else {
+                if (!reason.trim()) {
+                    alert("Please provide a reason for rejection");
+                    return;
+                }
+                response = await DashboardService.rejectAccountRequest(selectedRequest._id, reason);
+            }
+
+            if (response.status === 1) {
+                handleClose();
+                if (onRefresh) {
+                    await onRefresh();
+                }
+            } else {
+                alert(response.message || "Operation failed");
+            }
+        } catch (error: any) {
+            console.error("Error processing request:", error);
+            alert(error.message || "An error occurred");
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
 
     const columns = [
         {
             name: "User",
             width: "310px",
-            selector: (row: Users) => row.img,
-            cell: (row: Users) => (
+            selector: (row: AccountRequest) => row.user.name,
+            cell: (row: AccountRequest) => (
                 <div className="d-flex align-items-center gap-2">
                     <img
-                        src={row.img}
-                        alt={row.name}
+                        src={row.user.profile_image || IMAGES.Avatar1}
+                        alt={row.user.name}
                         className="rounded-circle"
                         width={35}
                         height={35}
                         style={{ objectFit: "cover" }}
                     />
-                    <div> <strong>{row.name}</strong><br /><small>{row.email}</small><br /><small>{row.phonenumber}</small></div>
+                    <div>
+                        <strong>{row.user.name}</strong><br />
+                        <small>{row.user.email}</small><br />
+                        <small>{row.user.phone_number ? `+${row.user.country_code} ${row.user.phone_number}` : 'N/A'}</small>
+                    </div>
                 </div>
             ),
         },
         {
             name: "Created On",
-            selector: (row: Users) => row.created,
+            selector: (row: AccountRequest) => new Date(row.created_at).toLocaleDateString(),
             sortable: true,
         },
         {
             name: "Dog",
-            selector: (row: Users) => row.dog_img,
+            selector: (row: AccountRequest) => row.dog.dog_name,
             width: "200px",
-            cell: (row: Users) => (
+            cell: (row: AccountRequest) => (
                 <div className="d-flex align-items-center gap-2">
                     <img
-                        src={row.dog_img}
-                        alt={row.name}
+                        src={row.dog.dog_images?.[0] || IMAGES.Dog}
+                        alt={row.dog.dog_name}
                         className="rounded-circle"
                         width={35}
                         height={35}
                         style={{ objectFit: "cover" }}
                     />
-                    <div><strong>{row.dogname}</strong><br /><small>{row.dogcategories}</small><br /><small>{row.dogbreed}</small></div>
+                    <div>
+                        <strong>{row.dog.dog_name}</strong><br />
+                        <small>{row.dog.profile_type}</small><br />
+                        <small>{row.dog.breed}</small>
+                    </div>
                 </div>
             ),
         },
-
         {
             name: "Plan",
-            selector: (row: Users) => row.plan,
+            selector: (row: AccountRequest) => row.plan || 'Free',
             sortable: true,
         },
         {
@@ -92,126 +124,57 @@ const Account: React.FC = () => {
             width: "200px",
             center: true,
             sortable: false,
-            cell: () => (
+            cell: (row: AccountRequest) => (
                 <div className="d-flex align-items-center gap-3">
                     <OverlayTrigger
                         placement="top"
                         overlay={<Tooltip id="view-tooltip">View</Tooltip>}
                     >
-                        <Link to="/users/view-user">
+                        <Link to={`/users/view-user?id=${row.user._id}`}>
                             <Icon icon="ri:eye-line" width={20} height={20} className="text-primary" />
                         </Link>
                     </OverlayTrigger>
-                    <OverlayTrigger
-                        placement="top"
-                        overlay={<Tooltip id="accept-tooltip">Accept</Tooltip>}
-                    >
-                        <Link to="javascript:void(0)" onClick={() => handleShow("accept")}>
-                            <Icon icon="mdi:check" width={20} height={20} className="text-success" />
-                        </Link>
-                    </OverlayTrigger>
-                    <OverlayTrigger
-                        placement="top"
-                        overlay={<Tooltip id="reject-tooltip">Reject</Tooltip>}
-                    >
-                        <Link to="javascript:void(0)" onClick={() => handleShow("reject")}>
-                            <Icon icon="icon-park-outline:close-one" width={20} height={20} className="text-danger" />
-                        </Link>
-                    </OverlayTrigger>
+                    {row.status === 'pending' && (
+                        <>
+                            <OverlayTrigger
+                                placement="top"
+                                overlay={<Tooltip id="accept-tooltip">Accept</Tooltip>}
+                            >
+                                <Link to="javascript:void(0)" onClick={() => handleShow("accept", row)}>
+                                    <Icon icon="mdi:check" width={20} height={20} className="text-success" />
+                                </Link>
+                            </OverlayTrigger>
+                            <OverlayTrigger
+                                placement="top"
+                                overlay={<Tooltip id="reject-tooltip">Reject</Tooltip>}
+                            >
+                                <Link to="javascript:void(0)" onClick={() => handleShow("reject", row)}>
+                                    <Icon icon="icon-park-outline:close-one" width={20} height={20} className="text-danger" />
+                                </Link>
+                            </OverlayTrigger>
+                        </>
+                    )}
                 </div>
             ),
         },
     ];
 
-    const [data] = useState<Users[]>([
-        {
-            id: 1,
-            name: "Emma Thompson",
-            img: IMAGES.Avatar1,
-            email: "emma.thompson@example.com",
-            phonenumber: "1234567890",
-            message: "User was using abusive language.",
-            created: "Jan 10, 2024",
-            dog_img: IMAGES.Dog,
-            location: "SW1A",
-            dogname: "Max",
-            dogcategories: "Breeding",
-            dogbreed: "Labrador",
-            plan: "Free"
-        },
-        {
-            id: 2,
-            name: "Emma Thompson",
-            img: IMAGES.Avatar1,
-            email: "emma.thompson@example.com",
-            phonenumber: "1234567890",
-            message: "User was using abusive language.",
-            created: "Jan 10, 2024",
-            dog_img: IMAGES.Dog,
-            location: "HA30",
-            dogname: "Bella",
-            dogcategories: "Playmates",
-            dogbreed: "Golden Retriever",
-            plan: "Express"
-        },
-        {
-            id: 3,
-            name: "Emma Thompson",
-            img: IMAGES.Avatar1,
-            email: "emma.thompson@example.com",
-            phonenumber: "1234567890",
-            message: "User was using abusive language.",
-            created: "Jan 10, 2024",
-            dog_img: IMAGES.Dog,
-            location: "SW1A",
-            dogname: "Charlie",
-            dogcategories: "Breeding",
-            dogbreed: "German Shepherd",
-            plan: "Free"
-        },
-        {
-            id: 4,
-            name: "Emma Thompson",
-            img: IMAGES.Avatar1,
-            email: "emma.thompson@example.com",
-            phonenumber: "1234567890",
-            message: "User was using abusive language.",
-            created: "Jan 10, 2024",
-            dog_img: IMAGES.Dog,
-            location: "N/A",
-            dogname: "Luna",
-            dogcategories: "Playmates",
-            dogbreed: "Poodle",
-            plan: "Express"
-        },
-    ]);
-
-    // const filteredData = data.filter(
-    //     (item) =>
-    //         JSON.stringify(item).toLowerCase().indexOf(searchText.toLowerCase()) !== -1
-    // );
-
     return (
         <React.Fragment>
             <Row>
                 <Col lg={12}>
-                    <h5 className="fw-semibold mb-3">Account Requests</h5>
-                    {/* <div className="text-end mb-3">
-                        <input
-                            type="text"
-                            placeholder="Search..."
-                            className="searchfield"
-                            value={searchText}
-                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchText(e.target.value)}
-                        />
-                    </div> */}
+                    <h5 className="fw-semibold mb-3">Account Requests ({data.length})</h5>
                     <div className="scrollable-table">
                         <DataTable
                             columns={columns as any}
                             data={data}
-
                             responsive
                             className="custom-table"
+                            noDataComponent={
+                                <div className="text-center py-4">
+                                    <p>No pending account requests</p>
+                                </div>
+                            }
                         />
                     </div>
                 </Col>
@@ -226,17 +189,17 @@ const Account: React.FC = () => {
                                 <Icon className="delete_icon text-success" icon="mdi:check-circle" />
                                 <h3>Confirm Account</h3>
                                 <p>
-                                    Are you sure you want to approve this account request? <br />
+                                    Are you sure you want to approve this account request for <strong>{selectedRequest?.user.name}</strong>? <br />
                                     This action will allow the user to access the platform.
                                 </p>
                             </>
                         ) : (
                             <>
                                 <Icon className="delete_icon text-danger" icon="mdi:close-circle" />
-
+                                <h3>Reject Account</h3>
                                 <div className="mt-3">
                                     <label htmlFor="reason" className="form-label text-start w-100">
-                                        Please provide a reason for rejecting this account:
+                                        Please provide a reason for rejecting <strong>{selectedRequest?.user.name}</strong>'s account:
                                     </label>
                                     <textarea
                                         id="reason"
@@ -249,28 +212,24 @@ const Account: React.FC = () => {
                                 </div>
                             </>
                         )}
-
                     </div>
                     <Button
                         variant="outline-secondary"
                         onClick={handleClose}
                         className="px-4 me-3"
-                        style={{
-                            height: '50px'
-                        }}
+                        style={{ height: '50px' }}
+                        disabled={isSubmitting}
                     >
                         Cancel
                     </Button>
                     <Button
                         variant={modalType === "accept" ? "success" : "danger"}
                         className="px-4 min_width110"
-                        onClick={() => handleConfirm(reason)}
-                        style={{
-                            height: '50px'
-                        }}
-                        disabled={!reason.trim()}
+                        onClick={handleConfirm}
+                        style={{ height: '50px' }}
+                        disabled={isSubmitting || (modalType === "reject" && !reason.trim())}
                     >
-                        {modalType === "accept" ? "Confirm" : "Cancel"}
+                        {isSubmitting ? "Processing..." : modalType === "accept" ? "Approve" : "Reject"}
                     </Button>
                 </Modal.Body>
             </Modal>
