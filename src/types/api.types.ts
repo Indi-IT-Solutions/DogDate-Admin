@@ -83,6 +83,11 @@ export interface User {
     push_notifications: boolean;
     status: 'active' | 'inactive' | 'blocked' | 'deleted';
     terms_and_conditions: boolean;
+    profile_picture?: {
+        file_path: string;
+        file_type: string;
+        file_hash: string;
+    } | null;
     created_at: string;
     updated_at: string;
     deleted_at?: string;
