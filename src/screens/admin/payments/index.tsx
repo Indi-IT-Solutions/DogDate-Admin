@@ -231,21 +231,21 @@ const Payments: React.FC = () => {
             },
             width: "100px"
         },
-        {
-            name: "Actions",
-            center: true,
-            sortable: false,
-            cell: (row: PaymentHistory) => (
-                <OverlayTrigger
-                    placement="top"
-                    overlay={<Tooltip id="view-tooltip">View</Tooltip>}
-                >
-                    <Link to={`/payments/view-payment?id=${row._id}`}>
-                        <Icon icon="ri:eye-line" width={20} height={20} className="text-primary" />
-                    </Link>
-                </OverlayTrigger>
-            ),
-        },
+        // {
+        //     name: "Actions",
+        //     center: true,
+        //     sortable: false,
+        //     cell: (row: PaymentHistory) => (
+        //         <OverlayTrigger
+        //             placement="top"
+        //             overlay={<Tooltip id="view-tooltip">View</Tooltip>}
+        //         >
+        //             <Link to={`/payments/view-payment?id=${row._id}`}>
+        //                 <Icon icon="ri:eye-line" width={20} height={20} className="text-primary" />
+        //             </Link>
+        //         </OverlayTrigger>
+        //     ),
+        // },
     ];
 
     // Fetch payments data
