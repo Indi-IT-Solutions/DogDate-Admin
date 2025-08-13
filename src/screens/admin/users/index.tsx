@@ -59,17 +59,17 @@ const Users: React.FC = () => {
 
       console.log('🔍 Fetching users with filters:', filters);
 
-      const response = await UserService.getUsers(filters);
+      const response: any = await UserService.getUsers(filters);
 
       console.log('📋 Users response:', response);
 
-      if (response.status === 1) {
-        setUserData(response.data || []);
-        setTotalRows(response.meta?.total || 0);
-        setCurrentPage(response.meta?.page || 1);
-        setPerPage(response.meta?.limit || 10);
+      if (response?.status === 1) {
+        setUserData(response?.data || []);
+        setTotalRows(response?.meta?.total || 0);
+        setCurrentPage(response?.meta?.page || 1);
+        setPerPage(response?.meta?.limit || 10);
       } else {
-        setError(response.message || "Failed to fetch users");
+        setError(response?.message || "Failed to fetch users");
         setUserData([]);
         setTotalRows(0);
       }

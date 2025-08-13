@@ -21,6 +21,7 @@ const defaultStats = {
 };
 
 const Stats: React.FC<StatsProps> = ({ data = defaultStats }) => {
+    const formatDollars = (cents: number) => `$${(Number(cents || 0) / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     const statsData = [
         {
             title: "Total Users",
@@ -52,7 +53,7 @@ const Stats: React.FC<StatsProps> = ({ data = defaultStats }) => {
         },
         {
             title: "Revenue",
-            value: `$${data.total_revenue.toLocaleString()}`,
+            value: formatDollars(data.total_revenue),
             icon: "qlementine-icons:money-16",
             bgColor: "#D8FFE1",
             iconColor: "#1F8F39"

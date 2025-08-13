@@ -64,19 +64,19 @@ const ReceivedRequests: React.FC = () => {
             };
 
             console.log('🔍 Fetching received requests for user:', userId, filters);
-            const response = await UserService.getUserReceivedRequests(userId, filters);
+            const response: any = await UserService.getUserReceivedRequests(userId, filters);
 
             console.log('✅ Received Requests response:', response);
 
-            if (response.status === 1) {
-                setMatchesData(response.data || []);
+            if (response?.status === 1) {
+                setMatchesData(response?.data || []);
                 setPagination({
-                    currentPage: response.meta?.page || 1,
-                    totalRows: response.meta?.total || 0,
-                    perPage: response.meta?.limit || 10
+                    currentPage: response?.meta?.page || 1,
+                    totalRows: response?.meta?.total || 0,
+                    perPage: response?.meta?.limit || 10
                 });
             } else {
-                setError(response.message || "Failed to fetch received requests");
+                setError(response?.message || "Failed to fetch received requests");
                 setMatchesData([]);
             }
         } catch (err: any) {

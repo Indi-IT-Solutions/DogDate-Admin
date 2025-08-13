@@ -2,7 +2,7 @@ import { IMAGES } from "@/contants/images";
 import React, { useState, useEffect } from "react";
 import DataTable from "react-data-table-component";
 import { Button, Modal, Alert, Spinner } from "react-bootstrap";
-import { Link, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import { UserService } from "@/services";
 
@@ -64,19 +64,19 @@ const Confirmed: React.FC = () => {
             };
 
             console.log('🔍 Fetching confirmed matches for user:', userId, filters);
-            const response = await UserService.getUserConfirmedMatches(userId, filters);
+            const response: any = await UserService.getUserConfirmedMatches(userId, filters);
 
             console.log('✅ Confirmed Matches response:', response);
 
-            if (response.status === 1) {
-                setMatchesData(response.data || []);
+            if (response?.status === 1) {
+                setMatchesData(response?.data || []);
                 setPagination({
-                    currentPage: response.meta?.page || 1,
-                    totalRows: response.meta?.total || 0,
-                    perPage: response.meta?.limit || 10
+                    currentPage: response?.meta?.page || 1,
+                    totalRows: response?.meta?.total || 0,
+                    perPage: response?.meta?.limit || 10
                 });
             } else {
-                setError(response.message || "Failed to fetch confirmed matches");
+                setError(response?.message || "Failed to fetch confirmed matches");
                 setMatchesData([]);
             }
         } catch (err: any) {

@@ -11,17 +11,17 @@ import type {
 
 export class DogService {
     // Get all dogs with pagination and filters
-    static async getDogs(filters: DogFilters = {}): Promise<PaginatedResponse<Dog>> {
+    static async getDogs(filters: DogFilters = {}): Promise<any> {
         try {
             const queryString = objectToQueryString(filters);
             const url = `${DOG_ENDPOINTS.LIST}${queryString ? `?${queryString}` : ''}`;
 
-            const response = await apiClient.get(url);
+            const response: any = await apiClient.get(url);
 
             if (response.data.status === 1 && response.data.data) {
                 const backendData = response.data.data;
 
-                const paginatedResponse: PaginatedResponse<Dog> = {
+                const paginatedResponse: any = {
                     status: response.data.status,
                     message: response.data.message,
                     data: backendData.dogs || [],
@@ -147,6 +147,92 @@ export class DogService {
             const response = await apiClient.get(DOG_ENDPOINTS.STATS);
             return response.data;
         } catch (error: any) {
+            throw error.response?.data || error;
+        }
+    }
+
+    // Get dog breeding data
+    static async getDogBreedingData(dogId: string, filters: any = {}): Promise<any> {
+        try {
+            const queryString = objectToQueryString(filters);
+            const url = `${DOG_ENDPOINTS.BREEDING_DATA(dogId)}${queryString ? `?${queryString}` : ''}`;
+
+            const response: any = await apiClient.get(url);
+
+            if (response.data.status === 1 && response.data.data) {
+                const backendData = response.data.data;
+
+                const paginatedResponse: any = {
+                    status: response.data.status,
+                    message: response.data.message,
+                    data: backendData.breedings || [],
+                    meta: {
+                        page: backendData.pagination?.current_page || 1,
+                        limit: backendData.pagination?.per_page || 10,
+                        total: backendData.pagination?.total_breedings || 0,
+                        totalPages: backendData.pagination?.total_pages || 0,
+                    }
+                };
+
+                return paginatedResponse;
+            }
+
+            return {
+                status: 0,
+                message: response.data.message || 'No breeding data found',
+                data: [],
+                meta: {
+                    page: 1,
+                    limit: 10,
+                    total: 0,
+                    totalPages: 0,
+                }
+            };
+        } catch (error: any) {
+            console.error('❌ Error fetching dog breeding data:', error);
+            throw error.response?.data || error;
+        }
+    }
+
+    // Get dog playdate data
+    static async getDogPlaydateData(dogId: string, filters: any = {}): Promise<any> {
+        try {
+            const queryString = objectToQueryString(filters);
+            const url = `${DOG_ENDPOINTS.PLAYDATE_DATA(dogId)}${queryString ? `?${queryString}` : ''}`;
+
+            const response: any = await apiClient.get(url);
+
+            if (response.data.status === 1 && response.data.data) {
+                const backendData = response.data.data;
+
+                const paginatedResponse: any = {
+                    status: response.data.status,
+                    message: response.data.message,
+                    data: backendData.playdates || [],
+                    meta: {
+                        page: backendData.pagination?.current_page || 1,
+                        limit: backendData.pagination?.per_page || 10,
+                        total: backendData.pagination?.total_playdates || 0,
+                        totalPages: backendData.pagination?.total_pages || 0,
+                    }
+                };
+
+                return paginatedResponse;
+            }
+
+            return {
+                status: 0,
+                message: response.data.message || 'No playdate data found',
+                data: [],
+                meta: {
+                    page: 1,
+                    limit: 10,
+                    total: 0,
+                    totalPages: 0,
+                }
+            };
+        } catch (error: any) {
+            console.error('❌ Error fetching dog playdate data:', error);
             throw error.response?.data || error;
         }
     }

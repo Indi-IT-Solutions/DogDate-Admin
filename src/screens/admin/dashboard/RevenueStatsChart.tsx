@@ -17,7 +17,11 @@ const RevenueStatsChart: React.FC<RevenueStatsChartProps> = ({ data }) => {
         { month: 'Jun', income: 0, subscriptions: 0, total_transactions: 0 },
     ];
 
-    const chartData = data && data.length > 0 ? data : defaultData;
+    const toDollars = (cents: number) => Number(cents || 0) / 100;
+    const chartData = (data && data.length > 0 ? data : defaultData).map(item => ({
+        ...item,
+        income: toDollars(item.income as any),
+    }));
 
     return (
         <div>
@@ -34,7 +38,10 @@ const RevenueStatsChart: React.FC<RevenueStatsChartProps> = ({ data }) => {
                         formatter={(value, name) => {
                             switch (name) {
                                 case 'income':
-                                    return [`$${Number(value).toLocaleString()}`, 'Total Income'];
+                                    return [
+                                        `$${Number(value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+                                        'Total Income'
+                                    ];
                                 case 'subscriptions':
                                     return [value, 'Subscriptions'];
                                 case 'total_transactions':

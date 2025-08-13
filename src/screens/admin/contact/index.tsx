@@ -1,180 +1,392 @@
-import React, { useState } from "react";
-import { Row, Col, Button, Modal, Form } from "react-bootstrap";
+import React, { useState, useEffect } from "react";
+import { Row, Col, Button, Modal, Form, Alert, Spinner, Badge } from "react-bootstrap";
 import { Icon } from "@iconify/react";
-import DataTable from "react-data-table-component";
-import { Link } from "react-router-dom";
+import DataTable, { TableColumn } from "react-data-table-component";
+import { ContactService, PaginationMeta } from "@/services";
 
-interface ReportData {
-    id: number;
-    name: string;
-    email: string;
-    phone: string;
-    message: string;
-}
+const formatDate = (dateString: string): string => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+};
+
+const getStatusBadge = (status: string) => {
+    switch (status) {
+        case 'pending':
+            return <Badge bg="warning">Pending</Badge>;
+        case 'replied':
+            return <Badge bg="info">Replied</Badge>;
+        case 'resolved':
+            return <Badge bg="success">Resolved</Badge>;
+        default:
+            return <Badge bg="secondary">{status}</Badge>;
+    }
+};
 
 const ContactUs: React.FC = () => {
     const [searchText, setSearchText] = useState<string>("");
-    const [show, setShow] = useState<boolean>(false);
-    const handleClose = (): void => setShow(false);
-    const handleShow = (): void => setShow(true);
+    const [showModal, setShowModal] = useState<boolean>(false);
+    const [selectedContact, setSelectedContact] = useState<any | null>(null);
+    const [replyMessage, setReplyMessage] = useState<string>("");
+    const [contactData, setContactData] = useState<any[]>([]);
+    const [loading, setLoading] = useState<boolean>(true);
+    const [error, setError] = useState<string>("");
+    const [success, setSuccess] = useState<string>("");
+    const [sendingReply, setSendingReply] = useState<boolean>(false);
+    const [pagination, setPagination] = useState<PaginationMeta>({
+        current_page: 1,
+        total_pages: 1,
+        total: 0,
+        per_page: 10,
+        has_next_page: false,
+        has_prev_page: false,
+        page: 1,
+        limit: 10,
+        totalPages: 1,
+    });
 
+    const handleClose = (): void => {
+        setShowModal(false);
+        setSelectedContact(null);
+        setReplyMessage("");
+    };
 
-    const columns = [
+    const handleShow = (contact: any): void => {
+        setSelectedContact(contact);
+        setShowModal(true);
+    };
+
+    const fetchContactQueries = async (page: number = 1, searchTerm: string = '') => {
+        try {
+
+            setError("");
+
+            const response: any = await ContactService.getContactQueries({
+                page,
+                limit: 10,
+                search: searchTerm
+            });
+
+            setContactData(response.data || []);
+            setPagination({
+                current_page: response.meta?.current_page || 1,
+                total_pages: response.meta?.total_pages || 1,
+                total: response.meta?.total_queries || 0,
+                per_page: response.meta?.per_page || 10,
+                has_next_page: response.meta?.has_next_page || false,
+                has_prev_page: response.meta?.has_prev_page || false,
+                page: response.meta?.current_page || 1,
+                limit: response.meta?.per_page || 10,
+                totalPages: response.meta?.total_pages || 1,
+            });
+        } catch (err: any) {
+            console.error('❌ Error fetching contact queries:', err);
+            setError(err.message || 'Failed to fetch contact queries');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchContactQueries(1, searchText);
+    }, []);
+
+    useEffect(() => {
+        const timeoutId = setTimeout(() => {
+            fetchContactQueries(1, searchText);
+        }, 500);
+
+        return () => clearTimeout(timeoutId);
+    }, [searchText]);
+
+    const handlePageChange = (page: number) => {
+        fetchContactQueries(page, searchText);
+    };
+
+    const handleSendReply = async () => {
+        if (!selectedContact || !replyMessage.trim()) {
+            setError('Please enter a reply message');
+            return;
+        }
+
+        try {
+            setSendingReply(true);
+            setError("");
+            setSuccess("");
+
+            await ContactService.sendContactReply({
+                contact_id: selectedContact._id,
+                reply_message: replyMessage.trim(),
+                admin_name: "Admin" // You can get this from auth context
+            });
+
+            // Update the contact status to replied
+            await ContactService.updateContactStatus(selectedContact._id, {
+                query_status: 'replied'
+            });
+
+            // Refresh the data
+            fetchContactQueries(pagination.current_page, searchText);
+
+            setSuccess(`Reply sent successfully to ${selectedContact.name} (${selectedContact.email})`);
+            handleClose();
+
+            // Clear success message after 5 seconds
+            setTimeout(() => {
+                setSuccess("");
+            }, 5000);
+        } catch (err: any) {
+            console.error('❌ Error sending reply:', err);
+            setError(err.message || 'Failed to send reply');
+        } finally {
+            setSendingReply(false);
+        }
+    };
+
+    const columns: TableColumn<any>[] = [
         {
             name: "Sr. No.",
-            selector: (row: ReportData) => row.id,
+            selector: (row: any) => contactData.indexOf(row) + 1,
             width: "100px",
             sortable: true,
         },
         {
             name: "Name",
-            selector: (row: ReportData) => row.name,
-            width: "180px",
+            selector: (row: any) => row.name,
+            width: "150px",
             sortable: true,
         },
         {
-            name: "Email Address",
-            selector: (row: ReportData) => row.email,
-
-            wrap: true,
+            name: "Email",
+            selector: (row: any) => row.email,
+            width: "200px",
             sortable: true,
         },
         {
-            name: "Phone Number",
-            selector: (row: ReportData) => row.phone,
-
+            name: "Phone",
+            cell: (row: any) => (
+                <span>
+                    {row.country_code && row.phone_number
+                        ? `${row.country_code} ${row.phone_number}`
+                        : 'N/A'
+                    }
+                </span>
+            ),
+            width: "150px",
             sortable: true,
         },
         {
             name: "Query",
-            selector: (row: ReportData) => row.message,
+            selector: (row: any) => row.query,
             wrap: true,
             sortable: true,
-            width: "260px",
+            width: "300px",
+            cell: (row: any) => (
+                <div style={{ maxWidth: '280px' }}>
+                    {row.query.length > 100
+                        ? `${row.query.substring(0, 100)}...`
+                        : row.query
+                    }
+                </div>
+            ),
+        },
+        {
+            name: "Status",
+            cell: (row: any) => getStatusBadge(row.query_status),
+            width: "120px",
+            sortable: true,
+        },
+        {
+            name: "Date",
+            cell: (row: any) => formatDate(row.created_at),
+            width: "150px",
+            sortable: true,
         },
         {
             name: "Actions",
-            width: "120px",
+            width: "100px",
             center: true,
-            cell: () => (
-                <Link onClick={handleShow} to="javascript:void(0)">
-                    <Icon icon="ri:reply-line" width={20} height={20} className="text-primary" />
-                </Link>
+            cell: (row: any) => (
+                <Button
+                    variant="outline-primary"
+                    size="sm"
+                    onClick={() => handleShow(row)}
+                    disabled={row.query_status === 'resolved'}
+                >
+                    <Icon icon="ri:reply-line" width={16} height={16} className="me-1" />
+                    Reply
+                </Button>
             ),
         },
     ];
-
-    const [data] = useState<ReportData[]>([
-        {
-            id: 1,
-            name: "Alex Wilson",
-            email: "alexwilson41@gmail.com",
-            phone: "+1 786 542 6325",
-            message: "I would like to schedule a dog meetup in my area.",
-        },
-        {
-            id: 2,
-            name: "Maria James",
-            email: "mariajames@gmail.com",
-            phone: "+1 555 123 4567",
-            message: "How do I join a dog meetup event?",
-        },
-        {
-            id: 3,
-            name: "Johnson Charles",
-            email: "johnsoncharles@gmail.com",
-            phone: "+1 555 987 6543",
-            message: "Can I bring more than one dog to the meetup?",
-        },
-        {
-            id: 4,
-            name: "Ava Smith",
-            email: "avasmith@gmail.com",
-            phone: "+1 555 456 7890",
-            message: "Is there a fee for attending dog meetups?",
-        },
-    ]);
-
-
-
-
-    const filteredData = data.filter(
-        (item) =>
-            JSON.stringify(item).toLowerCase().indexOf(searchText.toLowerCase()) !== -1
-    );
 
     return (
         <React.Fragment>
             <Row>
                 <Col lg={12}>
-                    <h5>Contact Us</h5>
-                    <div className="text-end mb-3">
-                        <input
-                            type="text"
-                            placeholder="Search..."
-                            className="searchfield"
-                            value={searchText}
-                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchText(e.target.value)}
-                        />
+                    <h5>Contact Us Queries</h5>
+                    {error && <Alert variant="danger">{error}</Alert>}
+                    {success && <Alert variant="success">{success}</Alert>}
+
+                    <div className="d-flex justify-content-between align-items-center mb-3">
+                        <div className="d-flex align-items-center">
+                            <span className="text-muted me-2">Total: {pagination.total || 0} queries</span>
+                            {loading && <Spinner animation="border" size="sm" className="ms-2" />}
+                        </div>
+                        <div className="text-end">
+                            <input
+                                type="text"
+                                placeholder="Search by name, email, phone..."
+                                className="searchfield"
+                                value={searchText}
+                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchText(e.target.value)}
+                                disabled={loading}
+                                style={{ minWidth: '300px' }}
+                            />
+                        </div>
                     </div>
+
                     <div className="scrollable-table">
                         <DataTable
                             columns={columns}
-                            data={filteredData}
+                            data={contactData}
                             pagination
+                            paginationServer
+                            paginationTotalRows={pagination.total || 0}
+                            paginationDefaultPage={pagination.current_page}
+                            paginationPerPage={pagination.per_page}
+                            onChangePage={handlePageChange}
+                            progressPending={loading}
+                            progressComponent={
+                                <div className="text-center p-4">
+                                    <Spinner animation="border" role="status">
+                                        <span className="visually-hidden">Loading...</span>
+                                    </Spinner>
+                                </div>
+                            }
+                            noDataComponent={
+                                <div className="text-center p-4">
+                                    <p className="text-muted">No contact queries found</p>
+                                </div>
+                            }
                             responsive
                             className="custom-table"
+                            striped
+                            highlightOnHover
                         />
                     </div>
+
+                    {contactData.length > 0 && (
+                        <div className="d-flex justify-content-between align-items-center mt-3">
+                            <small className="text-muted">
+                                Showing page {pagination.current_page} of {pagination.total_pages} ({pagination.total || 0} total queries)
+                            </small>
+                            <div className="d-flex align-items-center">
+                                <small className="text-muted me-2">Page {pagination.current_page} of {pagination.total_pages}</small>
+                            </div>
+                        </div>
+                    )}
                 </Col>
             </Row>
 
-            <Modal show={show} onHide={handleClose} centered>
+            <Modal show={showModal} onHide={handleClose} centered size="lg">
                 <Modal.Header closeButton>
                     <Modal.Title>
-                        <h2 className="modalhead">Reply</h2>
+                        <h2 className="modalhead">Reply to Query</h2>
                     </Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    <div className="modaldelete_div">
-                        <Form>
-                            <Form.Group className="mb-3 form-group">
-                                <Form.Label>Name</Form.Label>
-                                <Form.Control
-                                    type="text"
-                                    placeholder="Enter your name"
-                                    defaultValue="Alex Wilson"
-                                />
-                            </Form.Group>
-                            <Form.Group className="mb-3 form-group">
-                                <Form.Label>Email Address</Form.Label>
-                                <Form.Control
-                                    type="email"
-                                    placeholder="Enter your email"
-                                    defaultValue="alexwilson41@gmail.com"
-                                />
-                            </Form.Group>
-                            <Form.Group className="mb-3 form-group">
-                                <Form.Label>Phone Number</Form.Label>
-                                <Form.Control
-                                    type="tel"
-                                    placeholder="Enter your phone number"
-                                    defaultValue="+1 786 542 6325"
-                                />
-                            </Form.Group>
-                            <Form.Group className="mb-3 form-group">
-                                <Form.Label>Query</Form.Label>
-                                <Form.Control
-                                    as="textarea"
-                                    rows={4}
-                                    placeholder="Write your message here..."
-                                />
-                            </Form.Group>
-                        </Form>
+                    {selectedContact && (
+                        <div className="modaldelete_div">
+                            <Form>
+                                <Form.Group className="mb-3 form-group">
+                                    <Form.Label>Name</Form.Label>
+                                    <Form.Control
+                                        type="text"
+                                        value={selectedContact.name}
+                                        readOnly
+                                        className="bg-light"
+                                    />
+                                </Form.Group>
+
+                                <Form.Group className="mb-3 form-group">
+                                    <Form.Label>Email Address</Form.Label>
+                                    <Form.Control
+                                        type="email"
+                                        value={selectedContact.email}
+                                        readOnly
+                                        className="bg-light"
+                                    />
+                                </Form.Group>
+
+                                <Form.Group className="mb-3 form-group">
+                                    <Form.Label>Phone Number</Form.Label>
+                                    <Form.Control
+                                        type="tel"
+                                        value={selectedContact.country_code && selectedContact.phone_number
+                                            ? `${selectedContact.country_code} ${selectedContact.phone_number}`
+                                            : 'N/A'
+                                        }
+                                        readOnly
+                                        className="bg-light"
+                                    />
+                                </Form.Group>
+
+                                <Form.Group className="mb-3 form-group">
+                                    <Form.Label>Original Query</Form.Label>
+                                    <Form.Control
+                                        as="textarea"
+                                        rows={4}
+                                        value={selectedContact.query}
+                                        readOnly
+                                        className="bg-light"
+                                    />
+                                </Form.Group>
+
+                                <Form.Group className="mb-3 form-group">
+                                    <Form.Label>Your Reply</Form.Label>
+                                    <Form.Control
+                                        as="textarea"
+                                        rows={6}
+                                        placeholder="Enter your reply message..."
+                                        value={replyMessage}
+                                        onChange={(e) => setReplyMessage(e.target.value)}
+                                    />
+                                    <Form.Text className="text-muted">
+                                        This reply will be sent to the user's email address.
+                                    </Form.Text>
+                                </Form.Group>
+                            </Form>
+                        </div>
+                    )}
+
+                    <div className="d-flex gap-2">
+                        <Button
+                            onClick={handleSendReply}
+                            className="btn btn-primary px-4 flex-grow-1"
+                            disabled={sendingReply || !replyMessage.trim()}
+                        >
+                            {sendingReply ? (
+                                <>
+                                    <Spinner animation="border" size="sm" className="me-2" />
+                                    Sending...
+                                </>
+                            ) : (
+                                <>
+                                    <Icon icon="ri:send-plane-line" className="me-1" />
+                                    Send Reply
+                                </>
+                            )}
+                        </Button>
+                        <Button onClick={handleClose} variant="secondary" disabled={sendingReply}>
+                            Cancel
+                        </Button>
                     </div>
-                    <Button onClick={handleClose} className="btn btn-primary px-4 w-100">
-                        Send
-                    </Button>
                 </Modal.Body>
             </Modal>
         </React.Fragment>

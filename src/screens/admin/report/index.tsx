@@ -1,208 +1,368 @@
-import React, { useState } from "react";
-import { Row, Col, Button, Modal, OverlayTrigger, Tooltip } from "react-bootstrap";
+import React, { useState, useEffect } from "react";
+import { Row, Col, Button, Modal, OverlayTrigger, Tooltip, Alert, Spinner, Badge } from "react-bootstrap";
 import { Icon } from "@iconify/react";
-import DataTable from "react-data-table-component";
-import { Link } from "react-router-dom";
+import DataTable, { TableColumn } from "react-data-table-component";
+import { ReportService, PaginationMeta } from "@/services";
+import { Report as ReportType } from "@/types/api.types";
 
-interface ReportData {
-    id: number;
-    reportedBy: {
-        name: string;
-        email: string;
-    };
-    reportedTo: {
-        name: string;
-        email: string;
-    };
-    reason: string;
-    date: string;
-}
+const formatDate = (dateString: string): string => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+};
+
+const safeGetUserData = (userData: any): { name: string; email: string } => {
+    if (typeof userData === 'string') {
+        return { name: `User ID: ${userData}`, email: 'N/A' };
+    }
+    if (userData && typeof userData === 'object') {
+        return {
+            name: userData.name || 'Unknown User',
+            email: userData.email || 'N/A'
+        };
+    }
+    return { name: 'Unknown User', email: 'N/A' };
+};
+
+const getActionBadge = (action: string) => {
+    switch (action) {
+        case 'pending':
+            return <Badge bg="warning">Pending</Badge>;
+        case 'processed':
+            return <Badge bg="success">Processed</Badge>;
+        default:
+            return <Badge bg="secondary">{action}</Badge>;
+    }
+};
+
+const getStatusBadge = (status: string) => {
+    switch (status) {
+        case 'active':
+            return <Badge bg="success">Active</Badge>;
+        case 'deleted':
+            return <Badge bg="danger">Deleted</Badge>;
+        default:
+            return <Badge bg="secondary">{status}</Badge>;
+    }
+};
 
 const Report: React.FC = () => {
     const [searchText, setSearchText] = useState<string>("");
-    const [show, setShow] = useState<boolean>(false);
-    const handleClose = (): void => setShow(false);
-    const handleShow = (): void => setShow(true);
+    const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
+    const [selectedReport, setSelectedReport] = useState<any | null>(null);
+    const [reportData, setReportData] = useState<any[]>([]);
+    const [loading, setLoading] = useState<boolean>(true);
+    const [error, setError] = useState<string>("");
+    const [success, setSuccess] = useState<string>("");
+    const [deleting, setDeleting] = useState<boolean>(false);
+    const [pagination, setPagination] = useState<PaginationMeta>({
+        current_page: 1,
+        total_pages: 1,
+        total: 0,
+        per_page: 10,
+        has_next_page: false,
+        has_prev_page: false,
+        page: 1,
+        limit: 10,
+        totalPages: 1,
+    });
 
-    const columns = [
+    const handleCloseDeleteModal = (): void => {
+        setShowDeleteModal(false);
+        setSelectedReport(null);
+    };
+
+    const handleShowDeleteModal = (report: Report): void => {
+        setSelectedReport(report);
+        setShowDeleteModal(true);
+    };
+
+    const fetchReports = async (page: number = 1, searchTerm: string = '') => {
+        try {
+            setLoading(true);
+            setError("");
+
+            const response: any = await ReportService.getReports({
+                page,
+                limit: 10,
+                search: searchTerm
+            });
+
+            setReportData(response.data || []);
+
+            // Debug: Log the first report to see the data structure
+            if (response.data && response.data.length > 0) {
+                console.log('🔍 First report data:', JSON.stringify(response.data[0], null, 2));
+            }
+            setPagination({
+                current_page: response.meta?.current_page || 1,
+                total_pages: response.meta?.total_pages || 1,
+                total: response.meta?.total_reports || 0,
+                per_page: response.meta?.per_page || 10,
+                has_next_page: response.meta?.has_next_page || false,
+                has_prev_page: response.meta?.has_prev_page || false,
+                page: response.meta?.current_page || 1,
+                limit: response.meta?.per_page || 10,
+                totalPages: response.meta?.total_pages || 1,
+            });
+        } catch (err: any) {
+            console.error('❌ Error fetching reports:', err);
+            setError(err.message || 'Failed to fetch reports');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchReports(1, searchText);
+    }, []);
+
+    useEffect(() => {
+        const timeoutId = setTimeout(() => {
+            fetchReports(1, searchText);
+        }, 500);
+
+        return () => clearTimeout(timeoutId);
+    }, [searchText]);
+
+    const handlePageChange = (page: number) => {
+        fetchReports(page, searchText);
+    };
+
+    const handleDeleteReport = async () => {
+        if (!selectedReport) return;
+
+        try {
+            setDeleting(true);
+            setError("");
+            setSuccess("");
+
+            await ReportService.deleteReport(selectedReport?._id as string);
+
+            // Refresh the data
+            fetchReports(pagination.current_page, searchText);
+
+            setSuccess(`Report deleted successfully`);
+            handleCloseDeleteModal();
+
+            // Clear success message after 5 seconds
+            setTimeout(() => {
+                setSuccess("");
+            }, 5000);
+        } catch (err: any) {
+            console.error('❌ Error deleting report:', err);
+            setError(err.message || 'Failed to delete report');
+        } finally {
+            setDeleting(false);
+        }
+    };
+
+    const columns: any = [
         {
             name: "ID",
-            selector: (row: ReportData) => row.id,
-            width: "80px",
+            selector: (row: any) => row?._id.substring(-8),
+            width: "100px",
             sortable: true,
+            cell: (row: any) => (
+                <span className="text-muted">#{row?._id.substring(-8)}</span>
+            ),
         },
         {
             name: "Reported By",
-            cell: (row: ReportData) => (
-                <div>
-                    <div>{row.reportedBy.name}</div>
-                    <div className="text-mute small">{row.reportedBy.email}</div>
-                </div>
-            ),
-            width: "230px",
-            sortable: true,
-        },
-        {
-            name: "Reported To",
-            cell: (row: ReportData) => (
-                <div>
-                    <div>{row.reportedTo.name}</div>
-                    <div className="text-mute small">{row.reportedTo.email}</div>
-                </div>
-            ),
+            cell: (row: any) => {
+                const userData = safeGetUserData(row?.report_from);
+                return (
+                    <div>
+                        <div>{userData.name}</div>
+                        <div className="text-muted small">{userData.email}</div>
+                    </div>
+                );
+            },
             width: "200px",
             sortable: true,
         },
         {
-            name: "Reason",
-            selector: (row: ReportData) => row.reason,
-
+            name: "Reported Against",
+            cell: (row: any) => {
+                const userData = safeGetUserData(row?.report_against);
+                return (
+                    <div>
+                        <div>{userData.name}</div>
+                        <div className="text-muted small">{userData.email}</div>
+                    </div>
+                );
+            },
+            width: "200px",
+            sortable: true,
+        },
+        {
+            name: "Message",
+            selector: (row: any) => row?.message,
+            wrap: true,
+            sortable: true,
+            width: "300px",
+            cell: (row: any) => (
+                <div style={{ maxWidth: '280px' }}>
+                    {row?.message.length > 100
+                        ? `${row?.message.substring(0, 100)}...`
+                        : row?.message
+                    }
+                </div>
+            ),
+        },
+        {
+            name: "Action",
+            cell: (row: any) => getActionBadge(row?.action),
+            width: "120px",
+            sortable: true,
+        },
+        {
+            name: "Status",
+            cell: (row: any) => getStatusBadge(row?.status),
+            width: "100px",
             sortable: true,
         },
         {
             name: "Date",
-            selector: (row: ReportData) => row.date,
+            cell: (row: any) => formatDate(row?.created_at),
+            width: "150px",
             sortable: true,
         },
         {
             name: "Actions",
             width: "100px",
             center: true,
-            fixed: "right",
-
-            cell: () => (
+            cell: (row: any) => (
                 <OverlayTrigger
                     placement="top"
-                    overlay={<Tooltip id="close-tooltip">Delete</Tooltip>}
+                    overlay={<Tooltip id="delete-tooltip">Delete</Tooltip>}
                 >
-                    <Link to="javascript:void(0)" onClick={handleShow}>
-                        <Icon icon="icon-park-outline:close-one" width={20} height={20} className="text-danger" />
-                    </Link>
+                    <Button
+                        variant="outline-danger"
+                        size="sm"
+                        onClick={() => handleShowDeleteModal(row)}
+                        disabled={row?.status === 'deleted'}
+                    >
+                        <Icon icon="icon-park-outline:close-one" width={16} height={16} />
+                    </Button>
                 </OverlayTrigger>
             ),
         },
     ];
-
-    const [data] = useState<ReportData[]>([
-        {
-            id: 1,
-            reportedBy: {
-                name: "Maria James",
-                email: "mariajames@gmail.com"
-            },
-            reportedTo: {
-                name: "John Smith",
-                email: "johnsmith@gmail.com"
-            },
-            reason: "Abusive Language",
-            date: "2024-01-15"
-        },
-        {
-            id: 2,
-            reportedBy: {
-                name: "Johnson Charles",
-                email: "johnsoncharles@gmail.com"
-            },
-            reportedTo: {
-                name: "David Wilson",
-                email: "davidwilson@gmail.com"
-            },
-            reason: "Inappropriate Behavior",
-            date: "2024-01-14"
-        },
-        {
-            id: 3,
-            reportedBy: {
-                name: "Ava Smith",
-                email: "avasmith@gmail.com"
-            },
-            reportedTo: {
-                name: "Emma Davis",
-                email: "emmadavis@gmail.com"
-            },
-            reason: "Harassment",
-            date: "2024-01-13"
-        },
-        {
-            id: 4,
-            reportedBy: {
-                name: "Michael Brown",
-                email: "michaelbrown@gmail.com"
-            },
-            reportedTo: {
-                name: "Sarah Johnson",
-                email: "sarahjohnson@gmail.com"
-            },
-            reason: "Spam Content",
-            date: "2024-01-12"
-        },
-        {
-            id: 5,
-            reportedBy: {
-                name: "Emily Davis",
-                email: "emilydavis@gmail.com"
-            },
-            reportedTo: {
-                name: "James Wilson",
-                email: "jameswilson@gmail.com"
-            },
-            reason: "Fake Profile",
-            date: "2024-01-11"
-        },
-    ]);
-
-    const filteredData = data.filter(
-        (item) =>
-            JSON.stringify(item).toLowerCase().indexOf(searchText.toLowerCase()) !== -1
-    );
 
     return (
         <React.Fragment>
             <Row>
                 <Col lg={12}>
                     <h5 className="text-dark">Reports</h5>
-                    <div className="text-end mb-3">
-                        <input
-                            type="text"
-                            placeholder="Search..."
-                            className="searchfield"
-                            value={searchText}
-                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchText(e.target.value)}
-                        />
+                    {error && <Alert variant="danger">{error}</Alert>}
+                    {success && <Alert variant="success">{success}</Alert>}
+
+                    <div className="d-flex justify-content-between align-items-center mb-3">
+                        <div className="d-flex align-items-center">
+                            <span className="text-muted me-2">Total: {pagination.total || 0} reports</span>
+                            {loading && <Spinner animation="border" size="sm" className="ms-2" />}
+                        </div>
+                        <div className="text-end">
+                            <input
+                                type="text"
+                                placeholder="Search by name, email, message..."
+                                className="searchfield"
+                                value={searchText}
+                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchText(e.target.value)}
+                                disabled={loading}
+                                style={{ minWidth: '300px' }}
+                            />
+                        </div>
                     </div>
+
                     <div className="scrollable-table">
                         <DataTable
                             columns={columns}
-                            data={filteredData}
+                            data={reportData}
                             pagination
+                            paginationServer
+                            paginationTotalRows={pagination.total || 0}
+                            paginationDefaultPage={pagination.current_page}
+                            paginationPerPage={pagination.per_page}
+                            onChangePage={handlePageChange}
+                            progressPending={loading}
+                            progressComponent={
+                                <div className="text-center p-4">
+                                    <Spinner animation="border" role="status">
+                                        <span className="visually-hidden">Loading...</span>
+                                    </Spinner>
+                                </div>
+                            }
+                            noDataComponent={
+                                <div className="text-center p-4">
+                                    <p className="text-muted">No reports found</p>
+                                </div>
+                            }
                             responsive
                             className="custom-table"
+                            striped
+                            highlightOnHover
                         />
                     </div>
+
+                    {reportData.length > 0 && (
+                        <div className="d-flex justify-content-between align-items-center mt-3">
+                            <small className="text-muted">
+                                Showing page {pagination?.current_page} of {pagination?.total_pages} ({pagination?.total || 0} total reports)
+                            </small>
+                            <div className="d-flex align-items-center">
+                                <small className="text-muted me-2">Page {pagination?.current_page} of {pagination?.total_pages}</small>
+                            </div>
+                        </div>
+                    )}
                 </Col>
             </Row>
 
-            <Modal className="modal_Delete" show={show} onHide={handleClose} centered>
+            <Modal className="modal_Delete" show={showDeleteModal} onHide={handleCloseDeleteModal} centered>
                 <Modal.Body>
                     <div className="modaldelete_div">
                         <Icon className="delete_icon" icon="gg:close-o" />
-                        <h3>Are You Sure ?</h3>
+                        <h3>Are You Sure?</h3>
                         <p>You will not be able to recover the deleted record!</p>
+                        {selectedReport && (
+                            <div className="mt-3 p-3 bg-light rounded">
+                                <small className="text-muted">
+                                    <strong>Report:</strong> {selectedReport?.message.substring(0, 100)}...
+                                </small>
+                            </div>
+                        )}
                     </div>
-                    <Button
-                        variant="outline-danger"
-                        onClick={handleClose}
-                        className="px-4 me-3"
-                    >
-                        Cancel
-                    </Button>
-                    <Button
-                        variant="success"
-                        className="px-4 min_width110"
-                        onClick={handleClose}
-                    >
-                        Ok
-                    </Button>
+                    <div className="d-flex gap-2 mt-3">
+                        <Button
+                            variant="outline-danger"
+                            onClick={handleCloseDeleteModal}
+                            className="px-4"
+                            disabled={deleting}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            variant="danger"
+                            className="px-4"
+                            onClick={handleDeleteReport}
+                            disabled={deleting}
+                        >
+                            {deleting ? (
+                                <>
+                                    <Spinner animation="border" size="sm" className="me-2" />
+                                    Deleting...
+                                </>
+                            ) : (
+                                'Delete'
+                            )}
+                        </Button>
+                    </div>
                 </Modal.Body>
             </Modal>
         </React.Fragment>

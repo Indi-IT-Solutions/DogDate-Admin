@@ -9,12 +9,35 @@ import type { Dog } from "@/types/api.types";
 
 const ViewDog: React.FC = () => {
     const [searchParams] = useSearchParams();
-    const dogId = searchParams.get('id');
-
+    const dogId = searchParams.get('id'); // Changed from 'dogId' to 'id'
     const [key, setKey] = useState<string>("details");
     const [dogData, setDogData] = useState<Dog | null>(null);
-    const [loading, setLoading] = useState<boolean>(false);
+    const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string>("");
+
+    // Breeding data state
+    const [breedingData, setBreedingData] = useState<any[]>([]);
+    const [breedingLoading, setBreedingLoading] = useState<boolean>(false);
+    const [breedingError, setBreedingError] = useState<string>("");
+    const [breedingPagination, setBreedingPagination] = useState({
+        page: 1,
+        limit: 10,
+        total: 0,
+        totalPages: 0
+    });
+    const [breedingSearch, setBreedingSearch] = useState<string>("");
+
+    // Playdate data state
+    const [playdateData, setPlaydateData] = useState<any[]>([]);
+    const [playdateLoading, setPlaydateLoading] = useState<boolean>(false);
+    const [playdateError, setPlaydateError] = useState<string>("");
+    const [playdatePagination, setPlaydatePagination] = useState({
+        page: 1,
+        limit: 10,
+        total: 0,
+        totalPages: 0
+    });
+    const [playdateSearch, setPlaydateSearch] = useState<string>("");
 
     // Helper functions
     const safeGetString = (value: any): string => {
@@ -81,10 +104,9 @@ const ViewDog: React.FC = () => {
         try {
             setLoading(true);
             setError("");
-
             const response = await DogService.getDogById(dogId);
 
-            if (response.status === 1 && response.data) {
+            if (response?.status === 1 && response?.data) {
                 setDogData(response.data);
             } else {
                 setError(response.message || "Failed to fetch dog details");
@@ -95,6 +117,214 @@ const ViewDog: React.FC = () => {
             setLoading(false);
         }
     };
+
+    // Fetch breeding data
+    const fetchBreedingData = async (page: number = 1, limit: number = 10, search?: string) => {
+        if (!dogId) return;
+
+        try {
+            setBreedingLoading(true);
+            setBreedingError("");
+
+            const filters = { page, limit, search: search || undefined };
+            const response: any = await DogService.getDogBreedingData(dogId, filters);
+
+            if (response?.status === 1) {
+                setBreedingData(response.data || []);
+                setBreedingPagination({
+                    page: response?.meta?.page || 1,
+                    limit: response?.meta?.limit || 10,
+                    total: response?.meta?.total || 0,
+                    totalPages: response?.meta?.total_pages || 0
+                });
+            } else {
+                setBreedingError(response.message || "Failed to fetch breeding data");
+                setBreedingData([]);
+            }
+        } catch (err: any) {
+            setBreedingError(err.message || "An error occurred while fetching breeding data");
+            setBreedingData([]);
+        } finally {
+            setBreedingLoading(false);
+        }
+    };
+
+    // Fetch playdate data
+    const fetchPlaydateData = async (page: number = 1, limit: number = 10, search?: string) => {
+        if (!dogId) return;
+
+        try {
+            setPlaydateLoading(true);
+            setPlaydateError("");
+
+            const filters = { page, limit, search: search || undefined };
+            const response: any = await DogService.getDogPlaydateData(dogId, filters);
+
+            if (response?.status === 1) {
+                setPlaydateData(response.data || []);
+                setPlaydatePagination({
+                    page: response.meta?.page || 1,
+                    limit: response.meta?.limit || 10,
+                    total: response.meta?.total || 0,
+                    totalPages: response.meta?.totalPages || 0
+                });
+            } else {
+                setPlaydateError(response.message || "Failed to fetch playdate data");
+                setPlaydateData([]);
+            }
+        } catch (err: any) {
+            setPlaydateError(err.message || "An error occurred while fetching playdate data");
+            setPlaydateData([]);
+        } finally {
+            setPlaydateLoading(false);
+        }
+    };
+
+    // Handle pagination for breeding
+    const handleBreedingPageChange = (page: number) => {
+        setBreedingPagination(prev => ({ ...prev, page }));
+        fetchBreedingData(page, breedingPagination.limit, breedingSearch);
+    };
+
+    const handleBreedingPerRowsChange = (perPage: number, page: number) => {
+        setBreedingPagination(prev => ({ ...prev, limit: perPage, page }));
+        fetchBreedingData(page, perPage, breedingSearch);
+    };
+
+    // Handle pagination for playdates
+    const handlePlaydatePageChange = (page: number) => {
+        setPlaydatePagination(prev => ({ ...prev, page }));
+        fetchPlaydateData(page, playdatePagination.limit, playdateSearch);
+    };
+
+    const handlePlaydatePerRowsChange = (perPage: number, page: number) => {
+        setPlaydatePagination(prev => ({ ...prev, limit: perPage, page }));
+        fetchPlaydateData(page, perPage, playdateSearch);
+    };
+
+    // Debounced search for breeding
+    useEffect(() => {
+        const timeoutId = setTimeout(() => {
+            if (breedingSearch !== undefined) {
+                setBreedingPagination(prev => ({ ...prev, page: 1 }));
+                fetchBreedingData(1, breedingPagination.limit, breedingSearch);
+            }
+        }, 500);
+        return () => clearTimeout(timeoutId);
+    }, [breedingSearch]);
+
+    // Debounced search for playdates
+    useEffect(() => {
+        const timeoutId = setTimeout(() => {
+            if (playdateSearch !== undefined) {
+                setPlaydatePagination(prev => ({ ...prev, page: 1 }));
+                fetchPlaydateData(1, playdatePagination.limit, playdateSearch);
+            }
+        }, 500);
+        return () => clearTimeout(timeoutId);
+    }, [playdateSearch]);
+
+    // Tab change handler
+    const handleTabChange = (selectedKey: string | null) => {
+        setKey(selectedKey || "details");
+
+        // Fetch data when switching to breeding or playdate tabs
+        if (selectedKey === "breedings" && breedingData.length === 0) {
+            fetchBreedingData();
+        } else if (selectedKey === "playdates" && playdateData.length === 0) {
+            fetchPlaydateData();
+        }
+    };
+
+    // Table columns for breeding data
+    const breedingColumns = [
+        {
+            name: "S.no.",
+            cell: (_: any, index: number) => (breedingPagination.page - 1) * breedingPagination.limit + index + 1,
+            width: "80px"
+        },
+        {
+            name: "Partner Dog",
+            cell: (row: any) => (
+                <div className="d-flex align-items-center">
+                    <div>
+                        <div className="fw-bold">{row.other_dog_details?.dog_name || 'N/A'}</div>
+                        <div className="text-muted small">{row.other_dog_details?.breed?.name || row.other_dog_details?.breed || 'N/A'}</div>
+                    </div>
+                </div>
+            ),
+            minWidth: "180px"
+        },
+        {
+            name: "Partner Owner",
+            cell: (row: any) => (
+                <div>
+                    <div className="fw-bold">{row.other_user_details?.name || 'N/A'}</div>
+                    <div className="text-muted small">{row.other_user_details?.email || 'N/A'}</div>
+                </div>
+            ),
+            minWidth: "180px"
+        },
+        {
+            name: "Match Date",
+            cell: (row: any) => formatDate(row.created_at),
+            minWidth: "120px"
+        },
+        {
+            name: "Status",
+            cell: (row: any) => (
+                <Badge bg={row.status === 'accepted' ? 'success' : 'secondary'}>
+                    {row.status.charAt(0).toUpperCase() + row.status.slice(1)}
+                </Badge>
+            ),
+            minWidth: "100px"
+        }
+    ];
+
+    // Table columns for playdate data
+    const playdateColumns = [
+        {
+            name: "S.no.",
+            cell: (_: any, index: number) => (playdatePagination.page - 1) * playdatePagination.limit + index + 1,
+            width: "80px"
+        },
+        {
+            name: "Playmate Dog",
+            cell: (row: any) => (
+                <div className="d-flex align-items-center">
+                    <div>
+                        <div className="fw-bold">{row.other_dog_details?.dog_name || 'N/A'}</div>
+                        <div className="text-muted small">{row.other_dog_details?.breed?.name || row.other_dog_details?.breed || 'N/A'}</div>
+                    </div>
+                </div>
+            ),
+            minWidth: "180px"
+        },
+        {
+            name: "Playmate Owner",
+            cell: (row: any) => (
+                <div>
+                    <div className="fw-bold">{row.other_user_details?.name || 'N/A'}</div>
+                    <div className="text-muted small">{row.other_user_details?.email || 'N/A'}</div>
+                </div>
+            ),
+            minWidth: "180px"
+        },
+        {
+            name: "Match Date",
+            cell: (row: any) => formatDate(row.created_at),
+            minWidth: "120px"
+        },
+        {
+            name: "Status",
+            cell: (row: any) => (
+                <Badge bg={row.status === 'accepted' ? 'success' : 'secondary'}>
+                    {row.status.charAt(0).toUpperCase() + row.status.slice(1)}
+                </Badge>
+            ),
+            minWidth: "100px"
+        }
+    ];
 
     useEffect(() => {
         if (dogId) {
@@ -220,55 +450,56 @@ const ViewDog: React.FC = () => {
                                             </p>
                                         </div>
 
-                                        <div className="tablefilelist_grid">
-                                            <h4>Profile Status</h4>
-                                            <p>
-                                                <Badge bg={getStatusBadge(dogData.profile_status)}>
-                                                    {dogData.profile_status.charAt(0).toUpperCase() + dogData.profile_status.slice(1)}
-                                                </Badge>
-                                            </p>
-                                        </div>
-                                        <div className="tablefilelist_grid">
-                                            <h4>Dog Date Tagline</h4>
-                                            <p>"{dogData.dog_date_tagline}"</p>
-                                        </div>
-                                        <div className="tablefilelist_grid">
-                                            <h4>Favorite Dog Treat</h4>
-                                            <p>{dogData.favorite_dog_treat}</p>
-                                        </div>
-                                        <div className="tablefilelist_grid">
-                                            <h4>Breeding Price</h4>
-                                            <p>${dogData.breeding_price}</p>
-                                        </div>
-                                        <div className="tablefilelist_grid">
-                                            <h4>Available for Breeding?</h4>
-                                            <p>
-                                                <Badge bg={dogData.available_for_breeding ? 'success' : 'danger'}>
-                                                    {dogData.available_for_breeding ? 'Yes' : 'No'}
-                                                </Badge>
-                                            </p>
-                                        </div>
-                                        <div className="tablefilelist_grid">
-                                            <h4>Status</h4>
-                                            <p>
-                                                <Badge bg={getStatusBadge(dogData.status)}>
-                                                    {dogData.status.charAt(0).toUpperCase() + dogData.status.slice(1)}
-                                                </Badge>
-                                            </p>
-                                        </div>
-                                        <div className="tablefilelist_grid">
-                                            <h4>Created At</h4>
-                                            <p>{formatDate(dogData.created_at)}</p>
-                                        </div>
-                                        <div className="tablefilelist_grid">
-                                            <h4>Updated At</h4>
-                                            <p>{formatDate(dogData.updated_at)}</p>
-                                        </div>
+
                                     </div>
                                 </div>
                             </Col>
                             <Col xl={6} lg={6} md={6} className="order-1 order-lg-2">
                                 <div className="userinfo_wrapper userinfo_wrapper_for_profile_page">
+                                    <div className="tablefilelist_grid">
+                                        <h4>Profile Status</h4>
+                                        <p>
+                                            <Badge bg={getStatusBadge(dogData.profile_status)}>
+                                                {dogData.profile_status.charAt(0).toUpperCase() + dogData.profile_status.slice(1)}
+                                            </Badge>
+                                        </p>
+                                    </div>
+                                    <div className="tablefilelist_grid">
+                                        <h4>Dog Date Tagline</h4>
+                                        <p>"{dogData.dog_date_tagline}"</p>
+                                    </div>
+                                    <div className="tablefilelist_grid">
+                                        <h4>Favorite Dog Treat</h4>
+                                        <p>{dogData.favorite_dog_treat}</p>
+                                    </div>
+                                    <div className="tablefilelist_grid">
+                                        <h4>Breeding Price</h4>
+                                        <p>${dogData.breeding_price}</p>
+                                    </div>
+                                    <div className="tablefilelist_grid">
+                                        <h4>Available for Breeding?</h4>
+                                        <p>
+                                            <Badge bg={dogData.available_for_breeding ? 'success' : 'danger'}>
+                                                {dogData.available_for_breeding ? 'Yes' : 'No'}
+                                            </Badge>
+                                        </p>
+                                    </div>
+                                    <div className="tablefilelist_grid">
+                                        <h4>Status</h4>
+                                        <p>
+                                            <Badge bg={getStatusBadge(dogData.status)}>
+                                                {dogData.status.charAt(0).toUpperCase() + dogData.status.slice(1)}
+                                            </Badge>
+                                        </p>
+                                    </div>
+                                    <div className="tablefilelist_grid">
+                                        <h4>Created At</h4>
+                                        <p>{formatDate(dogData.created_at)}</p>
+                                    </div>
+                                    <div className="tablefilelist_grid">
+                                        <h4>Updated At</h4>
+                                        <p>{formatDate(dogData.updated_at)}</p>
+                                    </div>
                                     <div className="userinfo_inner">
                                         <div className="tablefilelist_grid">
                                             <h4>Dog Owner</h4>
@@ -445,36 +676,8 @@ const ViewDog: React.FC = () => {
                         id="boxer-status-tabs"
                         className="customtabs mb-2"
                         activeKey={key}
-                        onSelect={(k: any) => setKey(k || "details")}
+                        onSelect={(k: any) => handleTabChange(k)}
                     >
-                        <Tab eventKey="details" title="Details">
-                            <Row>
-                                <Col md={12}>
-                                    <div className="text-end mb-3">
-                                        <input
-                                            type="text"
-                                            placeholder="Search details..."
-                                            className="searchfield"
-                                            value={""}
-                                            onChange={(e) => { }}
-                                        />
-                                    </div>
-                                    <DataTable
-                                        columns={[]}
-                                        data={[]}
-                                        pagination
-                                        responsive
-                                        className="custom-table"
-                                        noDataComponent={
-                                            <div className="text-center py-4">
-                                                <Icon icon="mdi:dog" width={48} height={48} className="text-muted mb-2" />
-                                                <p className="text-muted">No details found for this user</p>
-                                            </div>
-                                        }
-                                    />
-                                </Col>
-                            </Row>
-                        </Tab>
 
                         <Tab eventKey="breedings" title="Breedings">
                             <Row>
@@ -484,20 +687,33 @@ const ViewDog: React.FC = () => {
                                             type="text"
                                             placeholder="Search breedings..."
                                             className="searchfield"
-                                            value={""}
-                                            onChange={(e) => { }}
+                                            value={breedingSearch}
+                                            onChange={(e) => setBreedingSearch(e.target.value)}
                                         />
                                     </div>
+
+                                    {breedingError && (
+                                        <div className="alert alert-danger mb-3">
+                                            {breedingError}
+                                        </div>
+                                    )}
+
                                     <DataTable
-                                        columns={[]}
-                                        data={[]}
+                                        columns={breedingColumns}
+                                        data={breedingData}
                                         pagination
+                                        paginationServer
+                                        paginationTotalRows={breedingPagination.total}
+                                        onChangePage={handleBreedingPageChange}
+                                        onChangeRowsPerPage={handleBreedingPerRowsChange}
+                                        paginationPerPage={breedingPagination.limit}
+                                        progressPending={breedingLoading}
                                         responsive
                                         className="custom-table"
                                         noDataComponent={
                                             <div className="text-center py-4">
-                                                <Icon icon="mdi:dog" width={48} height={48} className="text-muted mb-2" />
-                                                <p className="text-muted">No breedings found for this user</p>
+                                                <Icon icon="mdi:heart-multiple" width={48} height={48} className="text-muted mb-2" />
+                                                <p className="text-muted">No breeding records found for this dog</p>
                                             </div>
                                         }
                                     />
@@ -513,20 +729,33 @@ const ViewDog: React.FC = () => {
                                             type="text"
                                             placeholder="Search playdates..."
                                             className="searchfield"
-                                            value={""}
-                                            onChange={(e) => { }}
+                                            value={playdateSearch}
+                                            onChange={(e) => setPlaydateSearch(e.target.value)}
                                         />
                                     </div>
+
+                                    {playdateError && (
+                                        <div className="alert alert-danger mb-3">
+                                            {playdateError}
+                                        </div>
+                                    )}
+
                                     <DataTable
-                                        columns={[]}
-                                        data={[]}
+                                        columns={playdateColumns}
+                                        data={playdateData}
                                         pagination
+                                        paginationServer
+                                        paginationTotalRows={playdatePagination.total}
+                                        onChangePage={handlePlaydatePageChange}
+                                        onChangeRowsPerPage={handlePlaydatePerRowsChange}
+                                        paginationPerPage={playdatePagination.limit}
+                                        progressPending={playdateLoading}
                                         responsive
                                         className="custom-table"
                                         noDataComponent={
                                             <div className="text-center py-4">
-                                                <Icon icon="mdi:dog" width={48} height={48} className="text-muted mb-2" />
-                                                <p className="text-muted">No playdates found for this user</p>
+                                                <Icon icon="mdi:dog-side" width={48} height={48} className="text-muted mb-2" />
+                                                <p className="text-muted">No playdate records found for this dog</p>
                                             </div>
                                         }
                                     />

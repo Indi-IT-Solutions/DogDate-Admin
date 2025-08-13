@@ -65,19 +65,19 @@ const LostMatches: React.FC = () => {
             };
 
             console.log('🔍 Fetching lost matches for user:', userId, filters);
-            const response = await UserService.getUserLostMatches(userId, filters);
+            const response: any = await UserService.getUserLostMatches(userId, filters);
 
             console.log('✅ Lost Matches response:', response);
 
-            if (response.status === 1) {
-                setMatchesData(response.data || []);
+            if (response?.status === 1) {
+                setMatchesData(response?.data || []);
                 setPagination({
-                    currentPage: response.meta?.page || 1,
-                    totalRows: response.meta?.total || 0,
-                    perPage: response.meta?.limit || 10
+                    currentPage: response?.meta?.page || 1,
+                    totalRows: response?.meta?.total || 0,
+                    perPage: response?.meta?.limit || 10
                 });
             } else {
-                setError(response.message || "Failed to fetch lost matches");
+                setError(response?.message || "Failed to fetch lost matches");
                 setMatchesData([]);
             }
         } catch (err: any) {

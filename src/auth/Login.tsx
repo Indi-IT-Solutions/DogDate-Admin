@@ -79,7 +79,7 @@ const Login: React.FC = () => {
       if (err.status === 0) {
         setError(err.message || "Invalid credentials");
       } else if (err.message?.includes('Network Error')) {
-        setError("Cannot connect to server. Please check if the backend is running.");
+        setError("Cannot connect to server.");
       } else {
         setError(err.message || "An error occurred during login");
       }

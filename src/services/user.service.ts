@@ -9,7 +9,7 @@ import type {
 
 export class UserService {
     // Get all users with pagination and filters
-    static async getUsers(filters: UserFilters = {}): Promise<PaginatedResponse<User>> {
+    static async getUsers(filters: UserFilters = {}): Promise<any> {
         try {
             const queryString = objectToQueryString(filters);
             const url = `${USER_ENDPOINTS.LIST}${queryString ? `?${queryString}` : ''}`;
@@ -22,7 +22,7 @@ export class UserService {
             if (response.data.status === 1 && response.data.data) {
                 const backendData = response.data.data;
 
-                const paginatedResponse: PaginatedResponse<User> = {
+                const paginatedResponse: any = {
                     status: response.data.status,
                     message: response.data.message,
                     data: backendData.users || [],
@@ -66,7 +66,7 @@ export class UserService {
     }
 
     // Get user's dogs
-    static async getUserDogs(userId: string, filters: UserFilters = {}): Promise<PaginatedResponse<any>> {
+    static async getUserDogs(userId: string, filters: UserFilters = {}): Promise<any> {
         try {
             const queryString = objectToQueryString(filters);
             const url = `${USER_ENDPOINTS.GET_DOGS(userId)}${queryString ? `?${queryString}` : ''}`;
@@ -79,7 +79,7 @@ export class UserService {
             if (response.data.status === 1 && response.data.data) {
                 const backendData = response.data.data;
 
-                const paginatedResponse: PaginatedResponse<any> = {
+                const paginatedResponse: any = {
                     status: response.data.status,
                     message: response.data.message,
                     data: backendData.dogs || [],
@@ -113,7 +113,7 @@ export class UserService {
     }
 
     // Get user's confirmed matches
-    static async getUserConfirmedMatches(userId: string, filters: UserFilters = {}): Promise<PaginatedResponse<any>> {
+    static async getUserConfirmedMatches(userId: string, filters: UserFilters = {}): Promise<any> {
         try {
             const queryString = objectToQueryString(filters);
             const url = `${USER_ENDPOINTS.GET_CONFIRMED_MATCHES(userId)}${queryString ? `?${queryString}` : ''}`;
@@ -125,7 +125,7 @@ export class UserService {
             if (response.data.status === 1 && response.data.data) {
                 const backendData = response.data.data;
 
-                const paginatedResponse: PaginatedResponse<any> = {
+                const paginatedResponse: any = {
                     status: response.data.status,
                     message: response.data.message,
                     data: backendData.matches || [],
@@ -153,7 +153,7 @@ export class UserService {
     }
 
     // Get user's sent requests
-    static async getUserSentRequests(userId: string, filters: UserFilters = {}): Promise<PaginatedResponse<any>> {
+    static async getUserSentRequests(userId: string, filters: UserFilters = {}): Promise<any> {
         try {
             const queryString = objectToQueryString(filters);
             const url = `${USER_ENDPOINTS.GET_SENT_REQUESTS(userId)}${queryString ? `?${queryString}` : ''}`;
@@ -165,7 +165,7 @@ export class UserService {
             if (response.data.status === 1 && response.data.data) {
                 const backendData = response.data.data;
 
-                const paginatedResponse: PaginatedResponse<any> = {
+                const paginatedResponse: any = {
                     status: response.data.status,
                     message: response.data.message,
                     data: backendData.matches || [],
@@ -193,7 +193,7 @@ export class UserService {
     }
 
     // Get user's received requests
-    static async getUserReceivedRequests(userId: string, filters: UserFilters = {}): Promise<PaginatedResponse<any>> {
+    static async getUserReceivedRequests(userId: string, filters: UserFilters = {}): Promise<any> {
         try {
             const queryString = objectToQueryString(filters);
             const url = `${USER_ENDPOINTS.GET_RECEIVED_REQUESTS(userId)}${queryString ? `?${queryString}` : ''}`;
@@ -205,7 +205,7 @@ export class UserService {
             if (response.data.status === 1 && response.data.data) {
                 const backendData = response.data.data;
 
-                const paginatedResponse: PaginatedResponse<any> = {
+                const paginatedResponse: any = {
                     status: response.data.status,
                     message: response.data.message,
                     data: backendData.matches || [],
@@ -233,7 +233,7 @@ export class UserService {
     }
 
     // Get user's lost matches
-    static async getUserLostMatches(userId: string, filters: UserFilters = {}): Promise<PaginatedResponse<any>> {
+    static async getUserLostMatches(userId: string, filters: UserFilters = {}): Promise<any> {
         try {
             const queryString = objectToQueryString(filters);
             const url = `${USER_ENDPOINTS.GET_LOST_MATCHES(userId)}${queryString ? `?${queryString}` : ''}`;
@@ -245,7 +245,7 @@ export class UserService {
             if (response.data.status === 1 && response.data.data) {
                 const backendData = response.data.data;
 
-                const paginatedResponse: PaginatedResponse<any> = {
+                const paginatedResponse: any = {
                     status: response.data.status,
                     message: response.data.message,
                     data: backendData.matches || [],

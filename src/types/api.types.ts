@@ -7,10 +7,19 @@ export interface ApiResponse<T = any> {
 }
 
 export interface PaginationMeta {
+    current_page: number;
+    total_pages: number;
+    total_payments?: number;
+    total_users?: number;
+    total_dogs?: number;
+    total?: number;
+    per_page: number;
+    has_next_page: boolean;
+    has_prev_page: boolean;
     page: number;
     limit: number;
-    total: number;
     totalPages: number;
+    total_queries?: number;
 }
 
 export interface PaginatedResponse<T> extends ApiResponse<T[]> {
@@ -180,7 +189,7 @@ export interface Hobby {
     _id: string;
     name: string;
     description?: string;
-    status: 'active' | 'inactive';
+    status: 'active' | 'inactive' | 'deleted';
     created_at: string;
     updated_at: string;
 }
@@ -189,7 +198,7 @@ export interface DogLike {
     _id: string;
     name: string;
     description?: string;
-    status: 'active' | 'inactive';
+    status: 'active' | 'inactive' | 'deleted';
     created_at: string;
     updated_at: string;
 }
@@ -217,40 +226,264 @@ export interface MeetupAvailability {
 export interface PaymentHistory {
     _id: string;
     user_id: string;
-    purchased_plan_id: string;
-    payment_method: 'stripe' | 'apple_pay' | 'google_pay';
+    relation_id?: string;
+    relation_with: 'dog_profile_express_registeration' | 'one_time_payment_for_match' | 'subscription_for_match' | 'subscription_renewal_for_match' | 'use_of_redeemable_coins_for_match_to_enable_chat' | 'use_of_playdate_premium_paws_subscription_for_match_to_enable_chat';
+    transaction_id: string;
+    iap_signed_date: string;
+    purchase_id?: string;
+    payment_region: string;
+    payment_region_id: string;
+    transaction_type: 'Consumable' | 'Auto-Renewable Subscription' | 'use_of_redeemable_coins_for_match_to_enable_chat' | 'use_of_playdate_premium_paws_subscription_for_match_to_enable_chat';
+    iap_product_id?: string;
+    paid_price: number;
+    payment_time: string;
+    payment_platform: 'ios_iap' | 'android_iap';
+    refund_reference_payment_id?: string;
+    product_details?: any;
+    status: 'paid' | 'skipped';
+    refund_reason?: string;
+    created_at: string;
+    user_details?: {
+        name: string;
+        email: string;
+        phone_number?: number;
+        address?: any;
+    };
+    dog_details?: {
+        dog_name: string;
+        breed: string;
+        profile_type: 'dating' | 'breeding' | 'both';
+        gender?: 'male' | 'female';
+        age?: number;
+        profile_picture?: {
+            file_path: string;
+            file_type: string;
+            file_hash: string;
+        };
+    };
+}
+
+export interface PaymentFilters extends PaginationRequest {
+    status?: 'paid' | 'skipped';
+    payment_platform?: 'ios_iap' | 'android_iap';
+    relation_with?: string;
+    transaction_type?: string;
+    from_date?: string;
+    to_date?: string;
+}
+
+export interface PaymentStats {
+    total_payments: number;
+    paid_payments: number;
+    skipped_payments: number;
+    payment_platforms: {
+        ios: number;
+        android: number;
+    };
+    transaction_types: {
+        consumable: number;
+        subscription: number;
+    };
+    new_payments_last_30_days: number;
+    total_revenue: number;
+    revenue_last_month: number;
+}
+
+export interface SubscriptionPackage {
+    _id: string;
+    type: "Breeding" | "Playmates";
+    title: string;
     amount: number;
-    currency: string;
-    payment_status: 'pending' | 'completed' | 'failed' | 'refunded';
-    payment_date: string;
+    interval: "One time" | "Monthly" | "Yearly";
+    matches: string;
+    features: string[];
+    iap_product_id: string;
+    is_active: boolean;
     created_at: string;
     updated_at: string;
+}
+
+export interface SubscriptionFilters {
+    page?: number;
+    limit?: number;
+    search?: string;
+    type?: "Breeding" | "Playmates";
+    interval?: "One time" | "Monthly" | "Yearly";
+    is_active?: boolean;
+}
+
+export interface SubscriptionStats {
+    total_packages: number;
+    active_packages: number;
+    inactive_packages: number;
+    package_types: {
+        breeding: number;
+        playmates: number;
+    };
+    intervals: {
+        one_time: number;
+        monthly: number;
+        yearly: number;
+    };
+    total_value: number;
+}
+
+export interface ContactFilters {
+    page?: number;
+    limit?: number;
+    search?: string;
+    query_status?: "pending" | "replied" | "resolved";
+    status?: "active" | "inactive";
+}
+
+export interface ContactStats {
+    total_queries: number;
+    pending_queries: number;
+    replied_queries: number;
+    resolved_queries: number;
+    active_queries: number;
+    inactive_queries: number;
+}
+
+export interface SendContactReply {
+    contact_id: string;
+    reply_message: string;
+    admin_name: string;
+}
+
+export interface ReportFilters {
+    page?: number;
+    limit?: number;
+    search?: string;
+    action?: "pending" | "processed";
+    status?: "active" | "deleted";
+}
+
+export interface ReportStats {
+    total_reports: number;
+    pending_reports: number;
+    processed_reports: number;
+    active_reports: number;
+    deleted_reports: number;
+}
+
+// Dog Breed Types
+export interface DogBreed {
+    _id: string;
+    name: string;
+    status: "active" | "inactive" | "deleted";
+    created_at: string;
+}
+
+export interface DogBreedFilters {
+    page?: number;
+    limit?: number;
+    search?: string;
+    status?: "active" | "inactive" | "deleted";
+}
+
+export interface HobbyFilters {
+    page?: number;
+    limit?: number;
+    search?: string;
+    status?: "active" | "inactive" | "deleted";
+}
+
+export interface DogLikeFilters {
+    page?: number;
+    limit?: number;
+    search?: string;
+    status?: "active" | "inactive" | "deleted";
+}
+
+export interface DogCharacterFilters {
+    page?: number;
+    limit?: number;
+    search?: string;
+    status?: "active" | "inactive" | "deleted";
+}
+
+// Page Types
+export interface Page {
+    _id: string;
+    title: "About Us" | "Terms & Conditions" | "Privacy Policy" | "FAQ's";
+    description: string | any;
+    identity_number: number;
+    created_at: string;
+}
+
+export interface PageFilters {
+    search?: string;
+}
+
+// FAQ Types
+export interface FAQ {
+    _id: string;
+    order: number;
+    question: string;
+    answer: string;
+    status: "active" | "inactive";
+    created_at: string;
+    updated_at: string;
+}
+
+export interface FAQFilters {
+    search?: string;
+    status?: "active" | "inactive";
+}
+
+export interface FAQStats {
+    total_faqs: number;
+    active_faqs: number;
+    inactive_faqs: number;
+}
+
+// Admin Profile Types
+export interface AdminProfile {
+    _id: string;
+    name: string;
+    email: string;
+    role: string;
+    status: string;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface UpdateProfileData {
+    name?: string;
+    email?: string;
+}
+
+export interface ChangePasswordData {
+    current_password: string;
+    new_password: string;
+    confirm_password: string;
 }
 
 // Report Types
 export interface Report {
     _id: string;
-    reported_by: string;
-    reported_user: string;
-    reported_dog?: string;
-    reason: string;
-    description: string;
-    status: 'pending' | 'reviewed' | 'resolved' | 'dismissed';
+    report_from: string | User;
+    report_against: string | User;
+    message: string;
+    action: "pending" | "processed";
+    status: "active" | "deleted";
     created_at: string;
-    updated_at: string;
 }
 
 // Contact Us Types
 export interface ContactUs {
     _id: string;
-    user_id?: string;
+    user_id: string | User;
     name: string;
     email: string;
-    subject: string;
-    message: string;
-    status: 'pending' | 'replied' | 'resolved';
+    country_code: string;
+    phone_number: number | null;
+    query: string;
+    query_status: "pending" | "replied" | "resolved";
+    status: "active" | "inactive";
     created_at: string;
-    updated_at: string;
+    updated_at?: string;
 }
 
 // Dashboard Types

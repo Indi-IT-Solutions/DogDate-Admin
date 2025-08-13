@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Row, Col, Button, Modal, OverlayTrigger, Tooltip, Badge, Alert, Spinner } from "react-bootstrap";
+import { Row, Col, Button, Modal, Badge, Alert, Spinner, OverlayTrigger, Tooltip } from "react-bootstrap";
 import { Icon } from "@iconify/react";
 import DataTable from "react-data-table-component";
 import { Link } from "react-router-dom";
@@ -55,15 +55,15 @@ const Dogs: React.FC = () => {
                 search: search || undefined,
             };
 
-            const response = await DogService.getDogs(filters);
+            const response: any = await DogService.getDogs(filters);
 
-            if (response.status === 1) {
-                setDogsData(response.data || []);
-                setTotalRows(response.meta?.total || 0);
-                setCurrentPage(response.meta?.page || 1);
-                setPerPage(response.meta?.limit || 10);
+            if (response?.status === 1) {
+                setDogsData(response?.data || []);
+                setTotalRows(response?.meta?.total || 0);
+                setCurrentPage(response?.meta?.page || 1);
+                setPerPage(response?.meta?.limit || 10);
             } else {
-                setError(response.message || "Failed to fetch dogs");
+                setError(response?.message || "Failed to fetch dogs");
                 setDogsData([]);
                 setTotalRows(0);
             }

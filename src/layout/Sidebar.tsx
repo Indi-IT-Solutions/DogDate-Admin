@@ -3,6 +3,7 @@ import { NavLink, Link, useLocation } from "react-router-dom";
 import logo_dark from "../assets/img/logo.png";
 import { Icon } from "@iconify/react";
 import { IMAGES } from "@/contants/images";
+import { AuthService } from "@/services";
 
 interface SubmenuItem {
   id: string;
@@ -57,6 +58,20 @@ const Sidebar: React.FC = () => {
 
   const isSubmenuItemActive = (submenu: SubmenuItem[]) => {
     return submenu.some((sub) => location.pathname.startsWith(sub.link));
+  };
+
+  const handleLogout = () => {
+    // Show confirmation dialog
+    const confirmed = window.confirm("Are you sure you want to logout?");
+
+    if (confirmed) {
+      // Close sidebar
+      setSidebarOpen(false);
+      setOpenSubmenu(null);
+
+      // Call logout service
+      AuthService.logout();
+    }
   };
 
 
@@ -152,7 +167,7 @@ const Sidebar: React.FC = () => {
     {
       id: "Logout",
       title: "Logout",
-      link: "/",
+      link: "#",
       icon: "material-symbols:logout",
     },
   ];
@@ -196,7 +211,12 @@ const Sidebar: React.FC = () => {
                       e.preventDefault();
                       handleSubmenuClick(page.id);
                     }
-                    : handleNavLinkClick
+                    : page.id === "Logout"
+                      ? (e) => {
+                        e.preventDefault();
+                        handleLogout();
+                      }
+                      : handleNavLinkClick
                 }
               >
                 <div className="flex-grow-1">
