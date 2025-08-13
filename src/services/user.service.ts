@@ -272,6 +272,16 @@ export class UserService {
         }
     }
 
+    // Update user
+    static async updateUser(userId: string, userData: Partial<User>): Promise<ApiResponse<User>> {
+        try {
+            const response = await apiClient.put(USER_ENDPOINTS.GET_BY_ID(userId), userData);
+            return response.data;
+        } catch (error: any) {
+            throw error.response?.data || error;
+        }
+    }
+
     // Update user status
     static async updateUserStatus(userId: string, status: 'active' | 'inactive' | 'blocked'): Promise<ApiResponse> {
         try {
