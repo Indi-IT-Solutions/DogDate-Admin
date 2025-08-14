@@ -7,6 +7,8 @@ import { toast } from "react-toastify";
 import { IMAGES } from "@/contants/images";
 import { DogService } from "@/services";
 import type { Dog, DogFilters, PaginatedResponse } from "@/types/api.types";
+import { showError, showSuccess, showDeleteConfirmation, handleApiError } from "@/utils/sweetAlert";
+import { getDogProfileImage } from "@/utils/imageUtils";
 
 const Dogs: React.FC = () => {
     const [searchText, setSearchText] = useState<string>("");
@@ -63,12 +65,12 @@ const Dogs: React.FC = () => {
                 setCurrentPage(response?.meta?.page || 1);
                 setPerPage(response?.meta?.limit || 10);
             } else {
-                setError(response?.message || "Failed to fetch dogs");
+                handleApiError(response, "Failed to fetch dogs");
                 setDogsData([]);
                 setTotalRows(0);
             }
         } catch (err: any) {
-            setError(err.message || "An error occurred while fetching dogs");
+            handleApiError(err, "Failed to fetch dogs");
             setDogsData([]);
             setTotalRows(0);
         } finally {
@@ -121,13 +123,13 @@ const Dogs: React.FC = () => {
             const response = await DogService.updateDogStatus(selectedDog._id, newStatus);
 
             if (response.status === 1) {
-                toast.success(`Dog ${newStatus === 'active' ? 'unblocked' : 'blocked'} successfully`);
+                showSuccess("Success", `Dog ${newStatus === 'active' ? 'unblocked' : 'blocked'} successfully`);
                 fetchDogs(currentPage, perPage, searchText.trim() || undefined);
             } else {
-                toast.error(response.message || "Failed to update dog status");
+                showError("Error", response.message || "Failed to update dog status");
             }
         } catch (err: any) {
-            toast.error(err.message || "An error occurred while updating dog status");
+            handleApiError(err, "Failed to update dog status");
         } finally {
             setLoading(false);
             setShow(false);
@@ -145,9 +147,13 @@ const Dogs: React.FC = () => {
             cell: (row: Dog) => (
                 <div className="d-flex align-items-center">
                     <img
-                        src={row.profile_picture?.file_path || IMAGES.Dog}
+                        src={getDogProfileImage(row)}
                         alt={row.dog_name}
                         style={{ width: 40, height: 40, borderRadius: "50%", objectFit: "cover", marginRight: 10 }}
+                        onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.src = IMAGES.Dog; // Fallback to default dog image on error
+                        }}
                     />
                     <div>
                         <div className="fw-bold">{row.dog_name}</div>
@@ -162,11 +168,7 @@ const Dogs: React.FC = () => {
             name: "User",
             cell: (row: Dog) => (
                 <div className="d-flex align-items-center">
-                    <img
-                        src={IMAGES.Avatar1}
-                        alt="User"
-                        style={{ width: 32, height: 32, borderRadius: "50%", objectFit: "cover", marginRight: 8 }}
-                    />
+
                     <div>
                         <div>{row.user_details?.name || safeGetString(row.user_id)}</div>
                         <div className="text-muted small">{row.user_details?.email || (typeof row.user_id === 'object' && row.user_id?.email ? row.user_id.email : 'No email')}</div>
@@ -299,22 +301,24 @@ const Dogs: React.FC = () => {
                                 : `Are you sure you want to unblock ${selectedDog?.dog_name}? The dog will be visible to other users again.`}
                         </p>
                     </div>
-                    <Button
-                        variant="outline-danger"
-                        onClick={handleClose}
-                        className="px-4 me-3"
-                        disabled={loading}
-                    >
-                        Cancel
-                    </Button>
-                    <Button
-                        variant="success"
-                        className="px-4 min_width110"
-                        onClick={handleToggleStatus}
-                        disabled={loading}
-                    >
-                        {loading ? <Spinner size="sm" /> : 'Ok'}
-                    </Button>
+                    <div className="d-flex justify-content-end gap-3">
+                        <Button
+                            variant="outline-danger"
+                            onClick={handleClose}
+                            className="px-4"
+                            disabled={loading}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            variant="success"
+                            className="px-4 min_width110"
+                            onClick={handleToggleStatus}
+                            disabled={loading}
+                        >
+                            {loading ? <Spinner size="sm" /> : 'Ok'}
+                        </Button>
+                    </div>
                 </Modal.Body>
             </Modal>
         </React.Fragment>

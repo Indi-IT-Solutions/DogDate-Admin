@@ -17,7 +17,7 @@ const RevenueStatsChart: React.FC<RevenueStatsChartProps> = ({ data }) => {
         { month: 'Jun', income: 0, subscriptions: 0, total_transactions: 0 },
     ];
 
-    const toDollars = (cents: number) => Number(cents || 0) / 100;
+    const toDollars = (cents: number) => Number(cents || 0) / 1000;
     const chartData = (data && data.length > 0 ? data : defaultData).map(item => ({
         ...item,
         income: toDollars(item.income as any),

@@ -3,6 +3,7 @@ import { Row, Col, Button, Modal, Form, OverlayTrigger, Tooltip, Alert, Spinner 
 import { Icon } from "@iconify/react";
 import DataTable, { TableColumn } from "react-data-table-component";
 import { FAQService, FAQ } from "@/services";
+import { showError, showSuccess, showDeleteConfirmation, handleApiError } from "@/utils/sweetAlert";
 
 const formatDate = (dateString: string): string => {
     const date = new Date(dateString);
@@ -47,24 +48,17 @@ const FAQs: React.FC = () => {
         if (deleteId !== null) {
             try {
                 setDeleting(true);
-                setError("");
-                setSuccess("");
 
                 await FAQService.deleteFAQ(deleteId);
-                setSuccess('FAQ deleted successfully');
+                showSuccess('Success', 'FAQ deleted successfully');
 
                 // Refresh the data
                 await fetchFAQs();
                 setDeleteId(null);
                 setShowDeleteModal(false);
-
-                // Clear success message after 5 seconds
-                setTimeout(() => {
-                    setSuccess("");
-                }, 5000);
             } catch (err: any) {
                 console.error('❌ Error deleting FAQ:', err);
-                setError(err.message || 'Failed to delete FAQ');
+                handleApiError(err, 'Failed to delete FAQ');
             } finally {
                 setDeleting(false);
             }
@@ -85,7 +79,7 @@ const FAQs: React.FC = () => {
             }
         } catch (err: any) {
             console.error('❌ Error fetching FAQs:', err);
-            setError(err.message || 'Failed to fetch FAQs');
+            handleApiError(err, 'Failed to fetch FAQs');
         } finally {
             setLoading(false);
         }
@@ -115,14 +109,12 @@ const FAQs: React.FC = () => {
         const status = formData.get("status") === "active" ? "active" as const : "inactive" as const;
 
         if (!question || !answer || order < 1) {
-            setError('Please fill all required fields correctly');
+            showError('Validation Error', 'Please fill all required fields correctly');
             return;
         }
 
         try {
             setSaving(true);
-            setError("");
-            setSuccess("");
 
             const faqData = {
                 order,
@@ -133,23 +125,18 @@ const FAQs: React.FC = () => {
 
             if (editFaq) {
                 await FAQService.updateFAQ(editFaq._id, faqData);
-                setSuccess('FAQ updated successfully');
+                showSuccess('Success', 'FAQ updated successfully');
             } else {
                 await FAQService.createFAQ(faqData);
-                setSuccess('FAQ added successfully');
+                showSuccess('Success', 'FAQ added successfully');
             }
 
             // Refresh the data
             await fetchFAQs();
             handleCloseModal();
-
-            // Clear success message after 5 seconds
-            setTimeout(() => {
-                setSuccess("");
-            }, 5000);
         } catch (err: any) {
             console.error('❌ Error saving FAQ:', err);
-            setError(err.message || 'Failed to save FAQ');
+            handleApiError(err, 'Failed to save FAQ');
         } finally {
             setSaving(false);
         }
@@ -401,11 +388,11 @@ const FAQs: React.FC = () => {
                         <h3>Are You Sure?</h3>
                         <p>You will not be able to recover the deleted FAQ!</p>
                     </div>
-                    <div className="d-flex justify-content-center mt-3">
+                    <div className="d-flex justify-content-end gap-3">
                         <Button
                             variant="outline-danger"
                             onClick={() => setShowDeleteModal(false)}
-                            className="px-4 me-3"
+                            className="px-4"
                             disabled={deleting}
                         >
                             Cancel

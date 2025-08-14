@@ -4,6 +4,7 @@ import logo_dark from "../assets/img/logo.png";
 import { Icon } from "@iconify/react";
 import { IMAGES } from "@/contants/images";
 import { AuthService } from "@/services";
+import { showConfirmation } from "@/utils/sweetAlert";
 
 interface SubmenuItem {
   id: string;
@@ -60,11 +61,16 @@ const Sidebar: React.FC = () => {
     return submenu.some((sub) => location.pathname.startsWith(sub.link));
   };
 
-  const handleLogout = () => {
-    // Show confirmation dialog
-    const confirmed = window.confirm("Are you sure you want to logout?");
+  const handleLogout = async () => {
+    // Show confirmation dialog using SweetAlert2
+    const result = await showConfirmation(
+      "Logout",
+      "Are you sure you want to logout?",
+      "Yes, Logout",
+      "Cancel"
+    );
 
-    if (confirmed) {
+    if (result.isConfirmed) {
       // Close sidebar
       setSidebarOpen(false);
       setOpenSubmenu(null);
