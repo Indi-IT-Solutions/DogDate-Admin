@@ -24,6 +24,7 @@ export { DogCharacterService } from './dog-character.service';
 export { PageService } from './page.service';
 export { FAQService } from './faq.service';
 export { ProfileService } from './profile.service';
+export { AWSService } from './aws.service';
 
 // Default exports
 export { default as AuthServiceDefault } from './auth.service';

@@ -3,6 +3,7 @@ import { Row, Col, Button, Modal, Form, Alert, Spinner, Badge } from "react-boot
 import { Icon } from "@iconify/react";
 import DataTable, { TableColumn } from "react-data-table-component";
 import { ContactService, PaginationMeta } from "@/services";
+import { showError, showSuccess, handleApiError } from "@/utils/sweetAlert";
 
 const formatDate = (dateString: string): string => {
     const date = new Date(dateString);
@@ -86,7 +87,7 @@ const ContactUs: React.FC = () => {
             });
         } catch (err: any) {
             console.error('❌ Error fetching contact queries:', err);
-            setError(err.message || 'Failed to fetch contact queries');
+            handleApiError(err, 'Failed to fetch contact queries');
         } finally {
             setLoading(false);
         }
@@ -110,14 +111,12 @@ const ContactUs: React.FC = () => {
 
     const handleSendReply = async () => {
         if (!selectedContact || !replyMessage.trim()) {
-            setError('Please enter a reply message');
+            showError('Validation Error', 'Please enter a reply message');
             return;
         }
 
         try {
             setSendingReply(true);
-            setError("");
-            setSuccess("");
 
             await ContactService.sendContactReply({
                 contact_id: selectedContact._id,
@@ -133,16 +132,11 @@ const ContactUs: React.FC = () => {
             // Refresh the data
             fetchContactQueries(pagination.current_page, searchText);
 
-            setSuccess(`Reply sent successfully to ${selectedContact.name} (${selectedContact.email})`);
+            showSuccess('Success', `Reply sent successfully to ${selectedContact.name} (${selectedContact.email})`);
             handleClose();
-
-            // Clear success message after 5 seconds
-            setTimeout(() => {
-                setSuccess("");
-            }, 5000);
         } catch (err: any) {
             console.error('❌ Error sending reply:', err);
-            setError(err.message || 'Failed to send reply');
+            handleApiError(err, 'Failed to send reply');
         } finally {
             setSendingReply(false);
         }
@@ -365,10 +359,13 @@ const ContactUs: React.FC = () => {
                         </div>
                     )}
 
-                    <div className="d-flex gap-2">
+                    <div className="d-flex justify-content-end gap-3">
+                        <Button onClick={handleClose} variant="secondary" disabled={sendingReply}>
+                            Cancel
+                        </Button>
                         <Button
                             onClick={handleSendReply}
-                            className="btn btn-primary px-4 flex-grow-1"
+                            className="btn btn-primary px-4"
                             disabled={sendingReply || !replyMessage.trim()}
                         >
                             {sendingReply ? (
@@ -382,9 +379,6 @@ const ContactUs: React.FC = () => {
                                     Send Reply
                                 </>
                             )}
-                        </Button>
-                        <Button onClick={handleClose} variant="secondary" disabled={sendingReply}>
-                            Cancel
                         </Button>
                     </div>
                 </Modal.Body>

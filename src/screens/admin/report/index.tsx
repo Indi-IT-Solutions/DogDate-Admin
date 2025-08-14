@@ -3,6 +3,7 @@ import { Row, Col, Button, Modal, OverlayTrigger, Tooltip, Alert, Spinner, Badge
 import { Icon } from "@iconify/react";
 import DataTable, { TableColumn } from "react-data-table-component";
 import { ReportService, PaginationMeta } from "@/services";
+import { showError, showSuccess, showDeleteConfirmation, handleApiError } from "@/utils/sweetAlert";
 import { Report as ReportType } from "@/types/api.types";
 
 const formatDate = (dateString: string): string => {
@@ -112,7 +113,7 @@ const Report: React.FC = () => {
             });
         } catch (err: any) {
             console.error('❌ Error fetching reports:', err);
-            setError(err.message || 'Failed to fetch reports');
+            handleApiError(err, 'Failed to fetch reports');
         } finally {
             setLoading(false);
         }
@@ -139,24 +140,17 @@ const Report: React.FC = () => {
 
         try {
             setDeleting(true);
-            setError("");
-            setSuccess("");
 
             await ReportService.deleteReport(selectedReport?._id as string);
 
             // Refresh the data
             fetchReports(pagination.current_page, searchText);
 
-            setSuccess(`Report deleted successfully`);
+            showSuccess('Success', 'Report deleted successfully');
             handleCloseDeleteModal();
-
-            // Clear success message after 5 seconds
-            setTimeout(() => {
-                setSuccess("");
-            }, 5000);
         } catch (err: any) {
             console.error('❌ Error deleting report:', err);
-            setError(err.message || 'Failed to delete report');
+            handleApiError(err, 'Failed to delete report');
         } finally {
             setDeleting(false);
         }
@@ -338,7 +332,7 @@ const Report: React.FC = () => {
                             </div>
                         )}
                     </div>
-                    <div className="d-flex gap-2 mt-3">
+                    <div className="d-flex justify-content-end gap-3">
                         <Button
                             variant="outline-danger"
                             onClick={handleCloseDeleteModal}

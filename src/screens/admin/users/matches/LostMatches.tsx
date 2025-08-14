@@ -5,6 +5,7 @@ import { Button, Modal, Alert, Spinner } from "react-bootstrap";
 import { Link, useSearchParams } from "react-router-dom";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import { UserService } from "@/services";
+import { getProfileImageUrl, getUserProfileImage, getDogProfileImage } from "@/utils/imageUtils";
 
 interface Dog {
     id: number;
@@ -182,12 +183,16 @@ const LostMatches: React.FC = () => {
                 return (
                     <div className="d-flex gap-2 align-items-center">
                         <img
-                            src={IMAGES.Dog} // Use default image
+                            src={getDogProfileImage(details.myDog)}
                             alt={details.myDog?.dog_name || 'Dog'}
                             className="rounded"
                             width={40}
                             height={40}
                             style={{ objectFit: "cover", border: "1px solid #eee" }}
+                            onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.src = IMAGES.Dog; // Fallback to default dog image on error
+                            }}
                         />
                         <div>
                             <div style={{ fontWeight: 500 }}>{details.myDog?.dog_name || 'Unknown'}</div>
@@ -205,12 +210,16 @@ const LostMatches: React.FC = () => {
                 return (
                     <div className="d-flex gap-2 align-items-center">
                         <img
-                            src={IMAGES.Dog} // Use default image
+                            src={getDogProfileImage(details.otherDog)}
                             alt={details.otherDog?.dog_name || 'Dog'}
                             className="rounded"
                             width={40}
                             height={40}
                             style={{ objectFit: "cover", border: "1px solid #eee" }}
+                            onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.src = IMAGES.Dog; // Fallback to default dog image on error
+                            }}
                         />
                         <div>
                             <div style={{ fontWeight: 500 }}>{details.otherDog?.dog_name || 'Unknown'}</div>
@@ -228,12 +237,16 @@ const LostMatches: React.FC = () => {
                 return (
                     <div className="d-flex gap-2 align-items-center">
                         <img
-                            src={IMAGES.Avatar1} // Use default avatar
+                            src={getUserProfileImage(details.otherUser)}
                             alt={details.otherUser?.name || 'User'}
                             className="rounded-circle"
                             width={36}
                             height={36}
                             style={{ objectFit: "cover", border: "1px solid #eee" }}
+                            onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.src = IMAGES.Avatar1; // Fallback to default avatar on error
+                            }}
                         />
                         <div>
                             <div style={{ fontWeight: 500 }}>{safeGetString(details.otherUser?.name) || 'Unknown User'}</div>
@@ -326,20 +339,22 @@ const LostMatches: React.FC = () => {
                         <h3>Are You Sure ?</h3>
                         <p>You will not be able to recover the deleted record!</p>
                     </div>
-                    <Button
-                        variant="outline-danger"
-                        onClick={handleClose}
-                        className="px-4 me-3"
-                    >
-                        Cancel
-                    </Button>
-                    <Button
-                        variant="success"
-                        className="px-4 min_width110"
-                        onClick={handleClose}
-                    >
-                        Ok
-                    </Button>
+                    <div className="d-flex justify-content-end gap-3">
+                        <Button
+                            variant="outline-danger"
+                            onClick={handleClose}
+                            className="px-4"
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            variant="success"
+                            className="px-4 min_width110"
+                            onClick={handleClose}
+                        >
+                            Ok
+                        </Button>
+                    </div>
                 </Modal.Body>
             </Modal>
         </React.Fragment>

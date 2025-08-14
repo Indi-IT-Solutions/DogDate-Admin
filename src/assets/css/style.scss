@@ -1978,3 +1978,26 @@ Form {
     font-size: 14px;
   }
 }
+
+// SweetAlert2 Custom Styles
+.swal2-icon-custom {
+  display: none !important;
+}
+
+.swal2-popup {
+  .swal2-icon {
+    display: none !important;
+  }
+
+  .swal2-html-container {
+    margin: 0 !important;
+  }
+
+  .swal2-title {
+    display: none !important;
+  }
+
+  .swal2-content {
+    padding: 0 !important;
+  }
+}

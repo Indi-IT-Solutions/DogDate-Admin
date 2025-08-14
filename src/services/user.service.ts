@@ -65,6 +65,16 @@ export class UserService {
         }
     }
 
+    // Update user
+    static async updateUser(userId: string, userData: Partial<User>): Promise<ApiResponse<User>> {
+        try {
+            const response = await apiClient.put(USER_ENDPOINTS.UPDATE(userId), userData);
+            return response.data;
+        } catch (error: any) {
+            throw error.response?.data || error;
+        }
+    }
+
     // Get user's dogs
     static async getUserDogs(userId: string, filters: UserFilters = {}): Promise<any> {
         try {
@@ -273,7 +283,7 @@ export class UserService {
     }
 
     // Update user
-    static async updateUser(userId: string, userData: Partial<User>): Promise<ApiResponse<User>> {
+    static async getUser(userId: string, userData: Partial<User>): Promise<ApiResponse<User>> {
         try {
             const response = await apiClient.put(USER_ENDPOINTS.GET_BY_ID(userId), userData);
             return response.data;

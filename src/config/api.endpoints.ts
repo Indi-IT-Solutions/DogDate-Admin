@@ -23,6 +23,7 @@ export const DOG_PROFILE_ENDPOINTS = {
 export const USER_ENDPOINTS = {
     LIST: '/common/user/profile_v1',
     GET_BY_ID: (id: string) => `/common/user/profile_v1/${id}`,
+    UPDATE: (id: string) => `/common/user/profile_v1/${id}`,
     GET_DOGS: (id: string) => `/common/user/profile_v1/${id}/dogs`,
     GET_CONFIRMED_MATCHES: (id: string) => `/common/user/profile_v1/${id}/matches/confirmed`,
     GET_SENT_REQUESTS: (id: string) => `/common/user/profile_v1/${id}/matches/sent-requests`,
@@ -96,6 +97,12 @@ export const DASHBOARD_ENDPOINTS = {
     REJECT_ACCOUNT: '/admin/dashboard_v1/reject-account',
     USER_GROWTH: '/admin/dashboard_v1/user-growth',
     REVENUE_DATA: '/admin/dashboard_v1/revenue-data',
+};
+
+// AWS S3 Endpoints
+export const AWS_ENDPOINTS = {
+    GENERATE_PRESIGNED_URL: '/common/aws/s3/generate_presigned_url',
+    GENERATE_PRESIGNED_URL_MULTIPLE: '/common/aws/s3/generate_presigned_url_multiple',
 };
 
 // Subscription Package Endpoints

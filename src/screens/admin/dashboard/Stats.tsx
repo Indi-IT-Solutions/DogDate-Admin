@@ -21,7 +21,7 @@ const defaultStats = {
 };
 
 const Stats: React.FC<StatsProps> = ({ data = defaultStats }) => {
-    const formatDollars = (cents: number) => `$${(Number(cents || 0) / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    const formatDollars = (cents: number) => `$${(Number(cents || 0) / 1000).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     const statsData = [
         {
             title: "Total Users",

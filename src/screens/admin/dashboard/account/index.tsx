@@ -5,6 +5,7 @@ import { IMAGES } from "@/contants/images";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import { Link } from "react-router-dom";
 import { DashboardService, type AccountRequest } from "@/services";
+import { showError, showSuccess, handleApiError } from "@/utils/sweetAlert";
 
 interface AccountProps {
     data?: AccountRequest[];
@@ -42,7 +43,7 @@ const Account: React.FC<AccountProps> = ({ data = [], onRefresh }) => {
                 response = await DashboardService.approveAccountRequest(selectedRequest._id);
             } else {
                 if (!reason.trim()) {
-                    alert("Please provide a reason for rejection");
+                    showError("Validation Error", "Please provide a reason for rejection");
                     return;
                 }
                 response = await DashboardService.rejectAccountRequest(selectedRequest._id, reason);
@@ -50,15 +51,16 @@ const Account: React.FC<AccountProps> = ({ data = [], onRefresh }) => {
 
             if (response.status === 1) {
                 handleClose();
+                showSuccess("Success", modalType === "accept" ? "Account request approved successfully!" : "Account request rejected successfully!");
                 if (onRefresh) {
                     await onRefresh();
                 }
             } else {
-                alert(response.message || "Operation failed");
+                showError("Operation Failed", response.message || "Operation failed");
             }
         } catch (error: any) {
             console.error("Error processing request:", error);
-            alert(error.message || "An error occurred");
+            handleApiError(error, "Failed to process account request");
         } finally {
             setIsSubmitting(false);
         }
@@ -213,24 +215,26 @@ const Account: React.FC<AccountProps> = ({ data = [], onRefresh }) => {
                             </>
                         )}
                     </div>
-                    <Button
-                        variant="outline-secondary"
-                        onClick={handleClose}
-                        className="px-4 me-3"
-                        style={{ height: '50px' }}
-                        disabled={isSubmitting}
-                    >
-                        Cancel
-                    </Button>
-                    <Button
-                        variant={modalType === "accept" ? "success" : "danger"}
-                        className="px-4 min_width110"
-                        onClick={handleConfirm}
-                        style={{ height: '50px' }}
-                        disabled={isSubmitting || (modalType === "reject" && !reason.trim())}
-                    >
-                        {isSubmitting ? "Processing..." : modalType === "accept" ? "Approve" : "Reject"}
-                    </Button>
+                    <div className="d-flex justify-content-end gap-3">
+                        <Button
+                            variant="outline-secondary"
+                            onClick={handleClose}
+                            className="px-4"
+                            style={{ height: '50px' }}
+                            disabled={isSubmitting}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            variant={modalType === "accept" ? "success" : "danger"}
+                            className="px-4 min_width110"
+                            onClick={handleConfirm}
+                            style={{ height: '50px' }}
+                            disabled={isSubmitting || (modalType === "reject" && !reason.trim())}
+                        >
+                            {isSubmitting ? "Processing..." : modalType === "accept" ? "Approve" : "Reject"}
+                        </Button>
+                    </div>
                 </Modal.Body>
             </Modal>
         </React.Fragment>

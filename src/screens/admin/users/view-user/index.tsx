@@ -6,6 +6,7 @@ import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import Matches from "../matches";
 import { UserService, type User } from "@/services";
+import { getUserProfileImage, getDogProfileImage } from "@/utils/imageUtils";
 
 interface Payments {
     id: number;
@@ -292,12 +293,16 @@ const UserView: React.FC = () => {
             cell: (row: any) => (
                 <div className="d-flex gap-3 align-items-center py-2">
                     <img
-                        src={IMAGES.Dog} // Use default image for now
+                        src={getDogProfileImage(row)}
                         alt={row.dog_name || 'Dog'}
                         className="rounded"
                         width={50}
                         height={50}
                         style={{ objectFit: "cover", border: "1px solid #eee" }}
+                        onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.src = IMAGES.Dog; // Fallback to default dog image on error
+                        }}
                     />
                     <div>
                         <div className="d-flex align-items-center gap-2">
@@ -459,7 +464,15 @@ const UserView: React.FC = () => {
                         <Row>
                             <Col md={4}>
                                 <div className="talefile_box">
-                                    <img className="talefile_img" src={IMAGES.Avatar1} alt="User Image" />
+                                    <img
+                                        className="talefile_img"
+                                        src={getUserProfileImage(userData)}
+                                        alt="User Image"
+                                        onError={(e) => {
+                                            const target = e.target as HTMLImageElement;
+                                            target.src = IMAGES.Avatar1; // Fallback to default avatar on error
+                                        }}
+                                    />
                                 </div>
                             </Col>
                             <Col md={8}>
@@ -729,20 +742,22 @@ const UserView: React.FC = () => {
                         <h3>Are You Sure ?</h3>
                         <p>You will not be able to recover the deleted record!</p>
                     </div>
-                    <Button
-                        variant="outline-danger"
-                        onClick={handleClose}
-                        className="px-4 me-3"
-                    >
-                        Cancel
-                    </Button>
-                    <Button
-                        variant="success"
-                        className="px-4 min_width110"
-                        onClick={handleClose}
-                    >
-                        Ok
-                    </Button>
+                    <div className="d-flex justify-content-end gap-3">
+                        <Button
+                            variant="outline-danger"
+                            onClick={handleClose}
+                            className="px-4"
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            variant="success"
+                            className="px-4 min_width110"
+                            onClick={handleClose}
+                        >
+                            Ok
+                        </Button>
+                    </div>
                 </Modal.Body>
             </Modal>
         </React.Fragment>

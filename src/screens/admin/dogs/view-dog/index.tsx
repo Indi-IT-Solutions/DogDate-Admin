@@ -6,6 +6,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import { DogService } from "@/services";
 import type { Dog } from "@/types/api.types";
+import { getUserProfileImage, getDogProfileImage, getProfileImageUrl } from "@/utils/imageUtils";
 
 const ViewDog: React.FC = () => {
     const [searchParams] = useSearchParams();
@@ -529,10 +530,14 @@ const ViewDog: React.FC = () => {
                                             <Card>
                                                 <Card.Body className="text-center p-2">
                                                     <img
-                                                        src={dogData.profile_picture.file_path}
+                                                        src={getDogProfileImage(dogData)}
                                                         alt="Profile Picture"
                                                         style={{ width: '100%', height: '150px', objectFit: 'cover' }}
                                                         className="rounded"
+                                                        onError={(e) => {
+                                                            const target = e.target as HTMLImageElement;
+                                                            target.src = IMAGES.Dog; // Fallback to default dog image on error
+                                                        }}
                                                     />
                                                     <p className="mt-2 mb-0" style={{ fontSize: '12px' }}>Profile Picture</p>
                                                 </Card.Body>
@@ -546,10 +551,14 @@ const ViewDog: React.FC = () => {
                                             <Card>
                                                 <Card.Body className="text-center p-2">
                                                     <img
-                                                        src={picture.file_path}
+                                                        src={getProfileImageUrl(picture)}
                                                         alt={`Picture ${index + 1}`}
                                                         style={{ width: '100%', height: '150px', objectFit: 'cover' }}
                                                         className="rounded"
+                                                        onError={(e) => {
+                                                            const target = e.target as HTMLImageElement;
+                                                            target.src = IMAGES.Dog; // Fallback to default dog image on error
+                                                        }}
                                                     />
                                                     <p className="mt-2 mb-0" style={{ fontSize: '12px' }}>Picture {index + 1}</p>
                                                 </Card.Body>
@@ -774,20 +783,22 @@ const ViewDog: React.FC = () => {
                         <h3>Are You Sure ?</h3>
                         <p>You will not be able to recover the deleted record!</p>
                     </div>
-                    <Button
-                        variant="outline-danger"
-                        onClick={() => { }}
-                        className="px-4 me-3"
-                    >
-                        Cancel
-                    </Button>
-                    <Button
-                        variant="success"
-                        className="px-4 min_width110"
-                        onClick={() => { }}
-                    >
-                        Ok
-                    </Button>
+                    <div className="d-flex justify-content-end gap-3">
+                        <Button
+                            variant="outline-danger"
+                            onClick={() => { }}
+                            className="px-4"
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            variant="success"
+                            className="px-4 min_width110"
+                            onClick={() => { }}
+                        >
+                            Ok
+                        </Button>
+                    </div>
                 </Modal.Body>
             </Modal>
         </React.Fragment>

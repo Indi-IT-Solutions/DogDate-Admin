@@ -1,12 +1,18 @@
-import React, { useState, useEffect } from "react";
-import { Row, Col, Form, Card, Button, Alert, Spinner } from "react-bootstrap";
+import React, { useState, useEffect, useRef } from "react";
+import { Row, Col, Form, Card, Button, Alert, Spinner, Badge } from "react-bootstrap";
 import { Icon } from "@iconify/react";
 import { Link, useSearchParams } from "react-router-dom";
+import GooglePlacesAutocomplete from 'react-google-places-autocomplete';
 import { UserService, type User } from "@/services";
 import { HobbyService, type Hobby } from "@/services";
-import { ContentService, type MeetupAvailability } from "@/services";
+import { ContentService } from "@/services";
+import { AWSService } from "@/services";
+import type { MeetupAvailability } from "@/types/api.types";
+import { showError, showSuccess, handleApiError } from "@/utils/sweetAlert";
+import { getUserProfileImage } from "@/utils/imageUtils";
+import { IMAGES } from "@/contants/images";
 
-const ageRangeList = ["18-25", "26-35", "36-45", "46-55", "55+"];
+const ageRangeList = ["18 yrs+", "30 yrs+", "40 yrs+", "50 yrs+"];
 
 const EditUser: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -35,6 +41,11 @@ const EditUser: React.FC = () => {
   const [hobbiesList, setHobbiesList] = useState<Hobby[]>([]);
   const [meetUpAvailabilityList, setMeetUpAvailabilityList] = useState<MeetupAvailability[]>([]);
 
+  // Profile picture upload state
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string>("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   // Fetch user data
   const fetchUserData = async () => {
     if (!userId) {
@@ -59,11 +70,11 @@ const EditUser: React.FC = () => {
         // Pre-fill form with user data
         setName(user.name || "");
         setEmail(user.email || "");
-        setAgeRange(user.age_range || "");
+        setAgeRange(user.age || "");
         setLocation(user.address?.city || user.address?.full_address || "");
         setAbout(user.about || "");
         setStatus(user.status || "");
-        setPhoneNumber(user.phone_number || "");
+        setPhoneNumber(user.phone_number?.toString() || "");
         setCountryCode(user.country_code || "");
 
         // Set hobbies and meetup availability
@@ -99,13 +110,8 @@ const EditUser: React.FC = () => {
         ContentService.getMeetupAvailability({ limit: 100 })
       ]);
 
-      if (hobbiesResponse.status === 1) {
-        setHobbiesList(hobbiesResponse.data || []);
-      }
-
-      if (availabilityResponse.status === 1) {
-        setMeetUpAvailabilityList(availabilityResponse.data || []);
-      }
+      setHobbiesList(hobbiesResponse || []);
+      setMeetUpAvailabilityList(availabilityResponse.data || []);
     } catch (err: any) {
       console.error("Error fetching options:", err);
     }
@@ -121,6 +127,75 @@ const EditUser: React.FC = () => {
     setList(prev =>
       prev.includes(value) ? prev.filter(item => item !== value) : [...prev, value]
     );
+  };
+
+  // Handle file selection
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        showError("Error", "Please select an image file");
+        return;
+      }
+
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        showError("Error", "File size must be less than 5MB");
+        return;
+      }
+
+      setSelectedFile(file);
+      setPreviewUrl(URL.createObjectURL(file));
+    }
+  };
+
+  // Handle file upload
+  const handleFileUpload = async (): Promise<string | null> => {
+    if (!selectedFile) return null;
+
+    try {
+      // Generate presigned URL
+      const fileName = `user_profile_${Date.now()}_${selectedFile.name}`;
+      const presignedResponse = await AWSService.generatePresignedUrl({
+        file_name: fileName,
+        file_type: selectedFile.type
+      });
+
+      if (presignedResponse.status === 1 && presignedResponse.data) {
+        // Upload to S3
+        await AWSService.uploadFileToS3(
+          presignedResponse.data.presignedUrl,
+          selectedFile
+        );
+
+        return presignedResponse.data.fileUrl;
+      } else {
+        throw new Error(presignedResponse.message || "Failed to generate upload URL");
+      }
+    } catch (err: any) {
+      console.error("Error uploading file:", err);
+      throw new Error("Failed to upload image");
+    }
+  };
+
+  // Handle Google Places selection
+  const handlePlaceSelect = (place: any) => {
+    if (place && place.value) {
+      // Parse the place details and update location
+      const addressComponents = place.value.description.split(', ');
+      const fullAddress = place.value.description;
+      const city = addressComponents[1] || "";
+      const country = addressComponents[addressComponents.length - 1] || "";
+
+      setLocation(fullAddress);
+    }
+  };
+
+  // Remove profile picture
+  const handleRemoveProfilePicture = () => {
+    setSelectedFile(null);
+    setPreviewUrl("");
   };
 
   // Handle form submission
@@ -141,18 +216,40 @@ const EditUser: React.FC = () => {
         return;
       }
 
+      let profilePictureData = undefined;
+
+      // Handle profile picture upload
+      if (selectedFile) {
+        const uploadedUrl = await handleFileUpload();
+        if (uploadedUrl) {
+          profilePictureData = {
+            file_path: uploadedUrl,
+            file_type: selectedFile.type,
+            file_hash: ""
+          };
+        }
+      } else if (previewUrl === "") {
+        // User wants to remove profile picture
+        profilePictureData = null;
+      }
+
       // Prepare update data
       const updateData: any = {
         name: name.trim(),
         email: email.trim(),
-        age_range: ageRange,
-        address: { city: location },
+        age: ageRange,
+        address: {
+          full_address: location,
+          city: location.split(', ')[1] || "",
+          country: location.split(', ').pop() || ""
+        },
         about,
         hobbies,
         meetup_availability: meetUpAvailability,
         status,
-        phone_number: phoneNumber,
+        phone_number: phoneNumber ? parseInt(phoneNumber) : undefined,
         country_code: countryCode,
+        profile_picture: profilePictureData
       };
 
       console.log('🔍 Updating user with data:', updateData);
@@ -162,7 +259,10 @@ const EditUser: React.FC = () => {
       console.log('📋 Update response:', response);
 
       if (response.status === 1) {
-        setSuccess("User updated successfully!");
+        showSuccess("Success", "User updated successfully!");
+        // Clear file state
+        setSelectedFile(null);
+        setPreviewUrl("");
         // Refresh user data
         await fetchUserData();
       } else {
@@ -171,7 +271,7 @@ const EditUser: React.FC = () => {
 
     } catch (err: any) {
       console.error("Error updating user:", err);
-      setError(err.message || "An error occurred while updating user");
+      handleApiError(err, "Failed to update user");
     } finally {
       setIsSubmitting(false);
     }
@@ -233,30 +333,49 @@ const EditUser: React.FC = () => {
             <Col lg={12}>
               <Form.Group className="mb-3 form-group">
                 <Form.Label>Profile Image</Form.Label>
-                <div className="upload_img1">
-                  {userData?.profile_picture ? (
-                    <div className="text-center">
-                      <img
-                        src={userData.profile_picture.file_path}
-                        alt="Profile"
-                        className="rounded-circle mb-3"
-                        width={100}
-                        height={100}
-                        style={{ objectFit: "cover" }}
-                      />
-                      <p className="text-muted mb-0">
-                        Current profile image
-                      </p>
+                <div className="text-center">
+                  <div className="position-relative mb-3">
+                    <img
+                      src={previewUrl || getUserProfileImage(userData)}
+                      alt="Profile"
+                      className="rounded-circle"
+                      width={120}
+                      height={120}
+                      style={{ objectFit: "cover", border: "3px solid #eee" }}
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.src = IMAGES.Avatar1;
+                      }}
+                    />
+                    <div className="position-absolute top-0 end-0">
+                      <Button
+                        variant="outline-primary"
+                        size="sm"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={isSubmitting}
+                      >
+                        <Icon icon="mdi:camera" />
+                      </Button>
+                      {(previewUrl || userData?.profile_picture) && (
+                        <Button
+                          variant="outline-primary"
+                          size="sm"
+                          className="ms-1"
+                          onClick={handleRemoveProfilePicture}
+                          disabled={isSubmitting}
+                        >
+                          <Icon icon="mdi:delete" />
+                        </Button>
+                      )}
                     </div>
-                  ) : (
-                    <label htmlFor="profileImageUpload" className="text-center cursor-pointer">
-                      <Icon icon="garden:upload-fill-16" />
-                      <p className="text-muted mb-0 mt-3">
-                        No profile image uploaded
-                      </p>
-                    </label>
-                  )}
-                  <input type="file" id="profileImageUpload" accept="image/*" style={{ display: "none" }} />
+                  </div>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileSelect}
+                    style={{ display: 'none' }}
+                  />
                 </div>
               </Form.Group>
             </Col>
@@ -269,7 +388,7 @@ const EditUser: React.FC = () => {
             <Col lg={6}>
               <Form.Group className="mb-3 form-group">
                 <Form.Label>Email</Form.Label>
-                <Form.Control type="text" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Enter email" />
+                <Form.Control type="text" value={email} disabled={true} placeholder="Enter email" />
               </Form.Group>
             </Col>
             <Col lg={6}>
@@ -278,15 +397,17 @@ const EditUser: React.FC = () => {
                 <div className="d-flex">
                   <Form.Control
                     type="text"
+                    disabled
                     value={countryCode}
-                    onChange={(e) => setCountryCode(e.target.value)}
+                    // onChange={(e) => setCountryCode(e.target.value)}
                     placeholder="+1"
                     style={{ width: '80px', marginRight: '8px' }}
                   />
                   <Form.Control
                     type="text"
                     value={phoneNumber}
-                    onChange={(e) => setPhoneNumber(e.target.value)}
+                    disabled={true}
+                    // onChange={(e) => setPhoneNumber(e.target.value)}
                     placeholder="Enter phone number"
                   />
                 </div>
@@ -305,8 +426,29 @@ const EditUser: React.FC = () => {
             </Col>
             <Col lg={6}>
               <Form.Group className="mb-3 form-group">
-                <Form.Label>Location </Form.Label>
-                <Form.Control type="text" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Enter location" />
+                <Form.Label>Location</Form.Label>
+                {import.meta.env.VITE_GOOGLE_PLACES_API_KEY ? (
+                  <GooglePlacesAutocomplete
+                    apiKey={import.meta.env.VITE_GOOGLE_PLACES_API_KEY}
+                    selectProps={{
+                      value: location ? {
+                        label: location,
+                        value: location
+                      } : null,
+                      onChange: handlePlaceSelect,
+                      placeholder: "Search for a location...",
+                      isDisabled: isSubmitting
+                    }}
+                  />
+                ) : (
+                  <Form.Control
+                    type="text"
+                    value={location}
+                    onChange={(e) => setLocation(e.target.value)}
+                    placeholder="Enter location manually..."
+                    disabled={isSubmitting}
+                  />
+                )}
               </Form.Group>
             </Col>
             <Col lg={12}>
@@ -316,32 +458,46 @@ const EditUser: React.FC = () => {
               </Form.Group>
             </Col>
             <Col lg={12}>
-              <Form.Group className="mb-3 form-group lifestyle">
+              <Form.Group className="mb-3 form-group">
                 <Form.Label><b>Lifestyle & Interests</b></Form.Label>
                 <div className="mb-2"><small>Hobbies</small></div>
                 <div className="d-flex flex-wrap gap-2 mb-3">
-                  {hobbiesList.map((hobby, idx) => (
-                    <Button
+                  {hobbiesList.map((hobby) => (
+                    <Form.Check
                       key={hobby._id}
-                      variant={hobbies.includes(hobby.name) ? "warning" : "outline-secondary"}
-                      style={{ borderRadius: 20, fontWeight: 400, padding: "4px 18px" }}
-                      onClick={() => handleTagToggle(hobby.name, setHobbies)}
-                    >
-                      {hobby.name}
-                    </Button>
+                      type="checkbox"
+                      id={`hobby-${hobby._id}`}
+                      label={hobby.name}
+                      checked={hobbies.includes(hobby.name)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setHobbies([...hobbies, hobby.name]);
+                        } else {
+                          setHobbies(hobbies.filter(name => name !== hobby.name));
+                        }
+                      }}
+                      disabled={isSubmitting}
+                    />
                   ))}
                 </div>
                 <div className="mb-2"><small>Meet Up Availability</small></div>
                 <div className="d-flex flex-wrap gap-2">
-                  {meetUpAvailabilityList.map((slot, idx) => (
-                    <Button
+                  {meetUpAvailabilityList.map((slot) => (
+                    <Form.Check
                       key={slot._id}
-                      variant={meetUpAvailability.includes(slot.name) ? "warning" : "outline-secondary"}
-                      style={{ borderRadius: 20, fontWeight: 400, padding: "4px 18px" }}
-                      onClick={() => handleTagToggle(slot.name, setMeetUpAvailability)}
-                    >
-                      {slot.name}
-                    </Button>
+                      type="checkbox"
+                      id={`availability-${slot._id}`}
+                      label={slot.name}
+                      checked={meetUpAvailability.includes(slot.name)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setMeetUpAvailability([...meetUpAvailability, slot.name]);
+                        } else {
+                          setMeetUpAvailability(meetUpAvailability.filter(name => name !== slot.name));
+                        }
+                      }}
+                      disabled={isSubmitting}
+                    />
                   ))}
                 </div>
               </Form.Group>

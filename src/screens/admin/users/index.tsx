@@ -5,6 +5,8 @@ import DataTable from "react-data-table-component";
 import { Link } from "react-router-dom";
 import { IMAGES } from "@/contants/images";
 import { UserService, type User, type UserFilters } from "@/services";
+import { showError, showSuccess, showDeleteConfirmation, handleApiError } from "@/utils/sweetAlert";
+import { getProfileImageUrl, getUserProfileImage } from "@/utils/imageUtils";
 
 const Users: React.FC = () => {
   const [searchText, setSearchText] = useState("");
@@ -69,13 +71,13 @@ const Users: React.FC = () => {
         setCurrentPage(response?.meta?.page || 1);
         setPerPage(response?.meta?.limit || 10);
       } else {
-        setError(response?.message || "Failed to fetch users");
+        handleApiError(response, "Failed to fetch users");
         setUserData([]);
         setTotalRows(0);
       }
     } catch (err: any) {
       console.error("Error fetching users:", err);
-      setError(err.message || "An error occurred while fetching users");
+      handleApiError(err, "Failed to fetch users");
       setUserData([]);
       setTotalRows(0);
     } finally {
@@ -95,12 +97,13 @@ const Users: React.FC = () => {
         // Refresh users list
         await fetchUsers(currentPage, perPage, searchText);
         handleClose();
+        showSuccess("Success", "User deleted successfully!");
       } else {
-        setError(response.message || "Failed to delete user");
+        showError("Error", response.message || "Failed to delete user");
       }
     } catch (err: any) {
       console.error("Error deleting user:", err);
-      setError(err.message || "An error occurred while deleting user");
+      handleApiError(err, "Failed to delete user");
     } finally {
       setIsSubmitting(false);
     }
@@ -116,13 +119,13 @@ const Users: React.FC = () => {
 
       if (response.status === 1) {
         handleClose1();
-        // You could show a success message here
+        showSuccess("Success", "Password reset successfully!");
       } else {
-        setError(response.message || "Failed to reset password");
+        showError("Error", response.message || "Failed to reset password");
       }
     } catch (err: any) {
       console.error("Error resetting password:", err);
-      setError(err.message || "An error occurred while resetting password");
+      handleApiError(err, "Failed to reset password");
     } finally {
       setIsSubmitting(false);
     }
@@ -172,12 +175,16 @@ const Users: React.FC = () => {
       cell: (row: User) => (
         <div className="d-flex align-items-center gap-2">
           <img
-            src={IMAGES.Avatar1} // You might want to use row.profile_image if available
+            src={getUserProfileImage(row)}
             alt={row.name}
             className="rounded-circle"
             width={35}
             height={35}
             style={{ objectFit: "cover" }}
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              target.src = IMAGES.Avatar1; // Fallback to default avatar on error
+            }}
           />
           <div>
             <strong>{row.name}</strong><br />
@@ -317,22 +324,24 @@ const Users: React.FC = () => {
             <h3>Are You Sure?</h3>
             <p>You will not be able to recover this user: <strong>{selectedUser?.name}</strong></p>
           </div>
-          <Button
-            variant="outline-danger"
-            onClick={handleClose}
-            className="px-4 me-3"
-            disabled={isSubmitting}
-          >
-            Cancel
-          </Button>
-          <Button
-            variant="success"
-            className="px-4 min_width110"
-            onClick={handleDeleteUser}
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? "Deleting..." : "Delete"}
-          </Button>
+          <div className="d-flex justify-content-end gap-3">
+            <Button
+              variant="outline-danger"
+              onClick={handleClose}
+              className="px-4"
+              disabled={isSubmitting}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="success"
+              className="px-4 min_width110"
+              onClick={handleDeleteUser}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "Deleting..." : "Delete"}
+            </Button>
+          </div>
         </Modal.Body>
       </Modal>
 
