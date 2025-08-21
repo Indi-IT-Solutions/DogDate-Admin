@@ -3,17 +3,9 @@ import { Row, Col, Button, Modal, Form, OverlayTrigger, Tooltip, Alert, Spinner 
 import { Icon } from "@iconify/react";
 import DataTable, { TableColumn } from "react-data-table-component";
 import { DogCharacterService, DogCharacter } from "@/services";
+import { formatDateTime } from "@/utils/dateUtils";
 
-const formatDate = (dateString: string): string => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-    });
-};
+
 
 const DogCharacters: React.FC = () => {
     const [dogCharacters, setDogCharacters] = useState<DogCharacter[]>([]);
@@ -146,7 +138,7 @@ const DogCharacters: React.FC = () => {
         },
         {
             name: "Created Date",
-            cell: (row: DogCharacter) => formatDate(row.created_at),
+            cell: (row: DogCharacter) => formatDateTime(row.created_at),
             width: "150px",
             sortable: true,
         },
@@ -226,13 +218,13 @@ const DogCharacters: React.FC = () => {
                         />
                     </div>
 
-                    {filteredDogCharacters.length > 0 && (
+                    {/* {filteredDogCharacters.length > 0 && (
                         <div className="d-flex justify-content-between align-items-center mt-3">
                             <small className="text-muted">
                                 Showing {filteredDogCharacters.length} of {dogCharacters.length} dog characters
                             </small>
                         </div>
-                    )}
+                    )} */}
                 </Col>
             </Row>
 

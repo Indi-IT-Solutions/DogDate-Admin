@@ -6,6 +6,7 @@ import { Icon } from "@iconify/react/dist/iconify.js";
 import { Link } from "react-router-dom";
 import { DashboardService, type AccountRequest } from "@/services";
 import { showError, showSuccess, handleApiError } from "@/utils/sweetAlert";
+import { formatDate } from "@/utils/dateUtils";
 
 interface AccountProps {
     data?: AccountRequest[];
@@ -91,7 +92,7 @@ const Account: React.FC<AccountProps> = ({ data = [], onRefresh }) => {
         },
         {
             name: "Created On",
-            selector: (row: AccountRequest) => new Date(row.created_at).toLocaleDateString(),
+            selector: (row: AccountRequest) => formatDate(row.created_at),
             sortable: true,
         },
         {

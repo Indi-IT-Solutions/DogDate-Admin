@@ -6,12 +6,12 @@ import { Link, useSearchParams } from "react-router-dom";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import { DogService } from "@/services";
 import type { Dog } from "@/types/api.types";
-import { getUserProfileImage, getDogProfileImage, getProfileImageUrl } from "@/utils/imageUtils";
+import { getDogProfileImage, getProfileImageUrl } from "@/utils/imageUtils";
 
 const ViewDog: React.FC = () => {
     const [searchParams] = useSearchParams();
     const dogId = searchParams.get('id'); // Changed from 'dogId' to 'id'
-    const [key, setKey] = useState<string>("details");
+    const [key, setKey] = useState<string>("breedings");
     const [dogData, setDogData] = useState<Dog | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string>("");
@@ -258,12 +258,19 @@ const ViewDog: React.FC = () => {
         },
         {
             name: "Partner Owner",
-            cell: (row: any) => (
-                <div>
-                    <div className="fw-bold">{row.other_user_details?.name || 'N/A'}</div>
-                    <div className="text-muted small">{row.other_user_details?.email || 'N/A'}</div>
-                </div>
-            ),
+            cell: (row: any) => {
+                // Handle both array and object structure for other_user_details
+                const userDetails = Array.isArray(row.other_user_details)
+                    ? row.other_user_details[0]
+                    : row.other_user_details;
+
+                return (
+                    <div>
+                        <div className="fw-bold">{userDetails?.name || 'N/A'}</div>
+                        <div className="text-muted small">{userDetails?.email || 'N/A'}</div>
+                    </div>
+                );
+            },
             minWidth: "180px"
         },
         {
@@ -303,12 +310,19 @@ const ViewDog: React.FC = () => {
         },
         {
             name: "Playmate Owner",
-            cell: (row: any) => (
-                <div>
-                    <div className="fw-bold">{row.other_user_details?.name || 'N/A'}</div>
-                    <div className="text-muted small">{row.other_user_details?.email || 'N/A'}</div>
-                </div>
-            ),
+            cell: (row: any) => {
+                // Handle both array and object structure for other_user_details
+                const userDetails = Array.isArray(row.other_user_details)
+                    ? row.other_user_details[0]
+                    : row.other_user_details;
+
+                return (
+                    <div>
+                        <div className="fw-bold">{userDetails?.name || 'N/A'}</div>
+                        <div className="text-muted small">{userDetails?.email || 'N/A'}</div>
+                    </div>
+                );
+            },
             minWidth: "180px"
         },
         {
@@ -409,7 +423,7 @@ const ViewDog: React.FC = () => {
                                             <h4>Breed Classification</h4>
                                             <p>
                                                 <Badge bg={dogData.breed_classification === 'purebred' ? 'success' : 'info'}>
-                                                    {dogData.breed_classification.charAt(0).toUpperCase() + dogData.breed_classification.slice(1)}
+                                                    {dogData.breed_classification?.replace(/_/g, ' ').charAt(0).toUpperCase() + dogData.breed_classification?.replace(/_/g, ' ').slice(1)}
                                                 </Badge>
                                             </p>
                                         </div>
@@ -526,19 +540,34 @@ const ViewDog: React.FC = () => {
                                 <Row>
                                     {/* Profile Picture */}
                                     {dogData.profile_picture && (
-                                        <Col md={3} className="mb-3">
+                                        <Col md={4} lg={3} className="mb-3">
                                             <Card>
                                                 <Card.Body className="text-center p-2">
-                                                    <img
-                                                        src={getDogProfileImage(dogData)}
-                                                        alt="Profile Picture"
-                                                        style={{ width: '100%', height: '150px', objectFit: 'cover' }}
-                                                        className="rounded"
-                                                        onError={(e) => {
-                                                            const target = e.target as HTMLImageElement;
-                                                            target.src = IMAGES.Dog; // Fallback to default dog image on error
-                                                        }}
-                                                    />
+                                                    <div style={{
+                                                        width: '100%',
+                                                        aspectRatio: '1',
+                                                        backgroundColor: '#f8f9fa',
+                                                        border: '1px solid #dee2e6',
+                                                        borderRadius: '8px',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        overflow: 'hidden'
+                                                    }}>
+                                                        <img
+                                                            src={getDogProfileImage(dogData)}
+                                                            alt="Profile Picture"
+                                                            style={{
+                                                                maxWidth: '100%',
+                                                                maxHeight: '100%',
+                                                                objectFit: 'contain'
+                                                            }}
+                                                            onError={(e) => {
+                                                                const target = e.target as HTMLImageElement;
+                                                                target.src = IMAGES.Dog; // Fallback to default dog image on error
+                                                            }}
+                                                        />
+                                                    </div>
                                                     <p className="mt-2 mb-0" style={{ fontSize: '12px' }}>Profile Picture</p>
                                                 </Card.Body>
                                             </Card>
@@ -547,19 +576,34 @@ const ViewDog: React.FC = () => {
 
                                     {/* Additional Pictures */}
                                     {dogData.pictures && dogData.pictures.map((picture, index) => (
-                                        <Col md={3} className="mb-3" key={index}>
+                                        <Col md={4} lg={3} className="mb-3" key={index}>
                                             <Card>
                                                 <Card.Body className="text-center p-2">
-                                                    <img
-                                                        src={getProfileImageUrl(picture)}
-                                                        alt={`Picture ${index + 1}`}
-                                                        style={{ width: '100%', height: '150px', objectFit: 'cover' }}
-                                                        className="rounded"
-                                                        onError={(e) => {
-                                                            const target = e.target as HTMLImageElement;
-                                                            target.src = IMAGES.Dog; // Fallback to default dog image on error
-                                                        }}
-                                                    />
+                                                    <div style={{
+                                                        width: '100%',
+                                                        aspectRatio: '1',
+                                                        backgroundColor: '#f8f9fa',
+                                                        border: '1px solid #dee2e6',
+                                                        borderRadius: '8px',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        overflow: 'hidden'
+                                                    }}>
+                                                        <img
+                                                            src={getProfileImageUrl(picture)}
+                                                            alt={`Picture ${index + 1}`}
+                                                            style={{
+                                                                maxWidth: '100%',
+                                                                maxHeight: '100%',
+                                                                objectFit: 'contain'
+                                                            }}
+                                                            onError={(e) => {
+                                                                const target = e.target as HTMLImageElement;
+                                                                target.src = IMAGES.Dog; // Fallback to default dog image on error
+                                                            }}
+                                                        />
+                                                    </div>
                                                     <p className="mt-2 mb-0" style={{ fontSize: '12px' }}>Picture {index + 1}</p>
                                                 </Card.Body>
                                             </Card>
@@ -581,10 +625,12 @@ const ViewDog: React.FC = () => {
                                                 <Card.Body className="text-center">
                                                     <Icon icon="mdi:file-document-outline" width={40} className="mb-2 text-primary" />
                                                     <p style={{ fontSize: '12px' }}>Breed Certification</p>
-                                                    <Button variant="outline-primary" size="sm">
-                                                        <a href={dogData.breed_certification.file_path} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
-                                                            View
-                                                        </a>
+                                                    <Button
+                                                        variant="outline-primary"
+                                                        size="sm"
+                                                        onClick={() => dogData.breed_certification?.file_path && window.open(dogData.breed_certification.file_path, '_blank', 'noopener,noreferrer')}
+                                                    >
+                                                        View
                                                     </Button>
                                                 </Card.Body>
                                             </Card>
@@ -598,10 +644,12 @@ const ViewDog: React.FC = () => {
                                                 <Card.Body className="text-center">
                                                     <Icon icon="mdi:file-document-outline" width={40} className="mb-2 text-success" />
                                                     <p style={{ fontSize: '12px' }}>Vaccination Certification</p>
-                                                    <Button variant="outline-success" size="sm">
-                                                        <a href={dogData.vaccination_certification.file_path} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
-                                                            View
-                                                        </a>
+                                                    <Button
+                                                        variant="outline-success"
+                                                        size="sm"
+                                                        onClick={() => dogData.vaccination_certification?.file_path && window.open(dogData.vaccination_certification.file_path, '_blank', 'noopener,noreferrer')}
+                                                    >
+                                                        View
                                                     </Button>
                                                 </Card.Body>
                                             </Card>
@@ -615,10 +663,12 @@ const ViewDog: React.FC = () => {
                                                 <Card.Body className="text-center">
                                                     <Icon icon="mdi:file-document-outline" width={40} className="mb-2 text-info" />
                                                     <p style={{ fontSize: '12px' }}>Flea Documents</p>
-                                                    <Button variant="outline-info" size="sm">
-                                                        <a href={dogData.flea_documents.file_path} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
-                                                            View
-                                                        </a>
+                                                    <Button
+                                                        variant="outline-info"
+                                                        size="sm"
+                                                        onClick={() => dogData.flea_documents?.file_path && window.open(dogData.flea_documents.file_path, '_blank', 'noopener,noreferrer')}
+                                                    >
+                                                        View
                                                     </Button>
                                                 </Card.Body>
                                             </Card>
@@ -637,10 +687,12 @@ const ViewDog: React.FC = () => {
                                                         <Card.Body className="text-center">
                                                             <Icon icon="mdi:file-document-outline" width={40} className="mb-2 text-warning" />
                                                             <p style={{ fontSize: '12px' }}>{doc.title || `Health Document ${index + 1}`}</p>
-                                                            <Button variant="outline-warning" size="sm">
-                                                                <a href={doc.file_path} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
-                                                                    View
-                                                                </a>
+                                                            <Button
+                                                                variant="outline-warning"
+                                                                size="sm"
+                                                                onClick={() => window.open(doc.file_path, '_blank', 'noopener,noreferrer')}
+                                                            >
+                                                                View
                                                             </Button>
                                                         </Card.Body>
                                                     </Card>
@@ -661,10 +713,12 @@ const ViewDog: React.FC = () => {
                                                         <Card.Body className="text-center">
                                                             <Icon icon="mdi:file-document-outline" width={40} className="mb-2 text-secondary" />
                                                             <p style={{ fontSize: '12px' }}>{doc.title || `Pedigree Document ${index + 1}`}</p>
-                                                            <Button variant="outline-secondary" size="sm">
-                                                                <a href={doc.file_path} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
-                                                                    View
-                                                                </a>
+                                                            <Button
+                                                                variant="outline-secondary"
+                                                                size="sm"
+                                                                onClick={() => window.open(doc.file_path, '_blank', 'noopener,noreferrer')}
+                                                            >
+                                                                View
                                                             </Button>
                                                         </Card.Body>
                                                     </Card>

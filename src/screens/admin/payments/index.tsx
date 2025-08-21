@@ -5,6 +5,7 @@ import { Row, Col, OverlayTrigger, Tooltip, Image, Alert, Spinner } from "react-
 import DataTable, { TableColumn } from "react-data-table-component";
 import { Link } from "react-router-dom";
 import { PaymentService, PaymentHistory, PaginationMeta } from "@/services";
+import { formatDate } from "@/utils/dateUtils";
 
 // Helper function to safely extract string values from populated objects
 const safeGetString = (value: any): string => {
@@ -62,18 +63,7 @@ const getPaymentPurposeDescription = (relationWith: string): string => {
     }
 };
 
-// Helper function to format date
-const formatDate = (dateString: string): string => {
-    try {
-        return new Date(dateString).toLocaleDateString('en-US', {
-            day: '2-digit',
-            month: 'short',
-            year: 'numeric'
-        });
-    } catch (error) {
-        return 'N/A';
-    }
-};
+
 
 const Payments: React.FC = () => {
     const [searchText, setSearchText] = useState<string>("");
@@ -357,7 +347,7 @@ const Payments: React.FC = () => {
                     />
 
                     {/* Pagination Info */}
-                    {paymentsData.length > 0 && (
+                    {/* {paymentsData.length > 0 && (
                         <div className="d-flex justify-content-between align-items-center mt-3">
                             <small className="text-muted">
                                 Showing page {pagination.current_page} of {pagination.total_pages}
@@ -369,7 +359,7 @@ const Payments: React.FC = () => {
                                 </small>
                             </div>
                         </div>
-                    )}
+                    )} */}
                 </Col>
             </Row>
         </React.Fragment>

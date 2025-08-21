@@ -232,13 +232,13 @@ const Pages: React.FC = () => {
             />
           </div>
 
-          {filteredPages.length > 0 && (
+          {/* {filteredPages.length > 0 && (
             <div className="d-flex justify-content-between align-items-center mt-3">
               <small className="text-muted">
                 Showing {filteredPages.length} of {pages.length} pages
               </small>
             </div>
-          )}
+          )} */}
         </Col>
       </Row>
 

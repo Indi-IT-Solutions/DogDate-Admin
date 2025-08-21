@@ -3,17 +3,9 @@ import { Row, Col, Button, Modal, Form, OverlayTrigger, Tooltip, Alert, Spinner 
 import { Icon } from "@iconify/react";
 import DataTable, { TableColumn } from "react-data-table-component";
 import { HobbyService, Hobby } from "@/services";
+import { formatDateTime } from "@/utils/dateUtils";
 
-const formatDate = (dateString: string): string => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-    });
-};
+
 
 const Hobbies: React.FC = () => {
     const [hobbies, setHobbies] = useState<Hobby[]>([]);
@@ -146,7 +138,7 @@ const Hobbies: React.FC = () => {
         },
         {
             name: "Created Date",
-            cell: (row: Hobby) => formatDate(row.created_at),
+            cell: (row: Hobby) => formatDateTime(row.created_at),
             width: "150px",
             sortable: true,
         },
@@ -226,13 +218,13 @@ const Hobbies: React.FC = () => {
                         />
                     </div>
 
-                    {filteredHobbies.length > 0 && (
+                    {/* {filteredHobbies.length > 0 && (
                         <div className="d-flex justify-content-between align-items-center mt-3">
                             <small className="text-muted">
                                 Showing {filteredHobbies.length} of {hobbies.length} hobbies
                             </small>
                         </div>
-                    )}
+                    )} */}
                 </Col>
             </Row>
 

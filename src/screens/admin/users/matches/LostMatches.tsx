@@ -6,6 +6,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import { UserService } from "@/services";
 import { getProfileImageUrl, getUserProfileImage, getDogProfileImage } from "@/utils/imageUtils";
+import { formatDate } from "@/utils/dateUtils";
 
 interface Dog {
     id: number;
@@ -139,10 +140,7 @@ const LostMatches: React.FC = () => {
         };
     };
 
-    // Helper function to format date
-    const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleDateString();
-    };
+
 
     // Helper function to get match type badge
     const getMatchTypeBadge = (type: string) => {

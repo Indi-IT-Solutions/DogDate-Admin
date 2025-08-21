@@ -9,6 +9,7 @@ import { DogService } from "@/services";
 import type { Dog, DogFilters, PaginatedResponse } from "@/types/api.types";
 import { showError, showSuccess, showDeleteConfirmation, handleApiError } from "@/utils/sweetAlert";
 import { getDogProfileImage } from "@/utils/imageUtils";
+import { formatDate } from "@/utils/dateUtils";
 
 const Dogs: React.FC = () => {
     const [searchText, setSearchText] = useState<string>("");
@@ -37,13 +38,7 @@ const Dogs: React.FC = () => {
         return status === 'active' ? 'success' : 'danger';
     };
 
-    const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric'
-        });
-    };
+
 
     // Fetch dogs with debounced search
     const fetchDogs = async (page: number = 1, limit: number = 10, search?: string) => {
@@ -182,19 +177,16 @@ const Dogs: React.FC = () => {
             name: "Age",
             selector: (row: Dog) => `${row.age} yr${row.age > 1 ? "s" : ""}`,
             width: "80px",
-            sortable: true,
         },
         {
             name: "Color",
             selector: (row: Dog) => row.colour,
             width: "100px",
-            sortable: true,
         },
         {
             name: "Added On",
             selector: (row: Dog) => formatDate(row.created_at),
             width: "120px",
-            sortable: true,
         },
         {
             name: "Status",
@@ -204,7 +196,6 @@ const Dogs: React.FC = () => {
                 </Badge>
             ),
             width: "100px",
-            sortable: true,
         },
         {
             name: "Action",
@@ -291,7 +282,7 @@ const Dogs: React.FC = () => {
             <Modal className="modal_Delete" show={show} onHide={handleClose} centered>
                 <Modal.Body>
                     <div className="modaldelete_div">
-                        <Icon className="delete_icon" icon="gg:close-o" />
+                        <Icon className="delete_icon" icon="mdi:alert-circle-outline" />
                         <h3>
                             {selectedDog?.status === "active" ? "Block Dog?" : "Unblock Dog?"}
                         </h3>

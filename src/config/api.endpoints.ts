@@ -153,6 +153,14 @@ export const PAGE_ENDPOINTS = {
     UPDATE: '/admin/page_v1/edit',
 };
 
+export const MEETUP_AVAILABILITY_ENDPOINTS = {
+    LIST: '/admin/meet_up_availability_v1/get_list',
+    GET_BY_ID: '/admin/meet_up_availability_v1/get_specific_entry_details',
+    CREATE: '/admin/meet_up_availability_v1/add',
+    UPDATE: '/admin/meet_up_availability_v1/edit',
+    DELETE: '/admin/meet_up_availability_v1/delete_entry',
+};
+
 export const FAQ_ENDPOINTS = {
     LIST: '/admin/faq_v1',
     GET_BY_ID: (id: string) => `/admin/faq_v1/${id}`,

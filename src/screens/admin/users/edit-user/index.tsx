@@ -79,17 +79,17 @@ const EditUser: React.FC = () => {
 
         // Set hobbies and meetup availability
         if (user.hobbies && Array.isArray(user.hobbies)) {
-          const hobbyNames = user.hobbies.map((hobby: any) =>
-            typeof hobby === 'string' ? hobby : hobby.name
+          const hobbyIds = user.hobbies.map((hobby: any) =>
+            typeof hobby === 'string' ? hobby : hobby._id
           );
-          setHobbies(hobbyNames);
+          setHobbies(hobbyIds);
         }
 
         if (user.meetup_availability && Array.isArray(user.meetup_availability)) {
-          const availabilityNames = user.meetup_availability.map((availability: any) =>
-            typeof availability === 'string' ? availability : availability.name
+          const availabilityIds = user.meetup_availability.map((availability: any) =>
+            typeof availability === 'string' ? availability : availability._id
           );
-          setMeetUpAvailability(availabilityNames);
+          setMeetUpAvailability(availabilityIds);
         }
       } else {
         setError(response.message || "Failed to fetch user data");
@@ -105,15 +105,54 @@ const EditUser: React.FC = () => {
   // Fetch hobbies and meetup availability options
   const fetchOptions = async () => {
     try {
-      const [hobbiesResponse, availabilityResponse] = await Promise.all([
-        HobbyService.getHobbies({ limit: 100 }),
-        ContentService.getMeetupAvailability({ limit: 100 })
-      ]);
+      console.log('🔍 Fetching hobbies and meetup availability options...');
 
+      // Fetch hobbies
+      let hobbiesResponse: any = [];
+      try {
+        console.log('🔍 Calling HobbyService.getHobbies...');
+        console.log('🔍 API URL being called:', '/admin/hobbie_v1/get_list');
+        hobbiesResponse = await HobbyService.getHobbies({ limit: 100 });
+        console.log('✅ Hobbies response:', hobbiesResponse);
+      } catch (hobbyError: any) {
+        console.error('❌ Error fetching hobbies:', hobbyError);
+        console.error('❌ Error details:', {
+          message: hobbyError.message,
+          response: hobbyError.response,
+          status: hobbyError.response?.status,
+          data: hobbyError.response?.data
+        });
+      }
+
+      // Fetch meetup availability
+      let availabilityResponse: any = { data: [] };
+      try {
+        console.log('🔍 Calling ContentService.getMeetupAvailability...');
+        console.log('🔍 API URL being called:', '/admin/meet_up_availability_v1/get_list');
+        availabilityResponse = await ContentService.getMeetupAvailability({ limit: 100 });
+        console.log('✅ Availability response:', availabilityResponse);
+      } catch (availabilityError: any) {
+        console.error('❌ Error fetching meetup availability:', availabilityError);
+        console.error('❌ Error details:', {
+          message: availabilityError.message,
+          response: availabilityError.response,
+          status: availabilityError.response?.status,
+          data: availabilityError.response?.data
+        });
+      }
+
+      // Set the data
       setHobbiesList(hobbiesResponse || []);
       setMeetUpAvailabilityList(availabilityResponse.data || []);
+
+      console.log('✅ Final state set:', {
+        hobbiesCount: (hobbiesResponse || []).length,
+        availabilityCount: (availabilityResponse.data || []).length,
+        hobbiesList: hobbiesResponse,
+        availabilityList: availabilityResponse.data
+      });
     } catch (err: any) {
-      console.error("Error fetching options:", err);
+      console.error("❌ General error fetching options:", err);
     }
   };
 
@@ -122,12 +161,6 @@ const EditUser: React.FC = () => {
     fetchUserData();
     fetchOptions();
   }, [userId]);
-
-  const handleTagToggle = (value: string, setList: React.Dispatch<React.SetStateAction<string[]>>) => {
-    setList(prev =>
-      prev.includes(value) ? prev.filter(item => item !== value) : [...prev, value]
-    );
-  };
 
   // Handle file selection
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -192,11 +225,6 @@ const EditUser: React.FC = () => {
     }
   };
 
-  // Remove profile picture
-  const handleRemoveProfilePicture = () => {
-    setSelectedFile(null);
-    setPreviewUrl("");
-  };
 
   // Handle form submission
   const handleSubmit = async () => {
@@ -356,7 +384,7 @@ const EditUser: React.FC = () => {
                       >
                         <Icon icon="mdi:camera" />
                       </Button>
-                      {(previewUrl || userData?.profile_picture) && (
+                      {/* {(previewUrl || userData?.profile_picture) && (
                         <Button
                           variant="outline-primary"
                           size="sm"
@@ -366,7 +394,7 @@ const EditUser: React.FC = () => {
                         >
                           <Icon icon="mdi:delete" />
                         </Button>
-                      )}
+                      )} */}
                     </div>
                   </div>
                   <input
@@ -460,45 +488,55 @@ const EditUser: React.FC = () => {
             <Col lg={12}>
               <Form.Group className="mb-3 form-group">
                 <Form.Label><b>Lifestyle & Interests</b></Form.Label>
+
+
                 <div className="mb-2"><small>Hobbies</small></div>
                 <div className="d-flex flex-wrap gap-2 mb-3">
-                  {hobbiesList.map((hobby) => (
-                    <Form.Check
-                      key={hobby._id}
-                      type="checkbox"
-                      id={`hobby-${hobby._id}`}
-                      label={hobby.name}
-                      checked={hobbies.includes(hobby.name)}
-                      onChange={(e) => {
-                        if (e.target.checked) {
-                          setHobbies([...hobbies, hobby.name]);
-                        } else {
-                          setHobbies(hobbies.filter(name => name !== hobby.name));
-                        }
-                      }}
-                      disabled={isSubmitting}
-                    />
-                  ))}
+                  {hobbiesList.length === 0 ? (
+                    <div className="text-muted">Loading hobbies...</div>
+                  ) : (
+                    hobbiesList.map((hobby) => (
+                      <Form.Check
+                        key={hobby._id}
+                        type="checkbox"
+                        id={`hobby-${hobby._id}`}
+                        label={hobby.name}
+                        checked={hobbies.includes(hobby._id)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setHobbies([...hobbies, hobby._id]);
+                          } else {
+                            setHobbies(hobbies.filter(id => id !== hobby._id));
+                          }
+                        }}
+                        disabled={isSubmitting}
+                      />
+                    ))
+                  )}
                 </div>
                 <div className="mb-2"><small>Meet Up Availability</small></div>
                 <div className="d-flex flex-wrap gap-2">
-                  {meetUpAvailabilityList.map((slot) => (
-                    <Form.Check
-                      key={slot._id}
-                      type="checkbox"
-                      id={`availability-${slot._id}`}
-                      label={slot.name}
-                      checked={meetUpAvailability.includes(slot.name)}
-                      onChange={(e) => {
-                        if (e.target.checked) {
-                          setMeetUpAvailability([...meetUpAvailability, slot.name]);
-                        } else {
-                          setMeetUpAvailability(meetUpAvailability.filter(name => name !== slot.name));
-                        }
-                      }}
-                      disabled={isSubmitting}
-                    />
-                  ))}
+                  {meetUpAvailabilityList.length === 0 ? (
+                    <div className="text-muted">Loading meetup availability...</div>
+                  ) : (
+                    meetUpAvailabilityList.map((slot) => (
+                      <Form.Check
+                        key={slot._id}
+                        type="checkbox"
+                        id={`availability-${slot._id}`}
+                        label={slot.name}
+                        checked={meetUpAvailability.includes(slot._id)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setMeetUpAvailability([...meetUpAvailability, slot._id]);
+                          } else {
+                            setMeetUpAvailability(meetUpAvailability.filter(id => id !== slot._id));
+                          }
+                        }}
+                        disabled={isSubmitting}
+                      />
+                    ))
+                  )}
                 </div>
               </Form.Group>
             </Col>

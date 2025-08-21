@@ -7,6 +7,7 @@ import { Icon } from "@iconify/react/dist/iconify.js";
 import Matches from "../matches";
 import { UserService, type User } from "@/services";
 import { getUserProfileImage, getDogProfileImage } from "@/utils/imageUtils";
+import { formatDate } from "@/utils/dateUtils";
 
 interface Payments {
     id: number;
@@ -174,9 +175,7 @@ const UserView: React.FC = () => {
         return <span className={`badge ${variant}`}>{type.charAt(0).toUpperCase() + type.slice(1)}</span>;
     };
 
-    const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleDateString();
-    };
+
 
     // Helper function to safely extract names from populated fields
     const extractNames = (items: any[]) => {
@@ -594,13 +593,13 @@ const UserView: React.FC = () => {
                                             <span className="badge bg-secondary">Disabled</span>}
                                         </p>
                                     </div>
-                                    <div className="tablefilelist_grid">
+                                    {/* <div className="tablefilelist_grid">
                                         <h4>Profile Completed</h4>
                                         <p>{userData.submit_personal_details ?
                                             <span className="badge bg-success">Yes</span> :
                                             <span className="badge bg-warning">Incomplete</span>}
                                         </p>
-                                    </div>
+                                    </div> */}
                                 </Col>
                                 <Col md={6}>
                                     <div className="tablefilelist_grid">
@@ -613,13 +612,13 @@ const UserView: React.FC = () => {
                                             </span>
                                         </p>
                                     </div>
-                                    <div className="tablefilelist_grid">
+                                    {/* <div className="tablefilelist_grid">
                                         <h4>Terms Accepted</h4>
                                         <p>{userData.terms_and_conditions ?
                                             <span className="badge bg-success">Yes</span> :
                                             <span className="badge bg-danger">No</span>}
                                         </p>
-                                    </div>
+                                    </div> */}
                                     <div className="tablefilelist_grid">
                                         <h4>Last Updated</h4>
                                         <p>{formatDate(userData.updated_at)}</p>

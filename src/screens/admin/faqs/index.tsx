@@ -4,17 +4,9 @@ import { Icon } from "@iconify/react";
 import DataTable, { TableColumn } from "react-data-table-component";
 import { FAQService, FAQ } from "@/services";
 import { showError, showSuccess, showDeleteConfirmation, handleApiError } from "@/utils/sweetAlert";
+import { formatDateTime } from "@/utils/dateUtils";
 
-const formatDate = (dateString: string): string => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-    });
-};
+
 
 const FAQs: React.FC = () => {
     const [faqs, setFaqs] = useState<FAQ[]>([]);
@@ -136,7 +128,23 @@ const FAQs: React.FC = () => {
             handleCloseModal();
         } catch (err: any) {
             console.error('❌ Error saving FAQ:', err);
-            handleApiError(err, 'Failed to save FAQ');
+
+            // Extract the actual error message from the backend
+            let errorMessage = 'Failed to save FAQ';
+
+            if (err.message) {
+                // If it's a direct error message (like from our service)
+                errorMessage = err.message;
+            } else if (err.response?.data?.message) {
+                // If it's an axios error response
+                errorMessage = err.response.data.message;
+            } else if (err.data?.message) {
+                // If it's a direct response object
+                errorMessage = err.data.message;
+            }
+
+            // Show the specific error message to the user
+            showError('Error', errorMessage);
         } finally {
             setSaving(false);
         }
@@ -187,7 +195,7 @@ const FAQs: React.FC = () => {
         },
         {
             name: "Updated Date",
-            cell: (row: FAQ) => formatDate(row.updated_at),
+            cell: (row: FAQ) => formatDateTime(row.updated_at),
             width: "150px",
             sortable: true,
         },
@@ -281,13 +289,13 @@ const FAQs: React.FC = () => {
                         />
                     </div>
 
-                    {faqs.length > 0 && (
+                    {/* {faqs.length > 0 && (
                         <div className="d-flex justify-content-between align-items-center mt-3">
                             <small className="text-muted">
                                 Showing {faqs.length} FAQs
                             </small>
                         </div>
-                    )}
+                    )} */}
                 </Col>
             </Row>
 

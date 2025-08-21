@@ -4,17 +4,9 @@ import { Icon } from "@iconify/react";
 import DataTable, { TableColumn } from "react-data-table-component";
 import { ContactService, PaginationMeta } from "@/services";
 import { showError, showSuccess, handleApiError } from "@/utils/sweetAlert";
+import { formatDateTime } from "@/utils/dateUtils";
 
-const formatDate = (dateString: string): string => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-    });
-};
+
 
 const getStatusBadge = (status: string) => {
     switch (status) {
@@ -197,13 +189,13 @@ const ContactUs: React.FC = () => {
         },
         {
             name: "Date",
-            cell: (row: any) => formatDate(row.created_at),
+            cell: (row: any) => formatDateTime(row.created_at),
             width: "150px",
             sortable: true,
         },
         {
             name: "Actions",
-            width: "100px",
+            width: "130px",
             center: true,
             cell: (row: any) => (
                 <Button
@@ -211,6 +203,7 @@ const ContactUs: React.FC = () => {
                     size="sm"
                     onClick={() => handleShow(row)}
                     disabled={row.query_status === 'resolved'}
+                    className=" align-items-center"
                 >
                     <Icon icon="ri:reply-line" width={16} height={16} className="me-1" />
                     Reply
@@ -275,7 +268,7 @@ const ContactUs: React.FC = () => {
                         />
                     </div>
 
-                    {contactData.length > 0 && (
+                    {/* {contactData.length > 0 && (
                         <div className="d-flex justify-content-between align-items-center mt-3">
                             <small className="text-muted">
                                 Showing page {pagination.current_page} of {pagination.total_pages} ({pagination.total || 0} total queries)
@@ -284,7 +277,7 @@ const ContactUs: React.FC = () => {
                                 <small className="text-muted me-2">Page {pagination.current_page} of {pagination.total_pages}</small>
                             </div>
                         </div>
-                    )}
+                    )} */}
                 </Col>
             </Row>
 
