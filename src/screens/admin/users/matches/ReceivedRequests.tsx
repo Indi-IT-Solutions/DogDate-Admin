@@ -221,7 +221,7 @@ const ReceivedRequests: React.FC = () => {
         {
             name: "Status",
             cell: (row: any) => (
-                <span className="badge bg-info">
+                <span className="badge bg-info  text-capitalize">
                     {row.status?.charAt(0).toUpperCase() + row.status?.slice(1) || 'Unknown'}
                 </span>
             ),

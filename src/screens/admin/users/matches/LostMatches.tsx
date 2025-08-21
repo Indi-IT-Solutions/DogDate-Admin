@@ -258,6 +258,7 @@ const LostMatches: React.FC = () => {
             name: "Lost On",
             selector: (row: any) => formatDate(row.updated_at || row.created_at),
             sortable: true,
+            width: "140px"
         },
         {
             name: "Reason",
@@ -269,7 +270,7 @@ const LostMatches: React.FC = () => {
                     </span>
                 );
             },
-            width: "180px"
+            width: "210px"
         },
     ];
 

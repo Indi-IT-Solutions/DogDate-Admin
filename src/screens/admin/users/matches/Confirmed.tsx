@@ -241,7 +241,7 @@ const Confirmed: React.FC = () => {
         {
             name: "Status",
             cell: (row: any) => (
-                <span className="badge bg-success">
+                <span className="badge bg-success  text-capitalize">
                     {row.status?.charAt(0).toUpperCase() + row.status?.slice(1) || 'Unknown'}
                 </span>
             ),

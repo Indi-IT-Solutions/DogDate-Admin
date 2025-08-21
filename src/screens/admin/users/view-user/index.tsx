@@ -9,19 +9,7 @@ import { UserService, type User } from "@/services";
 import { getUserProfileImage, getDogProfileImage } from "@/utils/imageUtils";
 import { formatDate } from "@/utils/dateUtils";
 
-interface Payments {
-    id: number;
-    type: "Breeding" | "Playmates";
-    recurring: boolean;
-    dog: {
-        image: string;
-        name: string;
-        breed: string;
-    };
-    amount: number;
-    paidOn: string;
-    status: "Success" | "Failed";
-}
+
 interface Dog {
     id: number;
     image: string;
@@ -50,6 +38,16 @@ const UserView: React.FC = () => {
     const [dogsLoading, setDogsLoading] = useState(false);
     const [dogsError, setDogsError] = useState<string>("");
     const [dogsPagination, setDogsPagination] = useState({
+        currentPage: 1,
+        totalRows: 0,
+        perPage: 10
+    });
+
+    // State for payments data
+    const [paymentsData, setPaymentsData] = useState<any[]>([]);
+    const [paymentsLoading, setPaymentsLoading] = useState(false);
+    const [paymentsError, setPaymentsError] = useState<string>("");
+    const [paymentsPagination, setPaymentsPagination] = useState({
         currentPage: 1,
         totalRows: 0,
         perPage: 10
@@ -130,6 +128,45 @@ const UserView: React.FC = () => {
         }
     };
 
+    // Fetch user's payments
+    const fetchUserPayments = async (page: number = 1, limit: number = 10, search?: string) => {
+        if (!userId) return;
+
+        try {
+            setPaymentsLoading(true);
+            setPaymentsError("");
+
+            const filters = {
+                page,
+                limit,
+                search: search || undefined,
+            };
+
+            console.log('🔍 Fetching payments for user:', userId, filters);
+            const response: any = await UserService.getUserPayments(userId, filters);
+
+            console.log('💳 Payments response:', response);
+
+            if (response.status === 1) {
+                setPaymentsData(response.data || []);
+                setPaymentsPagination({
+                    currentPage: response?.meta?.page || 1,
+                    totalRows: response?.meta?.total || 0,
+                    perPage: response?.meta?.limit || 10
+                });
+            } else {
+                setPaymentsError(response.message || "Failed to fetch user's payments");
+                setPaymentsData([]);
+            }
+        } catch (err: any) {
+            console.error("Error fetching user's payments:", err);
+            setPaymentsError(err.message || "An error occurred while fetching payments");
+            setPaymentsData([]);
+        } finally {
+            setPaymentsLoading(false);
+        }
+    };
+
     // Load user data on component mount
     useEffect(() => {
         fetchUserData();
@@ -142,12 +179,31 @@ const UserView: React.FC = () => {
         }
     }, [key, userId]);
 
+    // Fetch payments when Payments tab is selected
+    useEffect(() => {
+        if (key === "payments" && userId) {
+            fetchUserPayments(1, 10);
+        }
+    }, [key, userId]);
+
     // Handle search for dogs with debounce
     useEffect(() => {
         if (key === "dogs") {
             const timeoutId = setTimeout(() => {
                 if (searchText !== undefined) {
                     fetchUserDogs(1, dogsPagination.perPage, searchText);
+                }
+            }, 500);
+            return () => clearTimeout(timeoutId);
+        }
+    }, [searchText, key]);
+
+    // Handle search for payments with debounce
+    useEffect(() => {
+        if (key === "payments") {
+            const timeoutId = setTimeout(() => {
+                if (searchText !== undefined) {
+                    fetchUserPayments(1, paymentsPagination.perPage, searchText);
                 }
             }, 500);
             return () => clearTimeout(timeoutId);
@@ -208,81 +264,94 @@ const UserView: React.FC = () => {
     const paymentsColumns = [
         {
             name: "Payment ID",
-            selector: (row: Payments) => row.id,
+            selector: (row: any) => row.transaction_id || row._id,
             width: "120px",
         },
         {
             name: "Type",
-            selector: (row: Payments) => row.type,
-            width: "130px",
-            cell: (row: Payments) => row.type,
+            selector: (row: any) => row.relation_with,
+            width: "220px",
+            cell: (row: any) => (
+                <span className="badge bg-info text-capitalize">
+                    {row.relation_with?.replace(/_/g, ' ') || 'N/A'}
+                </span>
+            ),
         },
         {
-            name: "Recurring",
-            selector: (row: Payments) => (row.recurring ? "Yes" : "No"),
-            width: "110px",
-            cell: (row: Payments) => (
-                <span className={`badge ${row.recurring ? "bg-success" : "bg-secondary"}`}>
-                    {row.recurring ? "Yes" : "No"}
+            name: "Transaction Type",
+            selector: (row: any) => row.transaction_type,
+            width: "140px",
+            cell: (row: any) => (
+                <span className={`badge ${row.transaction_type === "Auto-Renewable Subscription" ? "bg-success" : "bg-warning"}`}>
+                    {row.transaction_type === "Auto-Renewable Subscription" ? "Subscription" : "One-time"}
                 </span>
             ),
         },
         {
             name: "Dog",
             width: "220px",
-            cell: (row: Payments) => (
+            cell: (row: any) => (
                 <div className="d-flex align-items-center gap-2">
-                    <img
-                        src={row.dog.image}
-                        alt={row.dog.name}
-                        className="rounded"
-                        width={40}
-                        height={40}
-                        style={{ objectFit: "cover", border: "1px solid #eee" }}
-                    />
-                    <div>
-                        <div><strong>{row.dog.name}</strong></div>
-                        <small className="text-muted">{row.dog.breed}</small>
-                    </div>
+                    {row.dog_details ? (
+                        <>
+                            <img
+                                src={row.dog_details.profile_picture || IMAGES.Dog}
+                                alt={row.dog_details.dog_name || 'Dog'}
+                                className="rounded"
+                                width={40}
+                                height={40}
+                                style={{ objectFit: "cover", border: "1px solid #eee" }}
+                                onError={(e) => {
+                                    const target = e.target as HTMLImageElement;
+                                    target.src = IMAGES.Dog;
+                                }}
+                            />
+                            <div>
+                                <div><strong>{row.dog_details.dog_name || 'Unknown'}</strong></div>
+                                <small className="text-muted">{row.dog_details.breed || 'Unknown breed'}</small>
+                            </div>
+                        </>
+                    ) : (
+                        <span className="text-muted">No dog associated</span>
+                    )}
                 </div>
             ),
         },
         {
             name: "Amount",
-            selector: (row: Payments) => row.amount,
-            cell: (row: Payments) => (
-                <span className="text-dark" style={{ fontWeight: 600 }}>${row.amount}</span>
-            ),
+            selector: (row: any) => row.paid_price,
+            cell: (row: any) => {
+                const amount = row.paid_price ? (row.paid_price / 1000).toFixed(2) : '0.00';
+                return (
+                    <span className="text-dark" style={{ fontWeight: 600 }}>${amount}</span>
+                );
+            },
             width: "110px",
         },
         {
+            name: "Platform",
+            selector: (row: any) => row.payment_platform,
+            width: "100px",
+            cell: (row: any) => (
+                <span className={`badge ${row.payment_platform === 'ios_iap' ? 'bg-dark' : 'bg-success'}`}>
+                    {row.payment_platform === 'ios_iap' ? 'iOS' : 'Android'}
+                </span>
+            ),
+        },
+        {
             name: "Paid on",
-            selector: (row: Payments) => row.paidOn,
+            selector: (row: any) => row.payment_time,
             width: "140px",
+            cell: (row: any) => formatDate(row.payment_time),
         },
         {
             name: "Status",
-            cell: (row: Payments) => (
-                <span className={`badge ${row.status === "Success" ? "bg-success" : "bg-danger"}`}>
-                    {row.status}
+            cell: (row: any) => (
+                <span className={`badge ${row.status === "paid" ? "bg-success" : "bg-danger"} text-capitalize`}>
+                    {row.status || 'Unknown'}
                 </span>
             ),
             width: "100px"
-        },
-        {
-            name: "Actions",
-            center: true,
-            sortable: false,
-            cell: () => (
-                <OverlayTrigger
-                    placement="top"
-                    overlay={<Tooltip id="view-tooltip">View</Tooltip>}
-                >
-                    <Link to="/payments/view-payment">
-                        <Icon icon="ri:eye-line" width={20} height={20} className="text-primary" />
-                    </Link>
-                </OverlayTrigger>
-            ),
         },
     ];
 
@@ -356,7 +425,7 @@ const UserView: React.FC = () => {
             name: "Status",
             width: "100px",
             cell: (row: any) => (
-                <span className={`badge ${row.status === "active" ? "bg-success" : "bg-danger"}`}>
+                <span className={`badge ${row.status === "active" ? "bg-success" : "bg-danger"} text-capitalize`}>
                     {row.status?.charAt(0).toUpperCase() + row.status?.slice(1) || 'Unknown'}
                 </span>
             ),
@@ -378,12 +447,7 @@ const UserView: React.FC = () => {
         },
     ];
 
-    // Static data for payments (will be replaced with API calls later)
-    const [paymentsData] = useState<Payments[]>([]);
 
-    const filteredPaymentsData = paymentsData.filter((item) =>
-        JSON.stringify(item).toLowerCase().includes(searchText.toLowerCase())
-    );
 
     const filteredDogsData = dogsData.filter((item) =>
         JSON.stringify(item).toLowerCase().includes(searchText.toLowerCase())
@@ -702,6 +766,12 @@ const UserView: React.FC = () => {
                         <Tab eventKey="payments" title="Payments">
                             <Row>
                                 <Col md={12}>
+                                    {paymentsError && (
+                                        <Alert variant="danger" className="mb-3">
+                                            {paymentsError}
+                                        </Alert>
+                                    )}
+
                                     <div className="text-end mb-3">
                                         <input
                                             type="text"
@@ -711,20 +781,35 @@ const UserView: React.FC = () => {
                                             onChange={(e) => setSearchText(e.target.value)}
                                         />
                                     </div>
+
                                     <DataTable
                                         columns={paymentsColumns as any}
-                                        data={filteredPaymentsData}
+                                        data={paymentsData}
                                         pagination
                                         responsive
                                         className="custom-table"
+                                        progressPending={paymentsLoading}
+                                        progressComponent={<div>Loading payments...</div>}
                                         noDataComponent={
                                             <div className="text-center py-4">
                                                 <Icon icon="mdi:credit-card-off" width={48} height={48} className="text-muted mb-2" />
-                                                <p className="text-muted">No payments found for this user</p>
-                                                <small className="text-muted">This feature will be implemented to show user's payment history</small>
+                                                <p className="text-muted">
+                                                    {paymentsLoading ? 'Loading payments...' : 'No payments found for this user'}
+                                                </p>
+                                                {!paymentsLoading && paymentsPagination.totalRows === 0 && (
+                                                    <small className="text-muted">This user hasn't made any payments yet</small>
+                                                )}
                                             </div>
                                         }
                                     />
+
+                                    {paymentsPagination.totalRows > 0 && (
+                                        <div className="mt-3 text-center">
+                                            <small className="text-muted">
+                                                Showing {paymentsData.length} of {paymentsPagination.totalRows} payments
+                                            </small>
+                                        </div>
+                                    )}
                                 </Col>
                             </Row>
                         </Tab>

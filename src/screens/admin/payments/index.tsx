@@ -214,7 +214,7 @@ const Payments: React.FC = () => {
             cell: (row: PaymentHistory) => {
                 const status = getPaymentStatusDisplay(row.status);
                 return (
-                    <span className={`badge ${status === "Success" ? "bg-success" : "bg-danger"}`}>
+                    <span className={`badge ${status === "Success" ? "bg-success" : "bg-danger"} text-capitalize`}>
                         {status}
                     </span>
                 );
@@ -284,32 +284,26 @@ const Payments: React.FC = () => {
         <React.Fragment>
             <Row>
                 <Col md={12}>
-                    {error && (
+                    {/* {error && (
                         <Alert variant="danger" className="mb-3">
                             <Icon icon="mdi:alert-circle" className="me-2" />
                             {error}
                         </Alert>
-                    )}
-
-                    <div className="d-flex justify-content-between align-items-center mb-3">
-                        <div className="d-flex align-items-center">
-                            <span className="text-muted me-2">
-                                Total: {pagination.total_payments} payments
-                            </span>
-                            {loading && (
-                                <Spinner animation="border" size="sm" className="ms-2" />
-                            )}
-                        </div>
-                        <div className="text-end">
-                            <input
-                                type="text"
-                                placeholder="Search payments, users, dogs, purpose..."
-                                className="searchfield"
-                                value={searchText}
-                                onChange={(e) => setSearchText(e.target.value)}
-                                disabled={loading}
-                                style={{ minWidth: '250px' }}
-                            />
+                    )} */}
+                    <div className="d-flex align-items-center justify-content-between">
+                        <h5 className="text-dark">Payments</h5>
+                        <div className="d-flex justify-content-between align-items-center mb-3">
+                            <div className="text-end">
+                                <input
+                                    type="text"
+                                    placeholder="Search payments, users, dogs, purpose..."
+                                    className="searchfield"
+                                    value={searchText}
+                                    onChange={(e) => setSearchText(e.target.value)}
+                                    disabled={loading}
+                                    style={{ minWidth: '250px' }}
+                                />
+                            </div>
                         </div>
                     </div>
 

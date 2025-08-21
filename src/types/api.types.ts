@@ -606,4 +606,11 @@ export interface ResetPasswordRequest {
     otp: string;
     new_password: string;
     confirm_password: string;
+}
+
+// Combined interface for OTP verification and password reset
+export interface VerifyOtpAndResetPasswordRequest {
+    email: string;
+    otp: string;
+    new_password: string;
 } 

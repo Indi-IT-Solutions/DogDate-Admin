@@ -4,7 +4,7 @@ import { Icon } from "@iconify/react";
 import DataTable, { TableColumn } from "react-data-table-component";
 import { DogLikeService, DogLike } from "@/services";
 import { formatDateTime } from "@/utils/dateUtils";
-
+import { Link } from "react-router-dom";
 
 
 const DogLikes: React.FC = () => {
@@ -97,6 +97,20 @@ const DogLikes: React.FC = () => {
         }
     };
 
+    const handleDelete = async (id: string) => {
+        if (window.confirm('Are you sure you want to delete this dog like?')) {
+            try {
+                await DogLikeService.deleteDogLike(id);
+                setSuccess('Dog like deleted successfully');
+                await fetchDogLikes();
+                handleCloseModal(); // Close modal if it was open for deletion
+            } catch (err: any) {
+                console.error('❌ Error deleting dog like:', err);
+                setError(err.message || 'Failed to delete dog like');
+            }
+        }
+    };
+
     const filteredDogLikes = dogLikes.filter(
         (dogLike) => dogLike.name.toLowerCase().includes(searchText.toLowerCase())
     );
@@ -104,7 +118,7 @@ const DogLikes: React.FC = () => {
     const columns: TableColumn<DogLike>[] = [
         {
             name: "Sr. No.",
-            selector: (_row: DogLike, index: number) => index + 1,
+            selector: (row: DogLike, rowIndex: number | undefined) => (rowIndex ?? 0) + 1,
             width: "90px",
             sortable: false,
         },
@@ -129,7 +143,7 @@ const DogLikes: React.FC = () => {
         {
             name: "Status",
             cell: (row: DogLike) => (
-                <span className={`badge ${row.status === 'active' ? 'bg-success' : 'bg-secondary'}`}>
+                <span className={`badge ${row.status === 'active' ? 'bg-success' : 'bg-secondary'} text-capitalize`}>
                     {row.status}
                 </span>
             ),
@@ -144,20 +158,26 @@ const DogLikes: React.FC = () => {
         },
         {
             name: "Action",
-            width: "100px",
+            width: "120px",
             cell: (row: DogLike) => (
-                <OverlayTrigger
-                    placement="top"
-                    overlay={<Tooltip id={`edit-tooltip-${row._id}`}>Edit</Tooltip>}
-                >
-                    <Button
-                        variant="outline-warning"
-                        size="sm"
-                        onClick={() => handleShowModal(row)}
+                <div className="d-flex gap-2 justify-content-center">
+                    <OverlayTrigger
+                        placement="top"
+                        overlay={<Tooltip id={`edit-tooltip-${row._id}`}>Edit</Tooltip>}
                     >
-                        <Icon icon="tabler:edit" width={16} height={16} />
-                    </Button>
-                </OverlayTrigger>
+                        <Link to="javascript:void(0)" onClick={() => handleShowModal(row)}>
+                            <Icon icon="tabler:edit" width={16} height={16} className="text-warning" />
+                        </Link>
+                    </OverlayTrigger>
+                    <OverlayTrigger
+                        placement="top"
+                        overlay={<Tooltip id={`delete-tooltip-${row._id}`}>Delete</Tooltip>}
+                    >
+                        <Link to="javascript:void(0)" onClick={() => handleDelete(row._id)}>
+                            <Icon icon="icon-park-outline:close-one" width={16} height={16} className="text-danger" />
+                        </Link>
+                    </OverlayTrigger>
+                </div>
             ),
             center: true,
         },
@@ -167,15 +187,9 @@ const DogLikes: React.FC = () => {
         <>
             <Row>
                 <Col lg={12}>
-                    <h5 className="text-dark">Dog Likes</h5>
-                    {error && <Alert variant="danger">{error}</Alert>}
-                    {success && <Alert variant="success">{success}</Alert>}
 
                     <div className="d-flex justify-content-between align-items-center mb-3">
-                        <div className="d-flex align-items-center">
-                            <span className="text-muted me-2">Total: {dogLikes.length} dog likes</span>
-                            {loading && <Spinner animation="border" size="sm" className="ms-2" />}
-                        </div>
+                        <h5 className="text-dark">Dog Likes</h5>
                         <div className="d-flex gap-2">
                             <input
                                 type="text"

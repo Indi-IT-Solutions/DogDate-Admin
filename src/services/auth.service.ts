@@ -6,6 +6,7 @@ import type {
     ForgotPasswordRequest,
     VerifyOtpRequest,
     ResetPasswordRequest,
+    VerifyOtpAndResetPasswordRequest,
     ApiResponse,
 } from '../types/api.types';
 
@@ -37,20 +38,10 @@ export class AuthService {
         }
     }
 
-    // Verify OTP
-    static async verifyOtp(data: VerifyOtpRequest): Promise<ApiResponse> {
+    // Verify OTP and reset password in one call
+    static async verifyOtpAndResetPassword(data: VerifyOtpAndResetPasswordRequest): Promise<ApiResponse> {
         try {
-            const response = await apiClient.post(AUTH_ENDPOINTS.VERIFY_OTP, data);
-            return response.data;
-        } catch (error: any) {
-            throw error.response?.data || error;
-        }
-    }
-
-    // Create new password
-    static async resetPassword(data: ResetPasswordRequest): Promise<ApiResponse> {
-        try {
-            const response = await apiClient.post(AUTH_ENDPOINTS.RESET_PASSWORD, data);
+            const response = await apiClient.post(AUTH_ENDPOINTS.VERIFY_OTP_AND_RESET, data);
             return response.data;
         } catch (error: any) {
             throw error.response?.data || error;

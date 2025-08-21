@@ -258,7 +258,7 @@ const Users: React.FC = () => {
     {
       name: "Status",
       selector: (row: User) => (
-        <span className={`badge ${row.status === 'active' ? 'bg-success' : row.status === 'inactive' ? 'bg-warning' : 'bg-danger'}`}>
+        <span className={`badge ${row.status === 'active' ? 'bg-success' : row.status === 'inactive' ? 'bg-warning' : 'bg-danger'} text-capitalize`}>
           {row.status.charAt(0).toUpperCase() + row.status.slice(1)}
         </span>
       ),
@@ -330,24 +330,21 @@ const Users: React.FC = () => {
       <Row>
         <Col lg={12}>
           <div className="d-flex justify-content-between align-items-center dropSelect_option">
-            <h3 className="mb-0">Users ({totalRows})</h3>
+            <h3 className="mb-0">Users</h3>
+
+            <div className="text-end mb-3">
+              <input
+                type="text"
+                placeholder="Search users..."
+                className="searchfield"
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+              />
+            </div>
           </div>
 
-          {error && (
-            <Alert variant="danger" className="mt-3">
-              {error}
-            </Alert>
-          )}
 
-          <div className="text-end mb-3">
-            <input
-              type="text"
-              placeholder="Search users..."
-              className="searchfield"
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
-            />
-          </div>
+
           <div className="scrollable-table">
             <DataTable
               columns={userColumns as any}
@@ -380,7 +377,7 @@ const Users: React.FC = () => {
           </div>
           <div className="d-flex justify-content-end gap-3">
             <Button
-              variant="outline-danger"
+              variant="outline-secondary"
               onClick={handleClose}
               className="px-4"
               disabled={isSubmitting}
@@ -388,7 +385,7 @@ const Users: React.FC = () => {
               Cancel
             </Button>
             <Button
-              variant="success"
+              variant="danger"
               className="px-4 min_width110"
               onClick={handleDeleteUser}
               disabled={isSubmitting}

@@ -281,7 +281,7 @@ const ViewDog: React.FC = () => {
         {
             name: "Status",
             cell: (row: any) => (
-                <Badge bg={row.status === 'accepted' ? 'success' : 'secondary'}>
+                <Badge bg={row.status === 'accepted' ? 'success' : 'secondary'} className="text-capitalize">
                     {row.status.charAt(0).toUpperCase() + row.status.slice(1)}
                 </Badge>
             ),

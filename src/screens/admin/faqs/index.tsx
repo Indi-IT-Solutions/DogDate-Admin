@@ -5,7 +5,7 @@ import DataTable, { TableColumn } from "react-data-table-component";
 import { FAQService, FAQ } from "@/services";
 import { showError, showSuccess, showDeleteConfirmation, handleApiError } from "@/utils/sweetAlert";
 import { formatDateTime } from "@/utils/dateUtils";
-
+import { Link } from "react-router-dom";
 
 
 const FAQs: React.FC = () => {
@@ -185,7 +185,7 @@ const FAQs: React.FC = () => {
         {
             name: "Status",
             cell: (row: FAQ) => (
-                <span className={`badge ${row.status === 'active' ? 'bg-success' : 'bg-secondary'}`}>
+                <span className={`badge ${row.status === 'active' ? 'bg-success' : 'bg-secondary'} text-capitalize`}>
                     {row.status}
                 </span>
             ),
@@ -200,7 +200,7 @@ const FAQs: React.FC = () => {
             sortable: true,
         },
         {
-            name: "Actions",
+            name: "Action",
             width: "120px",
             cell: (row: FAQ) => (
                 <div className="d-flex gap-2 justify-content-center">
@@ -208,25 +208,17 @@ const FAQs: React.FC = () => {
                         placement="top"
                         overlay={<Tooltip id={`edit-tooltip-${row._id}`}>Edit</Tooltip>}
                     >
-                        <Button
-                            variant="outline-warning"
-                            size="sm"
-                            onClick={() => handleShowModal(row)}
-                        >
-                            <Icon icon="tabler:edit" width={16} height={16} />
-                        </Button>
+                        <Link to="javascript:void(0)" onClick={() => handleShowModal(row)}>
+                            <Icon icon="tabler:edit" width={16} height={16} className="text-warning" />
+                        </Link>
                     </OverlayTrigger>
                     <OverlayTrigger
                         placement="top"
                         overlay={<Tooltip id={`delete-tooltip-${row._id}`}>Delete</Tooltip>}
                     >
-                        <Button
-                            variant="outline-danger"
-                            size="sm"
-                            onClick={() => handleDelete(row._id)}
-                        >
-                            <Icon icon="icon-park-outline:close-one" width={16} height={16} />
-                        </Button>
+                        <Link to="javascript:void(0)" onClick={() => handleDelete(row._id)}>
+                            <Icon icon="icon-park-outline:close-one" width={16} height={16} className="text-danger" />
+                        </Link>
                     </OverlayTrigger>
                 </div>
             ),
@@ -238,15 +230,11 @@ const FAQs: React.FC = () => {
         <>
             <Row>
                 <Col lg={12}>
-                    <h5 className="text-dark">Frequently Asked Questions</h5>
-                    {error && <Alert variant="danger">{error}</Alert>}
-                    {success && <Alert variant="success">{success}</Alert>}
+
+
 
                     <div className="d-flex justify-content-between align-items-center mb-3">
-                        <div className="d-flex align-items-center">
-                            <span className="text-muted me-2">Total: {faqs.length} FAQs</span>
-                            {loading && <Spinner animation="border" size="sm" className="ms-2" />}
-                        </div>
+                        <h5 className="text-dark">Frequently Asked Questions</h5>
                         <div className="d-flex gap-2">
                             <input
                                 type="text"

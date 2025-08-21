@@ -108,6 +108,20 @@ const Dogs: React.FC = () => {
         setShow(true);
     };
 
+    // Delete modal handlers
+    const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
+    const [isDeleting, setIsDeleting] = useState<boolean>(false);
+
+    const handleCloseDeleteModal = (): void => {
+        setShowDeleteModal(false);
+        setSelectedDog(null);
+    };
+
+    const handleShowDeleteModal = (dog: Dog): void => {
+        setSelectedDog(dog);
+        setShowDeleteModal(true);
+    };
+
     const handleToggleStatus = async () => {
         if (!selectedDog) return;
 
@@ -116,7 +130,6 @@ const Dogs: React.FC = () => {
             const newStatus = selectedDog.status === "active" ? "inactive" : "active";
 
             const response = await DogService.updateDogStatus(selectedDog._id, newStatus);
-
             if (response.status === 1) {
                 showSuccess("Success", `Dog ${newStatus === 'active' ? 'unblocked' : 'blocked'} successfully`);
                 fetchDogs(currentPage, perPage, searchText.trim() || undefined);
@@ -128,6 +141,21 @@ const Dogs: React.FC = () => {
         } finally {
             setLoading(false);
             setShow(false);
+        }
+    };
+
+    const handleDelete = async () => {
+        if (!selectedDog) return;
+        try {
+            setIsDeleting(true);
+            await DogService.deleteDog(selectedDog._id);
+            showSuccess("Success", "Dog deleted successfully");
+            handleCloseDeleteModal();
+            await fetchDogs(currentPage, perPage, searchText.trim() || undefined);
+        } catch (err: any) {
+            handleApiError(err, "Failed to delete dog");
+        } finally {
+            setIsDeleting(false);
         }
     };
 
@@ -228,6 +256,14 @@ const Dogs: React.FC = () => {
                             />
                         </Link>
                     </OverlayTrigger>
+                    <OverlayTrigger
+                        placement="top"
+                        overlay={<Tooltip id={`delete-tooltip-${row._id}`}>Delete</Tooltip>}
+                    >
+                        <Link to="javascript:void(0)" onClick={() => handleShowDeleteModal(row)}>
+                            <Icon icon="icon-park-outline:close-one" width={16} height={16} className="text-danger" />
+                        </Link>
+                    </OverlayTrigger>
                 </div>
             ),
         },
@@ -238,7 +274,7 @@ const Dogs: React.FC = () => {
             <Row>
                 <Col lg={12}>
                     <div className="d-flex justify-content-between align-items-center mb-3">
-                        <h5 className="text-dark">Dogs ({totalRows})</h5>
+                        <h5 className="text-dark">Dogs</h5>
                         <input
                             type="text"
                             placeholder="Search dogs..."
@@ -308,6 +344,35 @@ const Dogs: React.FC = () => {
                             disabled={loading}
                         >
                             {loading ? <Spinner size="sm" /> : 'Ok'}
+                        </Button>
+                    </div>
+                </Modal.Body>
+            </Modal>
+
+            {/* Delete Modal */}
+            <Modal className="modal_Delete" show={showDeleteModal} onHide={handleCloseDeleteModal} centered>
+                <Modal.Body>
+                    <div className="modaldelete_div">
+                        <Icon className="delete_icon" icon="gg:close-o" />
+                        <h3>Are You Sure?</h3>
+                        <p>You will not be able to recover this dog: <strong>{selectedDog?.dog_name}</strong></p>
+                    </div>
+                    <div className="d-flex justify-content-end gap-3">
+                        <Button
+                            variant="outline-secondary"
+                            onClick={handleCloseDeleteModal}
+                            className="px-4"
+                            disabled={isDeleting}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            variant="danger"
+                            className="px-4 min_width110"
+                            onClick={handleDelete}
+                            disabled={isDeleting}
+                        >
+                            {isDeleting ? "Deleting..." : "Delete"}
                         </Button>
                     </div>
                 </Modal.Body>

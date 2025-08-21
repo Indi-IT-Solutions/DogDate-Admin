@@ -231,7 +231,7 @@ const SubscriptionPackages: React.FC = () => {
             name: "Status",
             width: "100px",
             cell: (row: SubscriptionPackage) => (
-                <span className={`badge ${row.is_active ? 'bg-success' : 'bg-danger'}`}>
+                <span className={`badge ${row.is_active ? 'bg-success' : 'bg-danger'} text-capitalize`}>
                     {row.is_active ? 'Active' : 'Inactive'}
                 </span>
             ),
@@ -317,14 +317,7 @@ const SubscriptionPackages: React.FC = () => {
                 )}
 
                 <div className="d-flex justify-content-between align-items-center mb-3">
-                    <div className="d-flex align-items-center">
-                        <span className="text-muted me-2">
-                            Total: {pagination.total || 0} packages
-                        </span>
-                        {loading && (
-                            <Spinner animation="border" size="sm" className="ms-2" />
-                        )}
-                    </div>
+
                     {/* <div className="d-flex align-items-center gap-3">
                         <input
                             type="text"

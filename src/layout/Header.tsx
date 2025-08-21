@@ -24,11 +24,11 @@ const Header: React.FC<HeaderProps> = ({ title }) => {
                     <div className='headerright' style={{ display: 'inline-flex', alignItems: 'center' }}>
                         <Dropdown>
                             <Dropdown.Toggle id="dropdown-basic" className="p-0">
-                                <img alt="" src={IMAGES.Avatar1} />
+                                <img alt="" src={IMAGES.Logo} style={{ width: '40px', height: '40px' }} />
                             </Dropdown.Toggle>
                             <Dropdown.Menu>
                                 <Dropdown.Item as={Link} to="/profile-settings">Profile Settings</Dropdown.Item>
-                                <Dropdown.Item as={Link} to="/">Logout</Dropdown.Item>
+                                {/* <Dropdown.Item as={Link} to="/">Logout</Dropdown.Item> */}
                             </Dropdown.Menu>
                         </Dropdown>
                     </div>
