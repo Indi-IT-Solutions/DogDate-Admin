@@ -37,20 +37,20 @@ const Stats: React.FC<StatsProps> = ({ data = defaultStats }) => {
             bgColor: "#FFF3D5",
             iconColor: "#FEC53D"
         },
-        {
-            title: "Breedings Completed",
-            value: data.breedings_completed.toLocaleString(),
-            icon: "mdi:dog-service",
-            bgColor: "#D5E9FF",
-            iconColor: "#0F66CC"
-        },
-        {
-            title: "Playmates Completed",
-            value: data.playmates_completed.toLocaleString(),
-            icon: "mdi:dog-side",
-            bgColor: "#FFE1E1",
-            iconColor: "#FF4D4D"
-        },
+        // {
+        //     title: "Breedings Completed",
+        //     value: data.breedings_completed.toLocaleString(),
+        //     icon: "mdi:dog-service",
+        //     bgColor: "#D5E9FF",
+        //     iconColor: "#0F66CC"
+        // },
+        // {
+        //     title: "Playmates Completed",
+        //     value: data.playmates_completed.toLocaleString(),
+        //     icon: "mdi:dog-side",
+        //     bgColor: "#FFE1E1",
+        //     iconColor: "#FF4D4D"
+        // },
         {
             title: "Revenue",
             value: formatDollars(data.total_revenue),

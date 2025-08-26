@@ -67,10 +67,10 @@ const Dashboard: React.FC = () => {
       </Row>
 
       <Row className="mt-4">
-        <Col lg={6}>
+        <Col lg={6} className="pe-4">
           <UserVendorGrowthChart data={dashboardData?.user_growth} />
         </Col>
-        <Col lg={6}>
+        <Col lg={6} className="ps-4">
           <RevenueStatsChart data={dashboardData?.revenue_data} />
         </Col>
       </Row>

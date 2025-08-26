@@ -8,8 +8,7 @@ export const API_CONFIG = {
 export const AUTH_ENDPOINTS = {
     LOGIN: '/admin/auth_v1/login',
     FORGOT_PASSWORD: '/admin/auth_v1/send_otp_for_forget_pass',
-    VERIFY_OTP: '/admin/auth_v1/confirm_forget_password_otp',
-    RESET_PASSWORD: '/admin/auth_v1/create_new_password',
+    VERIFY_OTP_AND_RESET: '/admin/auth_v1/verify_otp_and_reset_password',
 };
 
 // Admin Dog Profile Management Endpoints
@@ -29,6 +28,7 @@ export const USER_ENDPOINTS = {
     GET_SENT_REQUESTS: (id: string) => `/common/user/profile_v1/${id}/matches/sent-requests`,
     GET_RECEIVED_REQUESTS: (id: string) => `/common/user/profile_v1/${id}/matches/received-requests`,
     GET_LOST_MATCHES: (id: string) => `/common/user/profile_v1/${id}/matches/lost`,
+    GET_PAYMENTS: (id: string) => `/common/user/profile_v1/${id}/payments`,
     UPDATE_STATUS: (id: string) => `/common/user/profile_v1/${id}/status`,
     DELETE: (id: string) => `/common/user/profile_v1/${id}`,
     RESET_PASSWORD: (id: string) => `/common/user/profile_v1/${id}/reset-password`,
@@ -151,6 +151,14 @@ export const PAGE_ENDPOINTS = {
     LIST: '/admin/page_v1/get_list',
     GET_BY_ID: '/admin/page_v1/get_specific_page_details',
     UPDATE: '/admin/page_v1/edit',
+};
+
+export const MEETUP_AVAILABILITY_ENDPOINTS = {
+    LIST: '/admin/meet_up_availability_v1/get_list',
+    GET_BY_ID: '/admin/meet_up_availability_v1/get_specific_entry_details',
+    CREATE: '/admin/meet_up_availability_v1/add',
+    UPDATE: '/admin/meet_up_availability_v1/edit',
+    DELETE: '/admin/meet_up_availability_v1/delete_entry',
 };
 
 export const FAQ_ENDPOINTS = {

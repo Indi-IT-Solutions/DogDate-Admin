@@ -6,6 +6,7 @@ import { useSearchParams } from "react-router-dom";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import { UserService } from "@/services";
 import { getProfileImageUrl, getUserProfileImage, getDogProfileImage } from "@/utils/imageUtils";
+import { formatDate } from "@/utils/dateUtils";
 
 interface Dog {
     id: number;
@@ -138,10 +139,7 @@ const Confirmed: React.FC = () => {
         };
     };
 
-    // Helper function to format date
-    const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleDateString();
-    };
+
 
     // Helper function to get match type badge
     const getMatchTypeBadge = (type: string) => {
@@ -243,7 +241,7 @@ const Confirmed: React.FC = () => {
         {
             name: "Status",
             cell: (row: any) => (
-                <span className="badge bg-success">
+                <span className="badge bg-success  text-capitalize">
                     {row.status?.charAt(0).toUpperCase() + row.status?.slice(1) || 'Unknown'}
                 </span>
             ),

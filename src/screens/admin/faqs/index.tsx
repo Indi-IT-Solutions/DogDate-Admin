@@ -4,17 +4,9 @@ import { Icon } from "@iconify/react";
 import DataTable, { TableColumn } from "react-data-table-component";
 import { FAQService, FAQ } from "@/services";
 import { showError, showSuccess, showDeleteConfirmation, handleApiError } from "@/utils/sweetAlert";
+import { formatDateTime } from "@/utils/dateUtils";
+import { Link } from "react-router-dom";
 
-const formatDate = (dateString: string): string => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-    });
-};
 
 const FAQs: React.FC = () => {
     const [faqs, setFaqs] = useState<FAQ[]>([]);
@@ -136,7 +128,23 @@ const FAQs: React.FC = () => {
             handleCloseModal();
         } catch (err: any) {
             console.error('❌ Error saving FAQ:', err);
-            handleApiError(err, 'Failed to save FAQ');
+
+            // Extract the actual error message from the backend
+            let errorMessage = 'Failed to save FAQ';
+
+            if (err.message) {
+                // If it's a direct error message (like from our service)
+                errorMessage = err.message;
+            } else if (err.response?.data?.message) {
+                // If it's an axios error response
+                errorMessage = err.response.data.message;
+            } else if (err.data?.message) {
+                // If it's a direct response object
+                errorMessage = err.data.message;
+            }
+
+            // Show the specific error message to the user
+            showError('Error', errorMessage);
         } finally {
             setSaving(false);
         }
@@ -177,7 +185,7 @@ const FAQs: React.FC = () => {
         {
             name: "Status",
             cell: (row: FAQ) => (
-                <span className={`badge ${row.status === 'active' ? 'bg-success' : 'bg-secondary'}`}>
+                <span className={`badge ${row.status === 'active' ? 'bg-success' : 'bg-secondary'} text-capitalize`}>
                     {row.status}
                 </span>
             ),
@@ -187,12 +195,12 @@ const FAQs: React.FC = () => {
         },
         {
             name: "Updated Date",
-            cell: (row: FAQ) => formatDate(row.updated_at),
+            cell: (row: FAQ) => formatDateTime(row.updated_at),
             width: "150px",
             sortable: true,
         },
         {
-            name: "Actions",
+            name: "Action",
             width: "120px",
             cell: (row: FAQ) => (
                 <div className="d-flex gap-2 justify-content-center">
@@ -200,25 +208,17 @@ const FAQs: React.FC = () => {
                         placement="top"
                         overlay={<Tooltip id={`edit-tooltip-${row._id}`}>Edit</Tooltip>}
                     >
-                        <Button
-                            variant="outline-warning"
-                            size="sm"
-                            onClick={() => handleShowModal(row)}
-                        >
-                            <Icon icon="tabler:edit" width={16} height={16} />
-                        </Button>
+                        <Link to="javascript:void(0)" onClick={() => handleShowModal(row)}>
+                            <Icon icon="tabler:edit" width={16} height={16} className="text-warning" />
+                        </Link>
                     </OverlayTrigger>
                     <OverlayTrigger
                         placement="top"
                         overlay={<Tooltip id={`delete-tooltip-${row._id}`}>Delete</Tooltip>}
                     >
-                        <Button
-                            variant="outline-danger"
-                            size="sm"
-                            onClick={() => handleDelete(row._id)}
-                        >
-                            <Icon icon="icon-park-outline:close-one" width={16} height={16} />
-                        </Button>
+                        <Link to="javascript:void(0)" onClick={() => handleDelete(row._id)}>
+                            <Icon icon="icon-park-outline:close-one" width={16} height={16} className="text-danger" />
+                        </Link>
                     </OverlayTrigger>
                 </div>
             ),
@@ -230,15 +230,11 @@ const FAQs: React.FC = () => {
         <>
             <Row>
                 <Col lg={12}>
-                    <h5 className="text-dark">Frequently Asked Questions</h5>
-                    {error && <Alert variant="danger">{error}</Alert>}
-                    {success && <Alert variant="success">{success}</Alert>}
+
+
 
                     <div className="d-flex justify-content-between align-items-center mb-3">
-                        <div className="d-flex align-items-center">
-                            <span className="text-muted me-2">Total: {faqs.length} FAQs</span>
-                            {loading && <Spinner animation="border" size="sm" className="ms-2" />}
-                        </div>
+                        <h5 className="text-dark">Frequently Asked Questions</h5>
                         <div className="d-flex gap-2">
                             <input
                                 type="text"
@@ -281,13 +277,13 @@ const FAQs: React.FC = () => {
                         />
                     </div>
 
-                    {faqs.length > 0 && (
+                    {/* {faqs.length > 0 && (
                         <div className="d-flex justify-content-between align-items-center mt-3">
                             <small className="text-muted">
                                 Showing {faqs.length} FAQs
                             </small>
                         </div>
-                    )}
+                    )} */}
                 </Col>
             </Row>
 

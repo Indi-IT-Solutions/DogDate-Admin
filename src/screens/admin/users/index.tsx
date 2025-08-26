@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { Row, Col, OverlayTrigger, Tooltip, Modal, Form, Button, Alert } from "react-bootstrap";
+import { Row, Col, OverlayTrigger, Tooltip, Modal, Form, Button, Alert, InputGroup } from "react-bootstrap";
 import { Icon } from "@iconify/react";
 import DataTable from "react-data-table-component";
 import { Link } from "react-router-dom";
 import { IMAGES } from "@/contants/images";
 import { UserService, type User, type UserFilters } from "@/services";
-import { showError, showSuccess, showDeleteConfirmation, handleApiError } from "@/utils/sweetAlert";
-import { getProfileImageUrl, getUserProfileImage } from "@/utils/imageUtils";
+import { showError, showSuccess, handleApiError } from "@/utils/sweetAlert";
+import { getUserProfileImage } from "@/utils/imageUtils";
+import { formatDate } from "@/utils/dateUtils";
 
 const Users: React.FC = () => {
   const [searchText, setSearchText] = useState("");
@@ -25,6 +26,32 @@ const Users: React.FC = () => {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [newPassword, setNewPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [passwordValidation, setPasswordValidation] = useState({
+    length: false,
+    capital: false,
+    number: false,
+    special: false
+  });
+
+  // Password validation function
+  const validatePassword = (password: string) => {
+    const validations = {
+      length: password.length >= 8,
+      capital: /[A-Z]/.test(password),
+      number: /\d/.test(password),
+      special: /[!@#$%^&*(),.?":{}|<>]/.test(password)
+    };
+    setPasswordValidation(validations);
+    return Object.values(validations).every(Boolean);
+  };
+
+  // Handle password change
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const password = e.target.value;
+    setNewPassword(password);
+    validatePassword(password);
+  };
 
   const handleClose = () => {
     setShow(false);
@@ -40,6 +67,13 @@ const Users: React.FC = () => {
     setShow1(false);
     setSelectedUser(null);
     setNewPassword("");
+    setShowPassword(false);
+    setPasswordValidation({
+      length: false,
+      capital: false,
+      number: false,
+      special: false
+    });
   };
 
   const handleShow1 = (user: User) => {
@@ -113,6 +147,12 @@ const Users: React.FC = () => {
   const handleResetPassword = async () => {
     if (!selectedUser || !newPassword) return;
 
+    // Validate password before submitting
+    if (!validatePassword(newPassword)) {
+      showError("Error", "Please ensure your password meets all requirements");
+      return;
+    }
+
     try {
       setIsSubmitting(true);
       const response = await UserService.resetUserPassword(selectedUser._id, newPassword);
@@ -165,8 +205,7 @@ const Users: React.FC = () => {
     {
       name: "S.no.",
       width: "90px",
-      selector: (row: User, index: number) => `${(currentPage - 1) * perPage + index + 1}`,
-      sortable: true,
+      selector: (_row: User, index: number) => `${(currentPage - 1) * perPage + index + 1}`,
     },
     {
       name: "User",
@@ -189,7 +228,7 @@ const Users: React.FC = () => {
           <div>
             <strong>{row.name}</strong><br />
             <small>{row.email}</small><br />
-            <small>{row.phone_number ? `+${row.country_code} ${row.phone_number}` : 'N/A'}</small>
+            <small>{row.phone_number ? `${row.country_code} ${row.phone_number}` : 'N/A'}</small>
           </div>
         </div>
       ),
@@ -214,17 +253,15 @@ const Users: React.FC = () => {
     },
     {
       name: "Created On",
-      selector: (row: User) => new Date(row.created_at).toLocaleDateString(),
-      sortable: true,
+      selector: (row: User) => formatDate(row.created_at),
     },
     {
       name: "Status",
       selector: (row: User) => (
-        <span className={`badge ${row.status === 'active' ? 'bg-success' : row.status === 'inactive' ? 'bg-warning' : 'bg-danger'}`}>
+        <span className={`badge ${row.status === 'active' ? 'bg-success' : row.status === 'inactive' ? 'bg-warning' : 'bg-danger'} text-capitalize`}>
           {row.status.charAt(0).toUpperCase() + row.status.slice(1)}
         </span>
       ),
-      sortable: true,
       width: "100px",
     },
     {
@@ -250,14 +287,31 @@ const Users: React.FC = () => {
               <Icon icon="tabler:edit" width={20} height={20} className="text-warning" />
             </Link>
           </OverlayTrigger>
-          <OverlayTrigger
-            placement="top"
-            overlay={<Tooltip id="password-tooltip">Reset Password</Tooltip>}
-          >
-            <Link to="javascript:void(0)" onClick={() => handleShow1(row)}>
-              <Icon icon="mdi:lock" width={20} height={20} className="text-success" />
-            </Link>
-          </OverlayTrigger>
+          {row.register_type === 'google' || row.register_type === 'apple' ? (
+            <OverlayTrigger
+              placement="top"
+              overlay={<Tooltip id="password-tooltip">Password reset not available for Google/Apple users</Tooltip>}
+            >
+              <span>
+                <Icon
+                  icon="mdi:lock"
+                  width={20}
+                  height={20}
+                  className="text-muted"
+                  style={{ cursor: 'not-allowed', opacity: 0.5 }}
+                />
+              </span>
+            </OverlayTrigger>
+          ) : (
+            <OverlayTrigger
+              placement="top"
+              overlay={<Tooltip id="password-tooltip">Reset Password</Tooltip>}
+            >
+              <Link to="javascript:void(0)" onClick={() => handleShow1(row)}>
+                <Icon icon="mdi:lock" width={20} height={20} className="text-success" />
+              </Link>
+            </OverlayTrigger>
+          )}
           <OverlayTrigger
             placement="top"
             overlay={<Tooltip id="delete-tooltip">Delete</Tooltip>}
@@ -276,24 +330,21 @@ const Users: React.FC = () => {
       <Row>
         <Col lg={12}>
           <div className="d-flex justify-content-between align-items-center dropSelect_option">
-            <h3 className="mb-0">Users ({totalRows})</h3>
+            <h3 className="mb-0">Users</h3>
+
+            <div className="text-end mb-3">
+              <input
+                type="text"
+                placeholder="Search users..."
+                className="searchfield"
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+              />
+            </div>
           </div>
 
-          {error && (
-            <Alert variant="danger" className="mt-3">
-              {error}
-            </Alert>
-          )}
 
-          <div className="text-end mb-3">
-            <input
-              type="text"
-              placeholder="Search users..."
-              className="searchfield"
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
-            />
-          </div>
+
           <div className="scrollable-table">
             <DataTable
               columns={userColumns as any}
@@ -326,7 +377,7 @@ const Users: React.FC = () => {
           </div>
           <div className="d-flex justify-content-end gap-3">
             <Button
-              variant="outline-danger"
+              variant="outline-secondary"
               onClick={handleClose}
               className="px-4"
               disabled={isSubmitting}
@@ -334,7 +385,7 @@ const Users: React.FC = () => {
               Cancel
             </Button>
             <Button
-              variant="success"
+              variant="danger"
               className="px-4 min_width110"
               onClick={handleDeleteUser}
               disabled={isSubmitting}
@@ -357,20 +408,52 @@ const Users: React.FC = () => {
             <Form>
               <Form.Group className="mb-3 form-group">
                 <Form.Label>New password</Form.Label>
-                <Form.Control
-                  type="password"
-                  placeholder="Enter new password"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  minLength={6}
-                />
+                <InputGroup>
+                  <Form.Control
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Enter new password"
+                    value={newPassword}
+                    onChange={handlePasswordChange}
+                    minLength={6}
+                  />
+                  <InputGroup.Text onClick={() => setShowPassword(!showPassword)}>
+                    <Icon icon={showPassword ? "mdi:eye-off" : "mdi:eye"} />
+                  </InputGroup.Text>
+                </InputGroup>
+                <div className="text-muted small mt-1">
+                  Password must be at least 8 characters long, contain at least one capital letter, one number, and one special character.
+                </div>
+
+                {/* Password validation indicators */}
+                <div className="mt-2">
+                  <div className={`small ${passwordValidation.length ? 'text-success' : 'text-muted'}`}>
+                    <Icon icon={passwordValidation.length ? "mdi:check-circle" : "mdi:circle-outline"} className="me-1" />
+                    At least 8 characters
+                  </div>
+                  <div className={`small ${passwordValidation.capital ? 'text-success' : 'text-muted'}`}>
+                    <Icon icon={passwordValidation.capital ? "mdi:check-circle" : "mdi:circle-outline"} className="me-1" />
+                    At least one capital letter (A-Z)
+                  </div>
+                  <div className={`small ${passwordValidation.number ? 'text-success' : 'text-muted'}`}>
+                    <Icon icon={passwordValidation.number ? "mdi:check-circle" : "mdi:circle-outline"} className="me-1" />
+                    At least one number (0-9)
+                  </div>
+                  <div className={`small ${passwordValidation.special ? 'text-success' : 'text-muted'}`}>
+                    <Icon icon={passwordValidation.special ? "mdi:check-circle" : "mdi:circle-outline"} className="me-1" />
+                    At least one special character (!@#$%^&)
+                  </div>
+                </div>
+
+                <div className="text-success small mt-2">
+                  {passwordValidation.length && passwordValidation.capital && passwordValidation.number && passwordValidation.special && "✅ Password meets all requirements!"}
+                </div>
               </Form.Group>
             </Form>
           </div>
           <Button
             onClick={handleResetPassword}
             className="btn btn-primary px-4 w-100"
-            disabled={isSubmitting || !newPassword}
+            disabled={isSubmitting || !newPassword || !passwordValidation.length || !passwordValidation.capital || !passwordValidation.number || !passwordValidation.special}
           >
             {isSubmitting ? "Updating..." : "Update Password"}
           </Button>

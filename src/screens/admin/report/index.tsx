@@ -5,17 +5,9 @@ import DataTable, { TableColumn } from "react-data-table-component";
 import { ReportService, PaginationMeta } from "@/services";
 import { showError, showSuccess, showDeleteConfirmation, handleApiError } from "@/utils/sweetAlert";
 import { Report as ReportType } from "@/types/api.types";
+import { formatDateTime } from "@/utils/dateUtils";
+import { Link } from "react-router-dom";
 
-const formatDate = (dateString: string): string => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-    });
-};
 
 const safeGetUserData = (userData: any): { name: string; email: string } => {
     if (typeof userData === 'string') {
@@ -78,7 +70,7 @@ const Report: React.FC = () => {
         setSelectedReport(null);
     };
 
-    const handleShowDeleteModal = (report: Report): void => {
+    const handleShowDeleteModal = (report: ReportType): void => {
         setSelectedReport(report);
         setShowDeleteModal(true);
     };
@@ -192,60 +184,51 @@ const Report: React.FC = () => {
                 );
             },
             width: "200px",
-            sortable: true,
+            sortable: false,
         },
         {
             name: "Message",
             selector: (row: any) => row?.message,
             wrap: true,
-            sortable: true,
+            sortable: false,
             width: "300px",
             cell: (row: any) => (
-                <div style={{ maxWidth: '280px' }}>
-                    {row?.message.length > 100
-                        ? `${row?.message.substring(0, 100)}...`
-                        : row?.message
-                    }
+                <div style={{
+                    maxWidth: '280px',
+                    maxHeight: '100px',
+                    overflow: 'scroll',
+                    wordWrap: 'break-word'
+                }} className="custom-scrollbar">
+                    {row?.message}
                 </div>
             ),
         },
         {
             name: "Action",
-            cell: (row: any) => getActionBadge(row?.action),
-            width: "120px",
-            sortable: true,
+            width: "100px",
+            cell: (row: ReportType) => (
+                <OverlayTrigger
+                    placement="top"
+                    overlay={<Tooltip id={`delete-tooltip-${row._id}`}>Delete</Tooltip>}
+                >
+                    <Link to="javascript:void(0)" onClick={() => handleShowDeleteModal(row)}>
+                        <Icon icon="icon-park-outline:close-one" width={16} height={16} className="text-danger" />
+                    </Link>
+                </OverlayTrigger>
+            ),
+            center: true,
         },
         {
             name: "Status",
             cell: (row: any) => getStatusBadge(row?.status),
             width: "100px",
-            sortable: true,
+            sortable: false,
         },
         {
             name: "Date",
-            cell: (row: any) => formatDate(row?.created_at),
+            cell: (row: any) => formatDateTime(row?.created_at),
             width: "150px",
-            sortable: true,
-        },
-        {
-            name: "Actions",
-            width: "100px",
-            center: true,
-            cell: (row: any) => (
-                <OverlayTrigger
-                    placement="top"
-                    overlay={<Tooltip id="delete-tooltip">Delete</Tooltip>}
-                >
-                    <Button
-                        variant="outline-danger"
-                        size="sm"
-                        onClick={() => handleShowDeleteModal(row)}
-                        disabled={row?.status === 'deleted'}
-                    >
-                        <Icon icon="icon-park-outline:close-one" width={16} height={16} />
-                    </Button>
-                </OverlayTrigger>
-            ),
+            sortable: false,
         },
     ];
 
@@ -253,15 +236,10 @@ const Report: React.FC = () => {
         <React.Fragment>
             <Row>
                 <Col lg={12}>
-                    <h5 className="text-dark">Reports</h5>
-                    {error && <Alert variant="danger">{error}</Alert>}
-                    {success && <Alert variant="success">{success}</Alert>}
+
 
                     <div className="d-flex justify-content-between align-items-center mb-3">
-                        <div className="d-flex align-items-center">
-                            <span className="text-muted me-2">Total: {pagination.total || 0} reports</span>
-                            {loading && <Spinner animation="border" size="sm" className="ms-2" />}
-                        </div>
+                        <h5 className="text-dark">Reports</h5>
                         <div className="text-end">
                             <input
                                 type="text"
@@ -305,7 +283,7 @@ const Report: React.FC = () => {
                         />
                     </div>
 
-                    {reportData.length > 0 && (
+                    {/* {reportData.length > 0 && (
                         <div className="d-flex justify-content-between align-items-center mt-3">
                             <small className="text-muted">
                                 Showing page {pagination?.current_page} of {pagination?.total_pages} ({pagination?.total || 0} total reports)
@@ -314,7 +292,7 @@ const Report: React.FC = () => {
                                 <small className="text-muted me-2">Page {pagination?.current_page} of {pagination?.total_pages}</small>
                             </div>
                         </div>
-                    )}
+                    )} */}
                 </Col>
             </Row>
 

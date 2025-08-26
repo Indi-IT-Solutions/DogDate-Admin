@@ -23,6 +23,7 @@ import Hobbies from "@/screens/admin/pages/hobbies";
 import DogLikes from "@/screens/admin/pages/dog-likes";
 import ProtectedRoute from "../components/ProtectedRoute";
 import PublicRoute from "../components/PublicRoute";
+import NotFound from "../components/NotFound";
 
 const AdminRoutes = () => {
   return (
@@ -234,6 +235,9 @@ const AdminRoutes = () => {
           </ProtectedRoute>
         }
       />
+
+      {/* Catch-all route for wrong URLs */}
+      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 };

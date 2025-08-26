@@ -1,5 +1,5 @@
 import { apiClient, objectToQueryString } from './api.config';
-import { CONTENT_ENDPOINTS } from '../config/api.endpoints';
+import { CONTENT_ENDPOINTS, HOBBY_ENDPOINTS, MEETUP_AVAILABILITY_ENDPOINTS } from '../config/api.endpoints';
 import type {
     Breed,
     DogCharacter,
@@ -216,12 +216,24 @@ export class ContentService {
     // Meetup Availability Management
     static async getMeetupAvailability(filters: PaginationRequest = {}): Promise<PaginatedResponse<MeetupAvailability>> {
         try {
-            const queryString = objectToQueryString(filters);
-            const url = `${CONTENT_ENDPOINTS.MEETUP_AVAILABILITY}${queryString ? `?${queryString}` : ''}`;
+            console.log('🔍 Meetup Availability API URL:', MEETUP_AVAILABILITY_ENDPOINTS.LIST);
+            const response = await apiClient.post(MEETUP_AVAILABILITY_ENDPOINTS.LIST, filters);
 
-            const response = await apiClient.get(url);
-            return response.data;
+            if (response.data.status === 1 && response.data.data) {
+                return {
+                    data: response.data.data,
+                    meta: {
+                        total: response.data.data.length,
+                        page: 1,
+                        limit: response.data.data.length,
+                        totalPages: 1
+                    }
+                };
+            }
+
+            throw new Error(response.data.message || 'Failed to fetch meetup availability');
         } catch (error: any) {
+            console.error('❌ Error fetching meetup availability:', error);
             throw error.response?.data || error;
         }
     }

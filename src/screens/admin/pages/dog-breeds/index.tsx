@@ -3,17 +3,9 @@ import { Row, Col, Button, Modal, Form, OverlayTrigger, Tooltip, Alert, Spinner 
 import { Icon } from "@iconify/react";
 import DataTable, { TableColumn } from "react-data-table-component";
 import { BreedService, DogBreed } from "@/services";
+import { formatDateTime } from "@/utils/dateUtils";
+import { Link } from "react-router-dom";
 
-const formatDate = (dateString: string): string => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-    });
-};
 
 const DogBreeds: React.FC = () => {
     const [breeds, setBreeds] = useState<DogBreed[]>([]);
@@ -106,7 +98,7 @@ const DogBreeds: React.FC = () => {
     const columns: TableColumn<DogBreed>[] = [
         {
             name: "Sr. No.",
-            selector: (_row: DogBreed, index: number) => index + 1,
+            selector: (row: DogBreed, rowIndex: number | undefined) => (rowIndex ?? 0) + 1,
             width: "90px",
             sortable: false,
         },
@@ -120,7 +112,7 @@ const DogBreeds: React.FC = () => {
         {
             name: "Status",
             cell: (row: DogBreed) => (
-                <span className={`badge ${row.status === 'active' ? 'bg-success' : 'bg-secondary'}`}>
+                <span className={`badge ${row.status === 'active' ? 'bg-success' : 'bg-secondary'} text-capitalize`}>
                     {row.status}
                 </span>
             ),
@@ -129,7 +121,7 @@ const DogBreeds: React.FC = () => {
         },
         {
             name: "Created Date",
-            cell: (row: DogBreed) => formatDate(row.created_at),
+            cell: (row: DogBreed) => formatDateTime(row.created_at),
             width: "150px",
             sortable: true,
         },
@@ -141,13 +133,9 @@ const DogBreeds: React.FC = () => {
                     placement="top"
                     overlay={<Tooltip id={`edit-tooltip-${row._id}`}>Edit</Tooltip>}
                 >
-                    <Button
-                        variant="outline-warning"
-                        size="sm"
-                        onClick={() => handleShowModal(row)}
-                    >
-                        <Icon icon="tabler:edit" width={16} height={16} />
-                    </Button>
+                    <Link to="javascript:void(0)" onClick={() => handleShowModal(row)}>
+                        <Icon icon="tabler:edit" width={16} height={16} className="text-warning" />
+                    </Link>
                 </OverlayTrigger>
             ),
             center: true,
@@ -158,15 +146,11 @@ const DogBreeds: React.FC = () => {
         <>
             <Row>
                 <Col lg={12}>
-                    <h5 className="text-dark">Dog Breeds</h5>
-                    {error && <Alert variant="danger">{error}</Alert>}
-                    {success && <Alert variant="success">{success}</Alert>}
+
+
 
                     <div className="d-flex justify-content-between align-items-center mb-3">
-                        <div className="d-flex align-items-center">
-                            <span className="text-muted me-2">Total: {breeds.length} breeds</span>
-                            {loading && <Spinner animation="border" size="sm" className="ms-2" />}
-                        </div>
+                        <h5 className="text-dark">Dog Breeds</h5>
                         <div className="d-flex gap-2">
                             <input
                                 type="text"
@@ -209,13 +193,13 @@ const DogBreeds: React.FC = () => {
                         />
                     </div>
 
-                    {filteredBreeds.length > 0 && (
+                    {/* {filteredBreeds.length > 0 && (
                         <div className="d-flex justify-content-between align-items-center mt-3">
                             <small className="text-muted">
                                 Showing {filteredBreeds.length} of {breeds.length} breeds
                             </small>
                         </div>
-                    )}
+                    )} */}
                 </Col>
             </Row>
 

@@ -335,6 +335,46 @@ export class UserService {
             throw error.response?.data || error;
         }
     }
+
+    // Get user's payments
+    static async getUserPayments(userId: string, filters: UserFilters = {}): Promise<any> {
+        try {
+            const queryString = objectToQueryString(filters);
+            const url = `${USER_ENDPOINTS.GET_PAYMENTS(userId)}${queryString ? `?${queryString}` : ''}`;
+
+            const response = await apiClient.get(url);
+
+            console.log('✅ User Payments API response:', response.data);
+
+            if (response.data.status === 1 && response.data.data) {
+                const backendData = response.data.data;
+
+                const paginatedResponse: any = {
+                    status: response.data.status,
+                    message: response.data.message,
+                    data: backendData.payments || [],
+                    meta: {
+                        page: backendData.pagination?.current_page || 1,
+                        limit: backendData.pagination?.per_page || 10,
+                        total: backendData.pagination?.total_payments || 0,
+                        totalPages: backendData.pagination?.total_pages || 0,
+                    }
+                };
+
+                return paginatedResponse;
+            }
+
+            return {
+                status: 0,
+                message: response.data.message || 'No payments found',
+                data: [],
+                meta: { page: 1, limit: 10, total: 0, totalPages: 0, }
+            };
+        } catch (error: any) {
+            console.error('❌ Error fetching user payments:', error);
+            throw error.response?.data || error;
+        }
+    }
 }
 
 export default UserService; 

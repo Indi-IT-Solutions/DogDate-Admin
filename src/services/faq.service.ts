@@ -54,10 +54,23 @@ export class FAQService {
                 return;
             }
 
+            // If the backend returns an error, throw it with the specific message
             throw new Error(response.data.message || 'Failed to create FAQ');
         } catch (error: any) {
             console.error('❌ Error creating FAQ:', error);
-            throw error;
+
+            // If it's an axios error with response data, extract the message
+            if (error.response?.data?.message) {
+                throw new Error(error.response.data.message);
+            }
+
+            // If it's already an Error object with a message, re-throw it
+            if (error.message) {
+                throw error;
+            }
+
+            // Fallback to generic error
+            throw new Error('Failed to create FAQ');
         }
     }
 
@@ -70,10 +83,23 @@ export class FAQService {
                 return;
             }
 
+            // If the backend returns an error, throw it with the specific message
             throw new Error(response.data.message || 'Failed to update FAQ');
         } catch (error: any) {
             console.error('❌ Error updating FAQ:', error);
-            throw error;
+
+            // If it's an axios error with response data, extract the message
+            if (error.response?.data?.message) {
+                throw new Error(error.response.data.message);
+            }
+
+            // If it's already an Error object with a message, re-throw it
+            if (error.message) {
+                throw error;
+            }
+
+            // Fallback to generic error
+            throw new Error('Failed to update FAQ');
         }
     }
 

@@ -4,17 +4,10 @@ import { Icon } from "@iconify/react";
 import DataTable, { TableColumn } from "react-data-table-component";
 import { ContactService, PaginationMeta } from "@/services";
 import { showError, showSuccess, handleApiError } from "@/utils/sweetAlert";
+import { formatDateTime } from "@/utils/dateUtils";
+import { Link } from "react-router-dom";
+import { OverlayTrigger, Tooltip } from "react-bootstrap";
 
-const formatDate = (dateString: string): string => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-    });
-};
 
 const getStatusBadge = (status: string) => {
     switch (status) {
@@ -197,25 +190,24 @@ const ContactUs: React.FC = () => {
         },
         {
             name: "Date",
-            cell: (row: any) => formatDate(row.created_at),
+            cell: (row: any) => formatDateTime(row.created_at),
             width: "150px",
             sortable: true,
         },
         {
-            name: "Actions",
+            name: "Action",
             width: "100px",
-            center: true,
             cell: (row: any) => (
-                <Button
-                    variant="outline-primary"
-                    size="sm"
-                    onClick={() => handleShow(row)}
-                    disabled={row.query_status === 'resolved'}
+                <OverlayTrigger
+                    placement="top"
+                    overlay={<Tooltip id={`view-tooltip-${row._id}`}>Reply</Tooltip>}
                 >
-                    <Icon icon="ri:reply-line" width={16} height={16} className="me-1" />
-                    Reply
-                </Button>
+                    <Link to="javascript:void(0)" onClick={() => handleShow(row)}>
+                        <Icon icon="tabler:arrow-back-up" width={16} height={16} className="text-primary" />
+                    </Link>
+                </OverlayTrigger>
             ),
+            center: true,
         },
     ];
 
@@ -223,15 +215,8 @@ const ContactUs: React.FC = () => {
         <React.Fragment>
             <Row>
                 <Col lg={12}>
-                    <h5>Contact Us Queries</h5>
-                    {error && <Alert variant="danger">{error}</Alert>}
-                    {success && <Alert variant="success">{success}</Alert>}
-
                     <div className="d-flex justify-content-between align-items-center mb-3">
-                        <div className="d-flex align-items-center">
-                            <span className="text-muted me-2">Total: {pagination.total || 0} queries</span>
-                            {loading && <Spinner animation="border" size="sm" className="ms-2" />}
-                        </div>
+                        <h5>Contact Us Queries</h5>
                         <div className="text-end">
                             <input
                                 type="text"
@@ -275,16 +260,7 @@ const ContactUs: React.FC = () => {
                         />
                     </div>
 
-                    {contactData.length > 0 && (
-                        <div className="d-flex justify-content-between align-items-center mt-3">
-                            <small className="text-muted">
-                                Showing page {pagination.current_page} of {pagination.total_pages} ({pagination.total || 0} total queries)
-                            </small>
-                            <div className="d-flex align-items-center">
-                                <small className="text-muted me-2">Page {pagination.current_page} of {pagination.total_pages}</small>
-                            </div>
-                        </div>
-                    )}
+
                 </Col>
             </Row>
 

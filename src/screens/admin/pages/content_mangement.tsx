@@ -6,6 +6,7 @@ import { Editor } from 'react-draft-wysiwyg';
 import { ContentState, EditorState, convertToRaw, convertFromRaw } from 'draft-js';
 import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css';
 import { PageService, Page } from "@/services";
+import { Link } from "react-router-dom";
 
 const formatDate = (dateString: string): string => {
   const date = new Date(dateString);
@@ -147,13 +148,7 @@ const Pages: React.FC = () => {
       wrap: true,
       width: "250px",
     },
-    {
-      name: "Identity Number",
-      selector: (row: Page) => row.identity_number,
-      sortable: true,
-      width: "150px",
-      center: true,
-    },
+
     {
       name: "Created Date",
       cell: (row: Page) => formatDate(row.created_at),
@@ -168,13 +163,10 @@ const Pages: React.FC = () => {
           placement="top"
           overlay={<Tooltip id={`edit-tooltip-${row._id}`}>Edit</Tooltip>}
         >
-          <Button
-            variant="outline-warning"
-            size="sm"
-            onClick={() => handleShowModal(row)}
-          >
-            <Icon icon="tabler:edit" width={16} height={16} />
-          </Button>
+
+          <Link to="javascript:void(0)" onClick={() => handleShowModal(row)}>
+            <Icon icon="tabler:edit" width={20} height={20} className=" text-warning" />
+          </Link>
         </OverlayTrigger>
       ),
       center: true,
@@ -185,15 +177,11 @@ const Pages: React.FC = () => {
     <React.Fragment>
       <Row>
         <Col lg={12}>
-          <h5 className="text-dark">Content Management</h5>
-          {error && <Alert variant="danger">{error}</Alert>}
-          {success && <Alert variant="success">{success}</Alert>}
+
+
 
           <div className="d-flex justify-content-between align-items-center mb-3">
-            <div className="d-flex align-items-center">
-              <span className="text-muted me-2">Total: {pages.length} pages</span>
-              {loading && <Spinner animation="border" size="sm" className="ms-2" />}
-            </div>
+            <h5 className="text-dark">Content Management</h5>
             <div className="d-flex gap-2">
               <input
                 type="text"
@@ -232,13 +220,13 @@ const Pages: React.FC = () => {
             />
           </div>
 
-          {filteredPages.length > 0 && (
+          {/* {filteredPages.length > 0 && (
             <div className="d-flex justify-content-between align-items-center mt-3">
               <small className="text-muted">
                 Showing {filteredPages.length} of {pages.length} pages
               </small>
             </div>
-          )}
+          )} */}
         </Col>
       </Row>
 

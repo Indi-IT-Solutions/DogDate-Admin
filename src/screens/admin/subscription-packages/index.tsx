@@ -4,24 +4,14 @@ import DataTable, { TableColumn } from "react-data-table-component";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import { Link } from "react-router-dom";
 import { SubscriptionService, SubscriptionPackage, PaginationMeta } from "@/services";
+import { formatDate } from "@/utils/dateUtils";
 
 // Helper function to format amount
 const formatAmount = (amount: number): string => {
     return amount === 0 ? "Free" : `$${amount.toFixed(2)}`;
 };
 
-// Helper function to format date
-const formatDate = (dateString: string): string => {
-    try {
-        return new Date(dateString).toLocaleDateString('en-US', {
-            day: '2-digit',
-            month: 'short',
-            year: 'numeric'
-        });
-    } catch (error) {
-        return 'N/A';
-    }
-};
+
 
 const defaultEditData: Partial<SubscriptionPackage> = {
     type: "Breeding",
@@ -241,7 +231,7 @@ const SubscriptionPackages: React.FC = () => {
             name: "Status",
             width: "100px",
             cell: (row: SubscriptionPackage) => (
-                <span className={`badge ${row.is_active ? 'bg-success' : 'bg-danger'}`}>
+                <span className={`badge ${row.is_active ? 'bg-success' : 'bg-danger'} text-capitalize`}>
                     {row.is_active ? 'Active' : 'Inactive'}
                 </span>
             ),
@@ -327,15 +317,8 @@ const SubscriptionPackages: React.FC = () => {
                 )}
 
                 <div className="d-flex justify-content-between align-items-center mb-3">
-                    <div className="d-flex align-items-center">
-                        <span className="text-muted me-2">
-                            Total: {pagination.total || 0} packages
-                        </span>
-                        {loading && (
-                            <Spinner animation="border" size="sm" className="ms-2" />
-                        )}
-                    </div>
-                    <div className="d-flex align-items-center gap-3">
+
+                    {/* <div className="d-flex align-items-center gap-3">
                         <input
                             type="text"
                             placeholder="Search packages..."
@@ -354,7 +337,7 @@ const SubscriptionPackages: React.FC = () => {
                             <Icon icon="mdi:plus" width={16} height={16} />
                             Add New Package
                         </Button>
-                    </div>
+                    </div> */}
                 </div>
 
                 <DataTable
@@ -391,7 +374,7 @@ const SubscriptionPackages: React.FC = () => {
                 />
 
                 {/* Pagination Info */}
-                {subscriptionData.length > 0 && (
+                {/* {subscriptionData.length > 0 && (
                     <div className="d-flex justify-content-between align-items-center mt-3">
                         <small className="text-muted">
                             Showing page {pagination.current_page} of {pagination.total_pages}
@@ -403,14 +386,14 @@ const SubscriptionPackages: React.FC = () => {
                             </small>
                         </div>
                     </div>
-                )}
+                )} */}
             </Col>
 
             <Modal show={showModal} onHide={handleCloseModal} centered size="lg">
                 <Modal.Header closeButton>
                     <Modal.Title>
                         <h2 className="modalhead">
-                            {isCreateMode ? 'Create New Subscription Package' : 'Edit Subscription Package'}
+                            {'Edit Subscription Package'}
                         </h2>
                     </Modal.Title>
                 </Modal.Header>

@@ -6,6 +6,7 @@ import { Icon } from "@iconify/react/dist/iconify.js";
 import { Link } from "react-router-dom";
 import { DashboardService, type AccountRequest } from "@/services";
 import { showError, showSuccess, handleApiError } from "@/utils/sweetAlert";
+import { formatDate } from "@/utils/dateUtils";
 
 interface AccountProps {
     data?: AccountRequest[];
@@ -34,7 +35,6 @@ const Account: React.FC<AccountProps> = ({ data = [], onRefresh }) => {
 
     const handleConfirm = async () => {
         if (!selectedRequest) return;
-
         try {
             setIsSubmitting(true);
             let response;
@@ -82,16 +82,16 @@ const Account: React.FC<AccountProps> = ({ data = [], onRefresh }) => {
                         style={{ objectFit: "cover" }}
                     />
                     <div>
-                        <strong>{row.user.name}</strong><br />
-                        <small>{row.user.email}</small><br />
-                        <small>{row.user.phone_number ? `+${row.user.country_code} ${row.user.phone_number}` : 'N/A'}</small>
+                        <strong>{row?.user?.name}</strong><br />
+                        <small>{row?.user?.email}</small><br />
+                        {/* <small>{row.user.phone_number ? `+${row.user.country_code} ${row.user.phone_number}` : ''}</small> */}
                     </div>
                 </div>
             ),
         },
         {
             name: "Created On",
-            selector: (row: AccountRequest) => new Date(row.created_at).toLocaleDateString(),
+            selector: (row: AccountRequest) => formatDate(row.created_at),
             sortable: true,
         },
         {
