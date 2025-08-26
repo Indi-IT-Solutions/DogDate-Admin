@@ -35,7 +35,6 @@ const Account: React.FC<AccountProps> = ({ data = [], onRefresh }) => {
 
     const handleConfirm = async () => {
         if (!selectedRequest) return;
-
         try {
             setIsSubmitting(true);
             let response;
@@ -83,9 +82,9 @@ const Account: React.FC<AccountProps> = ({ data = [], onRefresh }) => {
                         style={{ objectFit: "cover" }}
                     />
                     <div>
-                        <strong>{row.user.name}</strong><br />
-                        <small>{row.user.email}</small><br />
-                        <small>{row.user.phone_number ? `+${row.user.country_code} ${row.user.phone_number}` : 'N/A'}</small>
+                        <strong>{row?.user?.name}</strong><br />
+                        <small>{row?.user?.email}</small><br />
+                        {/* <small>{row.user.phone_number ? `+${row.user.country_code} ${row.user.phone_number}` : ''}</small> */}
                     </div>
                 </div>
             ),
