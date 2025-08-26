@@ -129,17 +129,17 @@ const DogCharacters: React.FC = () => {
             wrap: true,
             width: "250px",
         },
-        {
-            name: "Description",
-            selector: (row: DogCharacter) => row.description || '',
-            wrap: true,
-            width: "300px",
-            cell: (row: DogCharacter) => (
-                <div style={{ maxWidth: '280px' }}>
-                    {row.description || 'No description'}
-                </div>
-            ),
-        },
+        // {
+        //     name: "Description",
+        //     selector: (row: DogCharacter) => row.description || '',
+        //     wrap: true,
+        //     width: "300px",
+        //     cell: (row: DogCharacter) => (
+        //         <div style={{ maxWidth: '280px' }}>
+        //             {row.description || 'No description'}
+        //         </div>
+        //     ),
+        // },
         {
             name: "Status",
             cell: (row: DogCharacter) => (
@@ -265,7 +265,7 @@ const DogCharacters: React.FC = () => {
                                 Enter the name of the dog character (e.g., Friendly, Playful, Calm)
                             </Form.Text>
                         </Form.Group>
-                        <Form.Group className="mb-3" controlId="dogCharacterDescription">
+                        {/* <Form.Group className="mb-3" controlId="dogCharacterDescription">
                             <Form.Label>Description (Optional)</Form.Label>
                             <Form.Control
                                 as="textarea"
@@ -278,7 +278,7 @@ const DogCharacters: React.FC = () => {
                             <Form.Text className="text-muted">
                                 Provide a brief description of the dog character
                             </Form.Text>
-                        </Form.Group>
+                        </Form.Group> */}
                     </Modal.Body>
                     <Modal.Footer>
                         <Button
