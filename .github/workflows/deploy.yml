@@ -17,7 +17,7 @@ jobs:
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.EC2_HOST }}
-          username: ubuntu
+          username: bitnami
           key: ${{ secrets.EC2_SSH_KEY }}
           timeout: 30m
           script: |
