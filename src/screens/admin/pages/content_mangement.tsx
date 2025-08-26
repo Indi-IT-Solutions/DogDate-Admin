@@ -148,13 +148,6 @@ const Pages: React.FC = () => {
       wrap: true,
       width: "250px",
     },
-
-    {
-      name: "Created Date",
-      cell: (row: Page) => formatDate(row.created_at),
-      width: "150px",
-      sortable: true,
-    },
     {
       name: "Actions",
       width: "100px",

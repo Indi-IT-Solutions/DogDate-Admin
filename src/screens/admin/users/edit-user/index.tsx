@@ -11,7 +11,7 @@ import type { MeetupAvailability } from "@/types/api.types";
 import { showError, showSuccess, handleApiError } from "@/utils/sweetAlert";
 import { getUserProfileImage } from "@/utils/imageUtils";
 import { IMAGES } from "@/contants/images";
-
+console.log('VITE_GOOGLE_PLACES_API_KEY :', import.meta.env.VITE_GOOGLE_PLACES_API_KEY);
 const ageRangeList = ["18 yrs+", "30 yrs+", "40 yrs+", "50 yrs+"];
 
 const EditUser: React.FC = () => {
@@ -455,28 +455,20 @@ const EditUser: React.FC = () => {
             <Col lg={6}>
               <Form.Group className="mb-3 form-group">
                 <Form.Label>Location</Form.Label>
-                {import.meta.env.VITE_GOOGLE_PLACES_API_KEY ? (
-                  <GooglePlacesAutocomplete
-                    apiKey={import.meta.env.VITE_GOOGLE_PLACES_API_KEY}
-                    selectProps={{
-                      value: location ? {
-                        label: location,
-                        value: location
-                      } : null,
-                      onChange: handlePlaceSelect,
-                      placeholder: "Search for a location...",
-                      isDisabled: isSubmitting
-                    }}
-                  />
-                ) : (
-                  <Form.Control
-                    type="text"
-                    value={location}
-                    onChange={(e) => setLocation(e.target.value)}
-                    placeholder="Enter location manually..."
-                    disabled={isSubmitting}
-                  />
-                )}
+
+                <GooglePlacesAutocomplete
+                  apiKey={'AIzaSyCLS0dQQTGrB4Mf4FyQjbHdEM3_2k94uoE'}
+                  selectProps={{
+                    value: location ? {
+                      label: location,
+                      value: location
+                    } : null,
+                    onChange: handlePlaceSelect,
+                    placeholder: "Search for a location...",
+                    isDisabled: isSubmitting
+                  }}
+                />
+
               </Form.Group>
             </Col>
             <Col lg={12}>

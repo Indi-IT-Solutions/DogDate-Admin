@@ -569,7 +569,7 @@ const UserView: React.FC = () => {
                                             {/* Phone number */}
                                             <div className="tablefilelist_grid">
                                                 <h4>Phone number</h4>
-                                                <p>{userData.phone_number ? `+${userData.country_code || ''} ${userData.phone_number}` : 'N/A'}</p>
+                                                <p>{userData.phone_number ? `${userData.country_code || ''} ${userData.phone_number}` : 'N/A'}</p>
                                             </div>
 
                                             {/* Location */}

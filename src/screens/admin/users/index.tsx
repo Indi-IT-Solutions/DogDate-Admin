@@ -330,9 +330,11 @@ const Users: React.FC = () => {
       <Row>
         <Col lg={12}>
           <div className="d-flex justify-content-between align-items-center dropSelect_option">
-            <h3 className="mb-0">Users</h3>
 
-            <div className="text-end mb-3">
+            <h5 className="text-dark">Dogs</h5>
+
+
+            <div className="text-end">
               <input
                 type="text"
                 placeholder="Search users..."

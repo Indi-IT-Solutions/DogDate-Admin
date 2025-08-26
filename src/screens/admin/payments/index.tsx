@@ -114,23 +114,23 @@ const Payments: React.FC = () => {
                 );
             },
         },
-        {
-            name: "Transaction Type",
-            width: "140px",
-            cell: (row: PaymentHistory) => {
-                let badgeClass = "bg-secondary";
+        // {
+        //     name: "Transaction Type",
+        //     width: "140px",
+        //     cell: (row: PaymentHistory) => {
+        //         let badgeClass = "bg-secondary";
 
-                // Color coding based on transaction type
-                if (row.transaction_type.includes('Auto-Renewable')) badgeClass = "bg-info";
-                else if (row.transaction_type.includes('Consumable')) badgeClass = "bg-success";
+        //         // Color coding based on transaction type
+        //         if (row.transaction_type.includes('Auto-Renewable')) badgeClass = "bg-info";
+        //         else if (row.transaction_type.includes('Consumable')) badgeClass = "bg-success";
 
-                return (
-                    <span className={`badge ${badgeClass}`} style={{ fontSize: '11px' }}>
-                        {row.transaction_type}
-                    </span>
-                );
-            },
-        },
+        //         return (
+        //             <span className={`badge ${badgeClass}`} style={{ fontSize: '11px' }}>
+        //                 {row.transaction_type}
+        //             </span>
+        //         );
+        //     },
+        // },
 
         {
             name: "Dog",
