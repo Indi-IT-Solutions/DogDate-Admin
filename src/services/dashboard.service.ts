@@ -41,10 +41,11 @@ export class DashboardService {
     }
 
     // Approve account request
-    static async approveAccountRequest(requestId: string): Promise<ApiResponse> {
+    static async approveAccountRequest(requestId: string, user_id: string): Promise<ApiResponse> {
         try {
             const response = await apiClient.post(DASHBOARD_ENDPOINTS.APPROVE_ACCOUNT, {
-                request_id: requestId
+                dog_profile_id: requestId,
+                user_id: user_id
             });
             return response.data;
         } catch (error: any) {
@@ -53,10 +54,11 @@ export class DashboardService {
     }
 
     // Reject account request
-    static async rejectAccountRequest(requestId: string, reason: string): Promise<ApiResponse> {
+    static async rejectAccountRequest(requestId: string, user_id: string, reason: string): Promise<ApiResponse> {
         try {
             const response = await apiClient.post(DASHBOARD_ENDPOINTS.REJECT_ACCOUNT, {
-                request_id: requestId,
+                dog_profile_id: requestId,
+                user_id: user_id,
                 reason: reason
             });
             return response.data;

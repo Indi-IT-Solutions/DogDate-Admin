@@ -93,8 +93,8 @@ export const DASHBOARD_ENDPOINTS = {
     STATS: '/admin/dashboard_v1/stats',
     RECENT_ACTIVITIES: '/admin/dashboard_v1/recent-activities',
     ACCOUNT_REQUESTS: '/admin/dashboard_v1/account-requests',
-    APPROVE_ACCOUNT: '/admin/dashboard_v1/approve-account',
-    REJECT_ACCOUNT: '/admin/dashboard_v1/reject-account',
+    APPROVE_ACCOUNT: '/admin/dog_profile_v1/approve_profile',
+    REJECT_ACCOUNT: '/admin/dog_profile_v1/reject_profile',
     USER_GROWTH: '/admin/dashboard_v1/user-growth',
     REVENUE_DATA: '/admin/dashboard_v1/revenue-data',
 };

@@ -40,13 +40,13 @@ const Account: React.FC<AccountProps> = ({ data = [], onRefresh }) => {
             let response;
 
             if (modalType === "accept") {
-                response = await DashboardService.approveAccountRequest(selectedRequest._id);
+                response = await DashboardService.approveAccountRequest(selectedRequest?.dog?._id, selectedRequest?.user?._id);
             } else {
                 if (!reason.trim()) {
                     showError("Validation Error", "Please provide a reason for rejection");
                     return;
                 }
-                response = await DashboardService.rejectAccountRequest(selectedRequest._id, reason);
+                response = await DashboardService.rejectAccountRequest(selectedRequest?.dog?._id, selectedRequest?.user?._id, reason);
             }
 
             if (response.status === 1) {
