@@ -1,6 +1,6 @@
 // API Base Configuration
 export const API_CONFIG = {
-    BASE_URL: import.meta.env.VITE_BASE_URL || 'http://localhost:3100/',
+    BASE_URL: import.meta.env.VITE_BASE_URL || 'https://dogdate.indiitserver.in:3100/',
     TIMEOUT: 30000,
 };
 
