@@ -31,3 +31,5 @@ jobs:
             docker build -t dogdate-admin .
             echo "Running the Docker container..."
             docker run -d -p 5001:80 --name dogdate-admin dogdate-admin
+
+            # asd
