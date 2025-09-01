@@ -5,7 +5,7 @@ on:
     branches: [main]
 
 env:
-  DO_PROJECT_DIR: /home/bitnami/DogDate-Admin
+  DO_PROJECT_DIR: /home/ubuntu/DogDate/DogDate-Admin
 
 jobs:
   build-deploy:
@@ -17,7 +17,7 @@ jobs:
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.EC2_HOST }}
-          username: bitnami
+          username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           timeout: 30m
           script: |
