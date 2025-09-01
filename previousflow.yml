@@ -1,0 +1,33 @@
+name: Deploy to AWS EC2
+
+on:
+  push:
+    branches: [main]
+
+env:
+  DO_PROJECT_DIR: /home/bitnami/DogDate-Admin
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: SSH to EC2 and deploy
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: bitnami
+          key: ${{ secrets.EC2_SSH_KEY }}
+          timeout: 30m
+          script: |
+            cd ${{ env.DO_PROJECT_DIR }} 
+            echo "Deploying to Dogdate Admin"
+            git pull origin main
+            echo "Stopping existing containers..." 
+            docker stop dogdate-admin || true
+            docker rm dogdate-admin || true
+            echo "Building the Docker image..."
+            docker build -t dogdate-admin .
+            echo "Running the Docker container..."
+            docker run -d -p 5001:80 --name dogdate-admin dogdate-admin
