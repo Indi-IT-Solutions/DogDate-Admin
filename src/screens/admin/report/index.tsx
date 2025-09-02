@@ -204,6 +204,18 @@ const Report: React.FC = () => {
             ),
         },
         {
+            name: "Status",
+            cell: (row: any) => getStatusBadge(row?.status),
+            width: "100px",
+            sortable: false,
+        },
+        {
+            name: "Date",
+            cell: (row: any) => formatDateTime(row?.created_at),
+            width: "150px",
+            sortable: false,
+        },
+        {
             name: "Action",
             width: "100px",
             cell: (row: ReportType) => (
@@ -218,18 +230,7 @@ const Report: React.FC = () => {
             ),
             center: true,
         },
-        {
-            name: "Status",
-            cell: (row: any) => getStatusBadge(row?.status),
-            width: "100px",
-            sortable: false,
-        },
-        {
-            name: "Date",
-            cell: (row: any) => formatDateTime(row?.created_at),
-            width: "150px",
-            sortable: false,
-        },
+
     ];
 
     return (

@@ -81,10 +81,11 @@ const Payments: React.FC = () => {
         {
             name: "Payment ID",
             selector: (row: PaymentHistory) => row._id,
-            width: "120px",
+            width: "140px",
+            wrap: true,
             cell: (row: PaymentHistory) => (
                 <span className="text-primary" style={{ fontWeight: 500, fontSize: 12 }}>
-                    {row._id.slice(-8)}...
+                    {row?._id}
                 </span>
             ),
         },
@@ -92,8 +93,8 @@ const Payments: React.FC = () => {
             name: "Purpose",
             width: "160px",
             cell: (row: PaymentHistory) => {
-                const purpose = getPaymentTypeDisplay(row.relation_with, row.transaction_type);
-                const description = getPaymentPurposeDescription(row.relation_with);
+                const purpose = getPaymentTypeDisplay(row?.relation_with, row?.transaction_type);
+                const description = getPaymentPurposeDescription(row?.relation_with);
                 let badgeClass = "bg-info";
 
                 // Color coding based on purpose
@@ -132,47 +133,47 @@ const Payments: React.FC = () => {
         //     },
         // },
 
-        {
-            name: "Dog",
-            width: "220px",
-            cell: (row: PaymentHistory) => {
-                const dogDetails = row.dog_details;
-                if (!dogDetails) {
-                    return (
-                        <div className="text-muted" style={{ fontSize: 12 }}>
-                            No dog data
-                        </div>
-                    );
-                }
-                return (
-                    <div className="d-flex align-items-center">
-                        <Image
-                            src={
-                                (typeof dogDetails.profile_picture === 'string'
-                                    ? dogDetails.profile_picture
-                                    : dogDetails.profile_picture?.file_path) || IMAGES.Dog
-                            }
-                            roundedCircle
-                            width={40}
-                            height={40}
-                            alt={dogDetails.dog_name || 'Dog'}
-                            style={{ objectFit: "cover", marginRight: 10, border: "1px solid #eee" }}
-                        />
-                        <div>
-                            <div style={{ fontWeight: 600 }}>{dogDetails.dog_name || 'N/A'}</div>
-                            <div className="text-muted" style={{ fontSize: 12 }}>
-                                {safeGetString(dogDetails.breed) || 'Unknown breed'}
-                            </div>
-                        </div>
-                    </div>
-                );
-            },
-        },
+        // {
+        //     name: "Dog",
+        //     width: "220px",
+        //     cell: (row: PaymentHistory) => {
+        //         const dogDetails = row?.dog_details;
+        //         if (!dogDetails) {
+        //             return (
+        //                 <div className="text-muted" style={{ fontSize: 12 }}>
+        //                     No dog data
+        //                 </div>
+        //             );
+        //         }
+        //         return (
+        //             <div className="d-flex align-items-center">
+        //                 <Image
+        //                     src={
+        //                         (typeof dogDetails?.profile_picture === 'string'
+        //                             ? dogDetails?.profile_picture
+        //                             : dogDetails?.profile_picture?.file_path) || IMAGES.Dog
+        //                     }
+        //                     roundedCircle
+        //                     width={40}
+        //                     height={40}
+        //                     alt={dogDetails?.dog_name || 'Dog'}
+        //                     style={{ objectFit: "cover", marginRight: 10, border: "1px solid #eee" }}
+        //                 />
+        //                 <div>
+        //                     <div style={{ fontWeight: 600 }}>{dogDetails?.dog_name || 'N/A'}</div>
+        //                     <div className="text-muted" style={{ fontSize: 12 }}>
+        //                         {safeGetString(dogDetails?.breed) || 'Unknown breed'}
+        //                     </div>
+        //                 </div>
+        //             </div>
+        //         );
+        //     },
+        // },
         {
             name: "User",
             width: "260px",
             cell: (row: PaymentHistory) => {
-                const userDetails = row.user_details;
+                const userDetails = row?.user_details;
                 if (!userDetails) {
                     return (
                         <div className="text-muted" style={{ fontSize: 12 }}>
@@ -184,7 +185,7 @@ const Payments: React.FC = () => {
                     <div className="d-flex align-items-center">
 
                         <div>
-                            <div style={{ fontWeight: 600 }}>{userDetails.name || 'N/A'}</div>
+                            <div style={{ fontWeight: 600 }}>{userDetails?.name || 'N/A'}</div>
                             <div className="text-muted" style={{ fontSize: 12 }}>{userDetails.email || 'N/A'}</div>
                         </div>
                     </div>
@@ -196,7 +197,7 @@ const Payments: React.FC = () => {
             width: "110px",
             cell: (row: PaymentHistory) => (
                 <span className="text-dark" style={{ fontWeight: 600 }}>
-                    ${(row.paid_price / 1000).toFixed(2)}
+                    ${(row?.paid_price / 1000).toFixed(2)}
                 </span>
             ),
         },
@@ -205,14 +206,14 @@ const Payments: React.FC = () => {
             width: "120px",
             cell: (row: PaymentHistory) => (
                 <span className="text-muted" style={{ fontSize: 12 }}>
-                    {formatDate(row.payment_time)}
+                    {formatDate(row?.payment_time)}
                 </span>
             ),
         },
         {
             name: "Status",
             cell: (row: PaymentHistory) => {
-                const status = getPaymentStatusDisplay(row.status);
+                const status = getPaymentStatusDisplay(row?.status);
                 return (
                     <span className={`badge ${status === "Success" ? "bg-success" : "bg-danger"} text-capitalize`}>
                         {status}
@@ -221,21 +222,7 @@ const Payments: React.FC = () => {
             },
             width: "100px"
         },
-        // {
-        //     name: "Actions",
-        //     center: true,
-        //     sortable: false,
-        //     cell: (row: PaymentHistory) => (
-        //         <OverlayTrigger
-        //             placement="top"
-        //             overlay={<Tooltip id="view-tooltip">View</Tooltip>}
-        //         >
-        //             <Link to={`/payments/view-payment?id=${row._id}`}>
-        //                 <Icon icon="ri:eye-line" width={20} height={20} className="text-primary" />
-        //             </Link>
-        //         </OverlayTrigger>
-        //     ),
-        // },
+
     ];
 
     // Fetch payments data

@@ -270,10 +270,14 @@ const UserView: React.FC = () => {
         {
             name: "Type",
             selector: (row: any) => row.relation_with,
-            width: "220px",
+            width: "200px",
+            wrap: true,
             cell: (row: any) => (
-                <span className="badge bg-info text-capitalize">
-                    {row.relation_with?.replace(/_/g, ' ') || 'N/A'}
+                <span className="badge bg-info text-capitalize" style={{
+                    whiteSpace: 'break-spaces',
+                    textAlign: 'left'
+                }}>
+                    {row?.relation_with?.replace(/_/g, ' ') || 'N/A'}
                 </span>
             ),
         },
@@ -287,36 +291,36 @@ const UserView: React.FC = () => {
                 </span>
             ),
         },
-        {
-            name: "Dog",
-            width: "220px",
-            cell: (row: any) => (
-                <div className="d-flex align-items-center gap-2">
-                    {row.dog_details ? (
-                        <>
-                            <img
-                                src={row.dog_details.profile_picture || IMAGES.Dog}
-                                alt={row.dog_details.dog_name || 'Dog'}
-                                className="rounded"
-                                width={40}
-                                height={40}
-                                style={{ objectFit: "cover", border: "1px solid #eee" }}
-                                onError={(e) => {
-                                    const target = e.target as HTMLImageElement;
-                                    target.src = IMAGES.Dog;
-                                }}
-                            />
-                            <div>
-                                <div><strong>{row.dog_details.dog_name || 'Unknown'}</strong></div>
-                                <small className="text-muted">{row.dog_details.breed || 'Unknown breed'}</small>
-                            </div>
-                        </>
-                    ) : (
-                        <span className="text-muted">No dog associated</span>
-                    )}
-                </div>
-            ),
-        },
+        // {
+        //     name: "Dog",
+        //     width: "220px",
+        //     cell: (row: any) => (
+        //         <div className="d-flex align-items-center gap-2">
+        //             {row.dog_details ? (
+        //                 <>
+        //                     <img
+        //                         src={row.dog_details.profile_picture || IMAGES.Dog}
+        //                         alt={row.dog_details.dog_name || 'Dog'}
+        //                         className="rounded"
+        //                         width={40}
+        //                         height={40}
+        //                         style={{ objectFit: "cover", border: "1px solid #eee" }}
+        //                         onError={(e) => {
+        //                             const target = e.target as HTMLImageElement;
+        //                             target.src = IMAGES.Dog;
+        //                         }}
+        //                     />
+        //                     <div>
+        //                         <div><strong>{row.dog_details.dog_name || 'Unknown'}</strong></div>
+        //                         <small className="text-muted">{row.dog_details.breed || 'Unknown breed'}</small>
+        //                     </div>
+        //                 </>
+        //             ) : (
+        //                 <span className="text-muted">No dog associated</span>
+        //             )}
+        //         </div>
+        //     ),
+        // },
         {
             name: "Amount",
             selector: (row: any) => row.paid_price,
@@ -636,9 +640,9 @@ const UserView: React.FC = () => {
                             </Col>
                         </Row>
 
-                        <hr className="my-4" />
+                        {/* <hr className="my-4" /> */}
 
-                        <h4>Additional Information</h4>
+                        {/* <h4>Additional Information</h4>
 
                         <div className="talefile_list mt-4">
                             <Row>
@@ -657,13 +661,13 @@ const UserView: React.FC = () => {
                                             <span className="badge bg-secondary">Disabled</span>}
                                         </p>
                                     </div>
-                                    {/* <div className="tablefilelist_grid">
+                                    <div className="tablefilelist_grid">
                                         <h4>Profile Completed</h4>
                                         <p>{userData.submit_personal_details ?
                                             <span className="badge bg-success">Yes</span> :
                                             <span className="badge bg-warning">Incomplete</span>}
                                         </p>
-                                    </div> */}
+                                    </div>
                                 </Col>
                                 <Col md={6}>
                                     <div className="tablefilelist_grid">
@@ -676,20 +680,20 @@ const UserView: React.FC = () => {
                                             </span>
                                         </p>
                                     </div>
-                                    {/* <div className="tablefilelist_grid">
+                                    <div className="tablefilelist_grid">
                                         <h4>Terms Accepted</h4>
                                         <p>{userData.terms_and_conditions ?
                                             <span className="badge bg-success">Yes</span> :
                                             <span className="badge bg-danger">No</span>}
                                         </p>
-                                    </div> */}
+                                    </div>
                                     <div className="tablefilelist_grid">
                                         <h4>Last Updated</h4>
                                         <p>{formatDate(userData.updated_at)}</p>
                                     </div>
                                 </Col>
                             </Row>
-                        </div>
+                        </div> */}
 
                     </div>
                 </Card.Body>
