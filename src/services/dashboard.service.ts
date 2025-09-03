@@ -59,7 +59,7 @@ export class DashboardService {
             const response = await apiClient.post(DASHBOARD_ENDPOINTS.REJECT_ACCOUNT, {
                 dog_profile_id: requestId,
                 user_id: user_id,
-                reason: reason
+                reject_reason: reason
             });
             return response.data;
         } catch (error: any) {

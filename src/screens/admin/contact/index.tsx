@@ -57,15 +57,12 @@ const ContactUs: React.FC = () => {
 
     const fetchContactQueries = async (page: number = 1, searchTerm: string = '') => {
         try {
-
             setError("");
-
             const response: any = await ContactService.getContactQueries({
                 page,
                 limit: 10,
                 search: searchTerm
             });
-
             setContactData(response.data || []);
             setPagination({
                 current_page: response.meta?.current_page || 1,
