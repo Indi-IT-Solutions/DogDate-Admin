@@ -23,7 +23,7 @@ const ProfileSettings: React.FC = () => {
 
   const fetchProfile = async () => {
     try {
-      setLoading(true);
+
       setError("");
 
       const profileData = await ProfileService.getProfile();

@@ -25,6 +25,8 @@ export { PageService } from './page.service';
 export { FAQService } from './faq.service';
 export { ProfileService } from './profile.service';
 export { AWSService } from './aws.service';
+export { SubAdminService } from './subadmin.service';
+export { RedeemableCoinService } from './redeemable-coin.service';
 
 // Default exports
 export { default as AuthServiceDefault } from './auth.service';
@@ -33,3 +35,5 @@ export { default as DogServiceDefault } from './dog.service';
 export { default as ContentServiceDefault } from './content.service';
 export { default as DashboardServiceDefault } from './dashboard.service';
 export { default as PaymentServiceDefault } from './payment.service';
+export { default as SubAdminServiceDefault } from './subadmin.service';
+export { default as RedeemableCoinServiceDefault } from './redeemable-coin.service';

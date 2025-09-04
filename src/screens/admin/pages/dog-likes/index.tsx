@@ -29,7 +29,7 @@ const DogLikes: React.FC = () => {
 
     const fetchDogLikes = async () => {
         try {
-            setLoading(true);
+
             setError("");
 
             const response = await DogLikeService.getDogLikes();

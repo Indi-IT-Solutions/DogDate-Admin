@@ -136,26 +136,26 @@ const Account: React.FC<AccountProps> = ({ data = [], onRefresh }) => {
                             <Icon icon="ri:eye-line" width={20} height={20} className="text-primary" />
                         </Link>
                     </OverlayTrigger>
-                    {row.status === 'pending' && (
-                        <>
-                            <OverlayTrigger
-                                placement="top"
-                                overlay={<Tooltip id="accept-tooltip">Accept</Tooltip>}
-                            >
-                                <Link to="javascript:void(0)" onClick={() => handleShow("accept", row)}>
-                                    <Icon icon="mdi:check" width={20} height={20} className="text-success" />
-                                </Link>
-                            </OverlayTrigger>
-                            <OverlayTrigger
-                                placement="top"
-                                overlay={<Tooltip id="reject-tooltip">Reject</Tooltip>}
-                            >
-                                <Link to="javascript:void(0)" onClick={() => handleShow("reject", row)}>
-                                    <Icon icon="icon-park-outline:close-one" width={20} height={20} className="text-danger" />
-                                </Link>
-                            </OverlayTrigger>
-                        </>
-                    )}
+                    {/* {row.status === 'pending' && ( */}
+                    <>
+                        <OverlayTrigger
+                            placement="top"
+                            overlay={<Tooltip id="accept-tooltip">Accept</Tooltip>}
+                        >
+                            <Link to="javascript:void(0)" onClick={() => handleShow("accept", row)}>
+                                <Icon icon="mdi:check" width={20} height={20} className="text-success" />
+                            </Link>
+                        </OverlayTrigger>
+                        <OverlayTrigger
+                            placement="top"
+                            overlay={<Tooltip id="reject-tooltip">Reject</Tooltip>}
+                        >
+                            <Link to="javascript:void(0)" onClick={() => handleShow("reject", row)}>
+                                <Icon icon="icon-park-outline:close-one" width={20} height={20} className="text-danger" />
+                            </Link>
+                        </OverlayTrigger>
+                    </>
+                    {/* )} */}
                 </div>
             ),
         },

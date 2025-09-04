@@ -6,6 +6,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 
 import { Sentry } from "react-activity";
 import AdminRoutes from "./routes/AdminRoutes";
+import { PermissionsProvider } from "./context/PermissionsContext";
 import ScrollToTop from "./components/ScrollToTop";
 
 function App() {
@@ -28,7 +29,9 @@ function App() {
       ) : (
         <Router basename={base}>
           <ScrollToTop />
-          <AdminRoutes />
+          <PermissionsProvider>
+            <AdminRoutes />
+          </PermissionsProvider>
         </Router>
       )}
     </>

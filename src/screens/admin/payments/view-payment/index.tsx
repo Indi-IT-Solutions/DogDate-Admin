@@ -92,10 +92,10 @@ const ViewPayment: React.FC = () => {
         }
 
         try {
-            setLoading(true);
+
             setError('');
 
-            const response = await PaymentService.getPaymentById(paymentId);
+            const response: any = await PaymentService.getPaymentById(paymentId);
             setPaymentData(response);
         } catch (err: any) {
             console.error('❌ Error fetching payment:', err);

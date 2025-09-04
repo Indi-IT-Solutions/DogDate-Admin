@@ -61,12 +61,25 @@ const Login: React.FC = () => {
           return;
         }
 
-        console.log('Login successful, navigating to dashboard...');
+        console.log('Login successful, deciding landing route...');
+
+        // Decide landing route based on role and allowed routes from payload/local store
+        const userDetails: any = (response as any)?.data?.user_details || storedUser;
+        const isAdminUser = userDetails?.type === 'admin';
+        const allowedRoutesFromPayload: string[] = Array.isArray(userDetails?.allowed_routes) ? userDetails.allowed_routes : [];
+
+        let targetRoute = '/dashboard';
+        if (!isAdminUser) {
+          if (allowedRoutesFromPayload.length > 0) {
+            targetRoute = allowedRoutesFromPayload[0];
+          }
+          if (targetRoute === '/pages') targetRoute = '/pages/content-management';
+        }
 
         // Small delay to ensure everything is properly set
         setTimeout(() => {
-          navigate("/dashboard", { replace: true });
-        }, 100);
+          navigate(targetRoute, { replace: true });
+        }, 50);
 
       } else {
         console.error('Login failed with status:', response.status);

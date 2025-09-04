@@ -29,7 +29,6 @@ const DogBreeds: React.FC = () => {
 
     const fetchBreeds = async () => {
         try {
-            setLoading(true);
             setError("");
 
             const response = await BreedService.getBreeds();

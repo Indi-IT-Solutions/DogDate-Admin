@@ -74,7 +74,6 @@ const SubscriptionPackages: React.FC = () => {
     // Fetch subscription packages data
     const fetchSubscriptionPackages = async (page: number = 1, searchTerm: string = '') => {
         try {
-            setLoading(true);
             setError('');
 
             const response = await SubscriptionService.getSubscriptionPackages({

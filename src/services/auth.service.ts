@@ -20,6 +20,10 @@ export class AuthService {
                 const { token, user_details } = response.data.data;
                 tokenManager.setToken(token);
                 tokenManager.setUserData(user_details);
+                // Notify app of successful login so permissions can refresh immediately
+                try {
+                    window.dispatchEvent(new Event('auth:login'));
+                } catch { }
             }
 
             return response.data;

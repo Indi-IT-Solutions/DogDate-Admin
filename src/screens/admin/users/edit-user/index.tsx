@@ -55,7 +55,7 @@ const EditUser: React.FC = () => {
     }
 
     try {
-      setLoading(true);
+
       setError("");
 
       console.log('🔍 Fetching user data for ID:', userId);

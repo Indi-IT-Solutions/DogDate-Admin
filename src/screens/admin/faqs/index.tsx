@@ -59,7 +59,7 @@ const FAQs: React.FC = () => {
 
     const fetchFAQs = async () => {
         try {
-            setLoading(true);
+
             setError("");
 
             const response = await FAQService.getFAQs({ search: searchText });
@@ -154,7 +154,7 @@ const FAQs: React.FC = () => {
         {
             name: "Order",
             selector: (row: FAQ) => row.order,
-            width: "90px",
+
             sortable: true,
             center: true,
         },
@@ -189,19 +189,19 @@ const FAQs: React.FC = () => {
                     {row.status}
                 </span>
             ),
-            width: "120px",
+
             sortable: true,
             center: true,
         },
         {
             name: "Updated Date",
             cell: (row: FAQ) => formatDateTime(row.updated_at),
-            width: "150px",
+
             sortable: true,
         },
         {
             name: "Action",
-            width: "120px",
+
             cell: (row: FAQ) => (
                 <div className="d-flex gap-2 justify-content-center">
                     <OverlayTrigger

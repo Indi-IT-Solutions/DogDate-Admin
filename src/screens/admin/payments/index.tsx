@@ -81,17 +81,17 @@ const Payments: React.FC = () => {
         {
             name: "Payment ID",
             selector: (row: PaymentHistory) => row._id,
-            width: "140px",
+
             wrap: true,
             cell: (row: PaymentHistory) => (
                 <span className="text-primary" style={{ fontWeight: 500, fontSize: 12 }}>
-                    {row?._id}
+                    {row?.purchase_id}
                 </span>
             ),
         },
         {
             name: "Purpose",
-            width: "160px",
+
             cell: (row: PaymentHistory) => {
                 const purpose = getPaymentTypeDisplay(row?.relation_with, row?.transaction_type);
                 const description = getPaymentPurposeDescription(row?.relation_with);
@@ -171,7 +171,7 @@ const Payments: React.FC = () => {
         // },
         {
             name: "User",
-            width: "260px",
+
             cell: (row: PaymentHistory) => {
                 const userDetails = row?.user_details;
                 if (!userDetails) {
@@ -194,7 +194,7 @@ const Payments: React.FC = () => {
         },
         {
             name: "Amount",
-            width: "110px",
+
             cell: (row: PaymentHistory) => (
                 <span className="text-dark" style={{ fontWeight: 600 }}>
                     ${(row?.paid_price / 1000).toFixed(2)}
@@ -203,7 +203,7 @@ const Payments: React.FC = () => {
         },
         {
             name: "Date",
-            width: "120px",
+
             cell: (row: PaymentHistory) => (
                 <span className="text-muted" style={{ fontSize: 12 }}>
                     {formatDate(row?.payment_time)}
@@ -220,7 +220,7 @@ const Payments: React.FC = () => {
                     </span>
                 );
             },
-            width: "100px"
+
         },
 
     ];
@@ -228,7 +228,7 @@ const Payments: React.FC = () => {
     // Fetch payments data
     const fetchPayments = async (page: number = 1, searchTerm: string = '') => {
         try {
-            setLoading(true);
+
             setError('');
 
             const response = await PaymentService.getPayments({

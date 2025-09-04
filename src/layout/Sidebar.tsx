@@ -4,6 +4,7 @@ import logo_dark from "../assets/img/logo.png";
 import { Icon } from "@iconify/react";
 import { IMAGES } from "@/contants/images";
 import { AuthService } from "@/services";
+import { usePermissions } from "@/context/PermissionsContext";
 import { showConfirmation } from "@/utils/sweetAlert";
 
 interface SubmenuItem {
@@ -89,6 +90,12 @@ const Sidebar: React.FC = () => {
       icon: "mdi:view-grid-outline",
     },
     {
+      id: "SubAdmins",
+      title: "Sub Admins",
+      link: "/sub-admins",
+      icon: "mdi:account-cog-outline",
+    },
+    {
       id: "Users",
       title: "Users",
       link: "/users",
@@ -124,6 +131,12 @@ const Sidebar: React.FC = () => {
       title: "Reported Users",
       link: "/report",
       icon: "mdi:alert-circle-outline",
+    },
+    {
+      id: "FreeFeatures",
+      title: "Free Features",
+      link: "/gifting",
+      icon: "mdi:gift-open",
     },
     {
       id: "Pages",
@@ -178,6 +191,27 @@ const Sidebar: React.FC = () => {
     },
   ];
 
+  // Permissions-based filtering
+  const { allowedRoutes } = usePermissions();
+  const user = AuthService.getCurrentUser();
+  const isAdmin = (user as any)?.type === 'admin';
+
+  const isAllowed = (route: string) => {
+    if (isAdmin) return true;
+    // Group access example: one '/pages' enables all /pages/*
+    const hasPagesGroup = allowedRoutes.includes('/pages');
+    if (route.startsWith('/pages')) return hasPagesGroup || allowedRoutes.some(prefix => route === prefix || route.startsWith(prefix + '/'));
+    // Always show "Profile Settings" to manage own profile
+    if (route === '/profile-settings' || route.startsWith('/profile-settings')) return true;
+    return allowedRoutes.some(prefix => route === prefix || route.startsWith(prefix + '/'));
+  };
+
+  const visiblePages: Page[] = pages
+    .filter(p => p.link === '#' || isAllowed(p.link))
+    .map(p => p.submenu ? ({
+      ...p,
+      submenu: (p.submenu || []).filter(s => isAllowed(s.link)),
+    }) : p);
 
   return (
     <>
@@ -202,7 +236,7 @@ const Sidebar: React.FC = () => {
           </Link>
         </div>
         <div className="sidebarouter">
-          {pages.map((page) => (
+          {visiblePages.map((page) => (
             <div key={page.id} className="navitem-container">
               <NavLink
                 to={page.link}

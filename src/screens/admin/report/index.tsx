@@ -51,7 +51,6 @@ const Report: React.FC = () => {
     const [reportData, setReportData] = useState<any[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string>("");
-    const [success, setSuccess] = useState<string>("");
     const [deleting, setDeleting] = useState<boolean>(false);
     const [pagination, setPagination] = useState<PaginationMeta>({
         current_page: 1,
@@ -77,7 +76,7 @@ const Report: React.FC = () => {
 
     const fetchReports = async (page: number = 1, searchTerm: string = '') => {
         try {
-            setLoading(true);
+
             setError("");
 
             const response: any = await ReportService.getReports({

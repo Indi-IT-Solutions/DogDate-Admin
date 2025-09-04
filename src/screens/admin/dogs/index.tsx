@@ -16,7 +16,7 @@ const Dogs: React.FC = () => {
     const [show, setShow] = useState<boolean>(false);
     const [selectedDog, setSelectedDog] = useState<Dog | null>(null);
     const [dogsData, setDogsData] = useState<Dog[]>([]);
-    const [loading, setLoading] = useState<boolean>(false);
+    const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string>("");
     const [totalRows, setTotalRows] = useState<number>(0);
     const [currentPage, setCurrentPage] = useState<number>(1);
@@ -43,7 +43,7 @@ const Dogs: React.FC = () => {
     // Fetch dogs with debounced search
     const fetchDogs = async (page: number = 1, limit: number = 10, search?: string) => {
         try {
-            setLoading(true);
+
             setError("");
 
             const filters: DogFilters = {

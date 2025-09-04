@@ -30,15 +30,6 @@ export class DashboardService {
         }
     }
 
-    // Get account requests (pending dog profile approvals)
-    static async getAccountRequests(): Promise<ApiResponse<AccountRequest[]>> {
-        try {
-            const response = await apiClient.get(DASHBOARD_ENDPOINTS.ACCOUNT_REQUESTS);
-            return response.data;
-        } catch (error: any) {
-            throw error.response?.data || error;
-        }
-    }
 
     // Approve account request
     static async approveAccountRequest(requestId: string, user_id: string): Promise<ApiResponse> {

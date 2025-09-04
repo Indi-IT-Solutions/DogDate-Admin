@@ -29,7 +29,7 @@ const DogCharacters: React.FC = () => {
 
     const fetchDogCharacters = async () => {
         try {
-            setLoading(true);
+
             setError("");
 
             const response = await DogCharacterService.getDogCharacters();

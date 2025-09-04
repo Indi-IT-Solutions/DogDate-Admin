@@ -78,7 +78,7 @@ const Pages: React.FC = () => {
 
   const fetchPages = async () => {
     try {
-      setLoading(true);
+
       setError("");
 
       const response = await PageService.getPages();

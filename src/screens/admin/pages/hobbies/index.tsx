@@ -29,7 +29,7 @@ const Hobbies: React.FC = () => {
 
     const fetchHobbies = async () => {
         try {
-            setLoading(true);
+
             setError("");
 
             const response = await HobbyService.getHobbies();

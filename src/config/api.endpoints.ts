@@ -92,7 +92,6 @@ export const DASHBOARD_ENDPOINTS = {
     OVERVIEW: '/admin/dashboard_v1/overview',
     STATS: '/admin/dashboard_v1/stats',
     RECENT_ACTIVITIES: '/admin/dashboard_v1/recent-activities',
-    ACCOUNT_REQUESTS: '/admin/dashboard_v1/account-requests',
     APPROVE_ACCOUNT: '/admin/dog_profile_v1/approve_profile',
     REJECT_ACCOUNT: '/admin/dog_profile_v1/reject_profile',
     USER_GROWTH: '/admin/dashboard_v1/user-growth',
@@ -174,4 +173,21 @@ export const PROFILE_ENDPOINTS = {
     GET_PROFILE: '/admin/profile_v1',
     UPDATE_PROFILE: '/admin/profile_v1',
     CHANGE_PASSWORD: '/admin/profile_v1/change-password',
-}; 
+};
+
+// Sub Admin Management Endpoints
+export const SUB_ADMIN_ENDPOINTS = {
+    LIST: '/admin/sub_admin_v1',
+    CREATE: '/admin/sub_admin_v1',
+    GET_BY_ID: (id: string) => `/admin/sub_admin_v1/${id}`,
+    UPDATE: (id: string) => `/admin/sub_admin_v1/${id}`,
+    UPDATE_STATUS: (id: string) => `/admin/sub_admin_v1/${id}/status`,
+    DELETE: (id: string) => `/admin/sub_admin_v1/${id}`,
+};
+
+// Redeemable Coin (Gift Matches) Endpoints
+export const REDEEMABLE_COIN_ENDPOINTS = {
+    ADD: '/admin/redeemable_coin_v1/add',
+    LIST: '/admin/redeemable_coin_v1/list',
+    BULK_ADD: '/admin/redeemable_coin_v1/bulk_add',
+};

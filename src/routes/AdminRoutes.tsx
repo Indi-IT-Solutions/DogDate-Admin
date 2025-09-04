@@ -24,6 +24,9 @@ import DogLikes from "@/screens/admin/pages/dog-likes";
 import ProtectedRoute from "../components/ProtectedRoute";
 import PublicRoute from "../components/PublicRoute";
 import NotFound from "../components/NotFound";
+import SubAdmins from "@/screens/admin/sub-admins";
+import AddSubAdmin from "@/screens/admin/sub-admins/add-subadmin";
+import Gifting from "@/screens/admin/gifting";
 
 const AdminRoutes = () => {
   return (
@@ -191,6 +194,36 @@ const AdminRoutes = () => {
           <ProtectedRoute>
             <Layout title={"FAQs"}>
               <FAQs />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/sub-admins"
+        element={
+          <ProtectedRoute>
+            <Layout title={"Sub Admins"}>
+              <SubAdmins />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/sub-admins/add"
+        element={
+          <ProtectedRoute>
+            <Layout title={"Add Sub Admin"}>
+              <AddSubAdmin />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/gifting"
+        element={
+          <ProtectedRoute>
+            <Layout title={"Free Features"}>
+              <Gifting />
             </Layout>
           </ProtectedRoute>
         }

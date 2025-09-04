@@ -4,7 +4,7 @@ import { Icon } from "@iconify/react";
 import DataTable from "react-data-table-component";
 import { Link } from "react-router-dom";
 import { IMAGES } from "@/contants/images";
-import { UserService, type User, type UserFilters } from "@/services";
+import { UserService, RedeemableCoinService, type User, type UserFilters } from "@/services";
 import { showError, showSuccess, handleApiError } from "@/utils/sweetAlert";
 import { getUserProfileImage } from "@/utils/imageUtils";
 import { formatDate } from "@/utils/dateUtils";
@@ -23,8 +23,10 @@ const Users: React.FC = () => {
   // Modal states
   const [show, setShow] = useState(false);
   const [show1, setShow1] = useState(false);
+  const [showGift, setShowGift] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [newPassword, setNewPassword] = useState("");
+  const [giftAmount, setGiftAmount] = useState<number | "">("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [passwordValidation, setPasswordValidation] = useState({
@@ -81,10 +83,22 @@ const Users: React.FC = () => {
     setShow1(true);
   };
 
+  const handleOpenGift = (user: User) => {
+    setSelectedUser(user);
+    setGiftAmount("");
+    setShowGift(true);
+  };
+
+  const handleCloseGift = () => {
+    setShowGift(false);
+    setSelectedUser(null);
+    setGiftAmount("");
+  };
+
   // Fetch users data
   const fetchUsers = async (page: number = 1, limit: number = 10, search?: string) => {
     try {
-      setLoading(true);
+
       setError("");
 
       const filters: UserFilters = {
@@ -320,6 +334,14 @@ const Users: React.FC = () => {
               <Icon icon="icon-park-outline:close-one" width={20} height={20} className="text-danger" />
             </Link>
           </OverlayTrigger>
+          <OverlayTrigger
+            placement="top"
+            overlay={<Tooltip id="gift-tooltip">Give Free Matches</Tooltip>}
+          >
+            <Link to="javascript:void(0)" onClick={() => handleOpenGift(row)}>
+              <Icon icon="mdi:gift" width={20} height={20} className="text-info" />
+            </Link>
+          </OverlayTrigger>
         </div>
       ),
     },
@@ -331,7 +353,7 @@ const Users: React.FC = () => {
         <Col lg={12}>
           <div className="d-flex justify-content-between align-items-center dropSelect_option">
 
-            <h5 className="text-dark">Dogs</h5>
+            <h5 className="text-dark">Users</h5>
 
 
             <div className="text-end">
@@ -459,6 +481,62 @@ const Users: React.FC = () => {
           >
             {isSubmitting ? "Updating..." : "Update Password"}
           </Button>
+        </Modal.Body>
+      </Modal>
+
+      {/* Gift Matches Modal */}
+      <Modal show={showGift} onHide={handleCloseGift} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>
+            <h2 className="modalhead">Gift Matches</h2>
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <p className="mb-3">How many matches would you like to gift to <strong>{selectedUser?.name}</strong>?</p>
+          <Form>
+            <Form.Group className="mb-3 form-group">
+              <Form.Label>Number of matches</Form.Label>
+              <Form.Control
+                type="number"
+                placeholder="Enter amount"
+                value={giftAmount}
+                min={1}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  const n = Number(v);
+                  if (v === '') setGiftAmount('');
+                  else if (!Number.isNaN(n)) setGiftAmount(Math.max(1, Math.floor(n)));
+                }}
+              />
+              <div className="text-muted small mt-1">Enter a positive integer.</div>
+            </Form.Group>
+          </Form>
+          <div className="d-flex justify-content-end gap-3 mt-3">
+            <Button variant="outline-secondary" onClick={handleCloseGift} disabled={isSubmitting}>Cancel</Button>
+            <Button
+              variant="primary"
+              disabled={isSubmitting || !selectedUser || !giftAmount || Number(giftAmount) <= 0}
+              onClick={async () => {
+                if (!selectedUser || !giftAmount) return;
+                try {
+                  setIsSubmitting(true);
+                  const res = await RedeemableCoinService.add({ user_id: selectedUser._id, amount: Number(giftAmount) });
+                  if (res.status === 1) {
+                    handleCloseGift();
+                    showSuccess('Success', `Gifted ${giftAmount} matches to ${selectedUser.name}.`);
+                  } else {
+                    showError('Error', res.message || 'Failed to gift matches');
+                  }
+                } catch (err: any) {
+                  handleApiError(err, 'Failed to gift matches');
+                } finally {
+                  setIsSubmitting(false);
+                }
+              }}
+            >
+              {isSubmitting ? 'Gifting...' : 'Confirm Gift'}
+            </Button>
+          </div>
         </Modal.Body>
       </Modal>
     </React.Fragment>

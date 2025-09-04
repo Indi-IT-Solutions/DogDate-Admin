@@ -265,12 +265,12 @@ const UserView: React.FC = () => {
         {
             name: "Payment ID",
             selector: (row: any) => row.transaction_id || row._id,
-            width: "120px",
+
         },
         {
             name: "Type",
             selector: (row: any) => row.relation_with,
-            width: "200px",
+
             wrap: true,
             cell: (row: any) => (
                 <span className="badge bg-info text-capitalize" style={{
@@ -284,7 +284,7 @@ const UserView: React.FC = () => {
         {
             name: "Transaction Type",
             selector: (row: any) => row.transaction_type,
-            width: "140px",
+
             cell: (row: any) => (
                 <span className={`badge ${row.transaction_type === "Auto-Renewable Subscription" ? "bg-success" : "bg-warning"}`}>
                     {row.transaction_type === "Auto-Renewable Subscription" ? "Subscription" : "One-time"}
@@ -330,12 +330,12 @@ const UserView: React.FC = () => {
                     <span className="text-dark" style={{ fontWeight: 600 }}>${amount}</span>
                 );
             },
-            width: "110px",
+
         },
         {
             name: "Platform",
             selector: (row: any) => row.payment_platform,
-            width: "100px",
+
             cell: (row: any) => (
                 <span className={`badge ${row.payment_platform === 'ios_iap' ? 'bg-dark' : 'bg-success'}`}>
                     {row.payment_platform === 'ios_iap' ? 'iOS' : 'Android'}
@@ -345,7 +345,6 @@ const UserView: React.FC = () => {
         {
             name: "Paid on",
             selector: (row: any) => row.payment_time,
-            width: "140px",
             cell: (row: any) => formatDate(row.payment_time),
         },
         {
@@ -355,7 +354,6 @@ const UserView: React.FC = () => {
                     {row.status || 'Unknown'}
                 </span>
             ),
-            width: "100px"
         },
     ];
 
