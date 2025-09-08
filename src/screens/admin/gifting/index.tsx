@@ -80,7 +80,7 @@ const Gifting: React.FC = () => {
     return (
         <React.Fragment>
             <Row className="mb-3">
-                <Col md={6}><h5 className="mb-0">Free Features</h5></Col>
+                <Col md={6}><h5 className="mb-0">Free Matches</h5></Col>
                 <Col md={6} className="text-end">
                     <InputGroup className="mb-2 justify-content-end">
                         <Form.Control style={{ maxWidth: 260 }} placeholder="Search gifted users by name/email" value={search} onChange={(e) => setSearch(e.target.value)} />

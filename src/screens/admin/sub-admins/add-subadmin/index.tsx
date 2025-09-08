@@ -14,7 +14,7 @@ const ALL_ROUTE_OPTIONS: { label: string; value: string }[] = [
     { label: 'FAQs', value: '/faqs' },
     // Single CMS option grants all /pages/* access by writing '/pages'
     { label: 'CMS', value: '/pages' },
-    { label: 'Free Features', value: '/gifting' },
+    { label: 'Free Matches', value: '/gifting' },
     { label: 'Sub Admins', value: '/sub-admins' },
 ];
 

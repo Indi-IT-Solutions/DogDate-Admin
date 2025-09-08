@@ -669,7 +669,7 @@ const UserView: React.FC = () => {
 
                                             {/* Free Features (Gifted Matches) */}
                                             <div className="tablefilelist_grid">
-                                                <h4>Free Features (Gifted Matches)</h4>
+                                                <h4>Free Matches</h4>
                                                 {giftTotals ? (
                                                     <div>
 

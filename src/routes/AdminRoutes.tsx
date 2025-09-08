@@ -233,7 +233,7 @@ const AdminRoutes = () => {
         path="/gifting"
         element={
           <ProtectedRoute>
-            <Layout title={"Free Features"}>
+            <Layout title={"Free Matches"}>
               <Gifting />
             </Layout>
           </ProtectedRoute>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, Row, Col, Form, Button, Spinner } from 'react-bootstrap';
+import { Card, Row, Col, Form, Button, Spinner, Modal } from 'react-bootstrap';
 import { Icon } from '@iconify/react/dist/iconify.js';
 import { useSearchParams, Link } from 'react-router-dom';
 import { DogService, AWSService, DogCharacterService, DogLikeService, BreedService } from '@/services';
@@ -40,6 +40,29 @@ const EditDog: React.FC = () => {
     const [pendingHealthDocs, setPendingHealthDocs] = React.useState<Array<{ title: string; file: File }>>([]);
     const [healthDocTitle, setHealthDocTitle] = React.useState<string>('');
     const [healthDocFile, setHealthDocFile] = React.useState<File | null>(null);
+    const [preview, setPreview] = React.useState<{ visible: boolean; url: string; title?: string }>({ visible: false, url: '' });
+
+    const openPreview = (url: string, title?: string) => setPreview({ visible: true, url, title });
+    const closePreview = () => setPreview({ visible: false, url: '' });
+
+    const getFileNameFromUrl = (url: string, fallback = 'file') => {
+        try {
+            const u = new URL(url);
+            const seg = u.pathname.split('/').pop();
+            return seg || fallback;
+        } catch { return fallback; }
+    };
+
+    const handleDownload = (url: string, fileName?: string) => {
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName || getFileNameFromUrl(url);
+        a.target = '_blank';
+        a.rel = 'noopener';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+    };
 
     const handleEditProfilePicture = (file: File | null) => {
         if (!file) return;
@@ -225,32 +248,40 @@ const EditDog: React.FC = () => {
     };
 
     const uploadNewFiles = async (): Promise<Array<{ relation_field: string; files: Array<{ title?: string; file_path: string; file_type: string }> }>> => {
-        const groups: Array<{ relation_field: string; files: Array<{ title?: string; file_path: string; file_type: string }> }> = [];
-        const filesMap = newFilesRef.current && Object.keys(newFilesRef.current).length ? newFilesRef.current : newFiles;
-        for (const field of Object.keys(filesMap)) {
-            const files = filesMap[field];
-            if (!files || files.length === 0) continue;
-            // request presigned urls
-            const req = { files: files.map(f => ({ file_name: f.name, file_type: f.type })) };
-            const pres = await AWSService.generateMultiplePresignedUrls(req as any);
-            if (pres.status !== 1) continue;
-            const map = pres.data?.files || [];
-            // upload
-            await AWSService.uploadMultipleFilesToS3(map.map((m: any, idx: number) => ({ presignedUrl: m.presignedUrl, file: files[idx] })));
-            // group
-            groups.push({ relation_field: field, files: map.map((m: any) => ({ file_path: m.fileUrl, file_type: normalizeFileType(m.file_type) })) });
-        }
-        // handle titled health documents separately
-        if (pendingHealthDocs.length > 0) {
-            const req = { files: pendingHealthDocs.map(d => ({ file_name: d.file.name, file_type: d.file.type })) } as any;
-            const pres = await AWSService.generateMultiplePresignedUrls(req);
-            if (pres.status === 1) {
+        try {
+            const groups: Array<{ relation_field: string; files: Array<{ title?: string; file_path: string; file_type: string }> }> = [];
+            const filesMap = newFilesRef.current && Object.keys(newFilesRef.current).length ? newFilesRef.current : newFiles;
+            for (const field of Object.keys(filesMap)) {
+                const files = filesMap[field];
+                if (!files || files.length === 0) continue;
+                // request presigned urls
+                const req = { files: files.map(f => ({ file_name: f.name, file_type: f.type })) };
+                const pres = await AWSService.generateMultiplePresignedUrls(req as any);
+                console.log('presprespres :', pres);
+                if (pres.status !== 1) continue;
                 const map = pres.data?.files || [];
-                await AWSService.uploadMultipleFilesToS3(map.map((m: any, idx: number) => ({ presignedUrl: m.presignedUrl, file: pendingHealthDocs[idx].file })));
-                groups.push({ relation_field: 'health_document', files: map.map((m: any, idx: number) => ({ title: pendingHealthDocs[idx].title, file_path: m.fileUrl, file_type: normalizeFileType(m.file_type) })) });
+                // upload
+                await AWSService.uploadMultipleFilesToS3(map.map((m: any, idx: number) => ({ presignedUrl: m.presignedUrl, file: files[idx] })));
+                // group
+                groups.push({ relation_field: field, files: map.map((m: any) => ({ file_path: m.fileUrl, file_type: normalizeFileType(m.file_type) })) });
             }
+            // handle titled health documents separately
+            if (pendingHealthDocs.length > 0) {
+                const req = { files: pendingHealthDocs.map(d => ({ file_name: d.file.name, file_type: d.file.type })) } as any;
+                const pres = await AWSService.generateMultiplePresignedUrls(req);
+                console.log('presprespresprespres :', pres);
+                if (pres.status === 1) {
+                    const map = pres.data?.files || [];
+                    await AWSService.uploadMultipleFilesToS3(map.map((m: any, idx: number) => ({ presignedUrl: m.presignedUrl, file: pendingHealthDocs[idx].file })));
+                    groups.push({ relation_field: 'health_document', files: map.map((m: any, idx: number) => ({ title: pendingHealthDocs[idx].title, file_path: m.fileUrl, file_type: normalizeFileType(m.file_type) })) });
+                }
+            }
+            return groups;
+        } catch (err: any) {
+            console.error('Error uploading new files:', err);
+            return [];
         }
-        return groups;
+        return [];
     };
 
     const handleSave = async () => {
@@ -279,12 +310,12 @@ const EditDog: React.FC = () => {
             };
 
             console.log('payloadpayloadpayload', payload);
-            const res: any = await DogService.adminEditDog(dogId, payload);
-            if (res.status === 1) {
-                showSuccess('Saved', 'Dog profile updated successfully');
-            } else {
-                showError('Error', res.message || 'Failed to update dog');
-            }
+            // const res: any = await DogService.adminEditDog(dogId, payload);
+            // if (res.status === 1) {
+            //     showSuccess('Saved', 'Dog profile updated successfully');
+            // } else {
+            //     showError('Error', res.message || 'Failed to update dog');
+            // }
         } catch (err: any) {
             handleApiError(err, 'Failed to update dog');
         } finally {
@@ -530,7 +561,7 @@ const EditDog: React.FC = () => {
                                     {existingFiles.profile_picture?.length > 0 && (
                                         <div className="mb-3">
                                             <div style={{ position: 'relative', width: '100%', backgroundColor: '#f8f9fa', border: '1px solid #dee2e6', borderRadius: '12px', overflow: 'hidden' }}>
-                                                <div style={{ width: '100%', paddingTop: '40%', position: 'relative' }}>
+                                                <div style={{ width: '100%', paddingTop: '40%', position: 'relative', cursor: 'zoom-in' }} onClick={() => openPreview(existingFiles.profile_picture[0]?.file_path || IMAGES.Dog, 'Profile Picture')}>
                                                     <img
                                                         src={existingFiles.profile_picture[0]?.file_path || IMAGES.Dog}
                                                         alt="Profile Picture"
@@ -544,13 +575,20 @@ const EditDog: React.FC = () => {
                                                         Change profile picture
                                                     </Button>
                                                 </div>
+                                                {existingFiles.profile_picture[0]?.file_path && (
+                                                    <button type="button" onClick={(e) => { e.stopPropagation(); handleDownload(existingFiles.profile_picture[0]?.file_path, 'profile_picture'); }}
+                                                        style={{ position: 'absolute', top: 12, right: 12, background: '#fff', border: '1px solid #dee2e6', borderRadius: '50%', width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                                        aria-label="Download">
+                                                        <Icon icon="mdi:cloud-download-outline" width={18} height={18} />
+                                                    </button>
+                                                )}
                                             </div>
                                         </div>
                                     )}
                                     <Row>
                                         {Array.isArray(existingFiles.pictures) && existingFiles.pictures.map((p: any, idx: number) => (
                                             <Col xs={6} sm={6} md={3} className="mb-3" key={p._id || idx}>
-                                                <div style={{ position: 'relative', width: '100%', aspectRatio: '1', backgroundColor: '#f8f9fa', border: '1px solid #dee2e6', borderRadius: '12px', overflow: 'hidden' }}>
+                                                <div style={{ position: 'relative', width: '100%', aspectRatio: '1', backgroundColor: '#f8f9fa', border: '1px solid #dee2e6', borderRadius: '12px', overflow: 'hidden', cursor: 'zoom-in' }} onClick={() => openPreview(p.file_path || IMAGES.Dog, `Picture ${idx + 1}`)}>
                                                     <img src={p.file_path || IMAGES.Dog} alt={`Picture ${idx + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => { (e.target as HTMLImageElement).src = IMAGES.Dog; }} />
                                                     <button
                                                         type="button"
@@ -560,6 +598,16 @@ const EditDog: React.FC = () => {
                                                     >
                                                         <Icon icon="mdi:close" width={16} height={16} />
                                                     </button>
+                                                    {p.file_path && (
+                                                        <button
+                                                            type="button"
+                                                            onClick={(e) => { e.stopPropagation(); handleDownload(p.file_path); }}
+                                                            style={{ position: 'absolute', top: 8, left: 8, background: '#fff', border: '1px solid #dee2e6', borderRadius: '50%', width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                                            aria-label="Download"
+                                                        >
+                                                            <Icon icon="mdi:cloud-download-outline" width={16} height={16} />
+                                                        </button>
+                                                    )}
                                                     <input id={`edit_picture_${idx}_input`} type="file" accept="image/*" hidden onChange={(e) => handleEditPictureAtIndex(idx, (e.target as HTMLInputElement).files?.[0] || null)} />
                                                     <button
                                                         type="button"
@@ -630,6 +678,16 @@ const EditDog: React.FC = () => {
                                                     >
                                                         <Icon icon="mdi:close" width={16} height={16} />
                                                     </button>
+                                                    {doc.file_path && (
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleDownload(doc.file_path)}
+                                                            style={{ position: 'absolute', top: 8, left: 8, background: '#fff', border: '1px solid #dee2e6', borderRadius: '50%', width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                                            aria-label="Download"
+                                                        >
+                                                            <Icon icon="mdi:cloud-download-outline" width={16} height={16} />
+                                                        </button>
+                                                    )}
                                                     <input id={`edit_health_doc_${idx}_input`} type="file" hidden onChange={(e) => handleEditHealthDocAtIndex(idx, doc, (e.target as HTMLInputElement).files?.[0] || null)} />
                                                     <button
                                                         type="button"
@@ -682,6 +740,16 @@ const EditDog: React.FC = () => {
                                                                 aria-label="Remove"
                                                             >
                                                                 <Icon icon="mdi:close" width={16} height={16} />
+                                                            </button>
+                                                        )}
+                                                        {viewUrl && (
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => handleDownload(viewUrl)}
+                                                                style={{ position: 'absolute', top: 8, left: 8, background: '#fff', border: '1px solid #dee2e6', borderRadius: '50%', width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                                                aria-label="Download"
+                                                            >
+                                                                <Icon icon="mdi:cloud-download-outline" width={16} height={16} />
                                                             </button>
                                                         )}
                                                     </div>
@@ -737,6 +805,19 @@ const EditDog: React.FC = () => {
                     </Row>
                 </Card.Body>
             </Card>
+            {/* Preview modal */}
+            <Modal show={preview.visible} onHide={closePreview} size="lg" centered>
+                <Modal.Header closeButton>
+                    <Modal.Title>{preview.title || 'Preview'}</Modal.Title>
+                </Modal.Header>
+                <Modal.Body className="text-center">
+                    <img src={preview.url} alt={preview.title || 'preview'} style={{ maxWidth: '100%', maxHeight: '70vh', objectFit: 'contain' }} />
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={closePreview}>Close</Button>
+                    <Button variant="primary" onClick={() => handleDownload(preview.url)}>Download</Button>
+                </Modal.Footer>
+            </Modal>
         </React.Fragment>
     );
 };

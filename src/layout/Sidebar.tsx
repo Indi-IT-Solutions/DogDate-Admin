@@ -134,7 +134,7 @@ const Sidebar: React.FC = () => {
     },
     {
       id: "FreeFeatures",
-      title: "Free Features",
+      title: "Free Matches",
       link: "/gifting",
       icon: "mdi:gift-open",
     },
