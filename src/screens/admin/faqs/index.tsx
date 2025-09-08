@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { Row, Col, Button, Modal, Form, OverlayTrigger, Tooltip, Alert, Spinner } from "react-bootstrap";
+import { Row, Col, Button, Modal, Form, OverlayTrigger, Tooltip, Spinner } from "react-bootstrap";
 import { Icon } from "@iconify/react";
 import DataTable, { TableColumn } from "react-data-table-component";
 import { FAQService, FAQ } from "@/services";
-import { showError, showSuccess, showDeleteConfirmation, handleApiError } from "@/utils/sweetAlert";
+import { showError, showSuccess, handleApiError } from "@/utils/sweetAlert";
 import { formatDateTime } from "@/utils/dateUtils";
 import { Link } from "react-router-dom";
 
@@ -16,8 +16,6 @@ const FAQs: React.FC = () => {
     const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
     const [deleteId, setDeleteId] = useState<string | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
-    const [error, setError] = useState<string>("");
-    const [success, setSuccess] = useState<string>("");
     const [saving, setSaving] = useState<boolean>(false);
     const [deleting, setDeleting] = useState<boolean>(false);
 
@@ -60,7 +58,7 @@ const FAQs: React.FC = () => {
     const fetchFAQs = async () => {
         try {
 
-            setError("");
+
 
             const response = await FAQService.getFAQs({ search: searchText });
             setFaqs(response || []);

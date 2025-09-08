@@ -1,7 +1,6 @@
 import React from 'react';
 import { Card, Row, Col, Form, Button, InputGroup } from 'react-bootstrap';
 import DataTable from 'react-data-table-component';
-import { Icon } from '@iconify/react';
 import { RedeemableCoinService, UserService } from '@/services';
 import { showError, showSuccess, handleApiError } from '@/utils/sweetAlert';
 

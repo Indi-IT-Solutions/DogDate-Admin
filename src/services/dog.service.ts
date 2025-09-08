@@ -236,6 +236,16 @@ export class DogService {
             throw error.response?.data || error;
         }
     }
+
+    // Admin edit dog profile
+    static async adminEditDog(dogId: string, payload: any): Promise<ApiResponse> {
+        try {
+            const response = await apiClient.put(DOG_ENDPOINTS.ADMIN_EDIT(dogId), payload);
+            return response.data;
+        } catch (error: any) {
+            throw error.response?.data || error;
+        }
+    }
 }
 
 export default DogService; 

@@ -21,6 +21,11 @@ export class RedeemableCoinService {
         const response = await apiClient.post(REDEEMABLE_COIN_ENDPOINTS.BULK_ADD, payload);
         return response.data;
     }
+
+    static async listByUser(userId: string) {
+        const response = await apiClient.get(REDEEMABLE_COIN_ENDPOINTS.LIST_BY_USER(userId));
+        return response.data;
+    }
 }
 
 export default RedeemableCoinService;

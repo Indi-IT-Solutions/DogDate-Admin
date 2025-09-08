@@ -413,53 +413,53 @@ const ViewDog: React.FC = () => {
                                     <div className="userinfo_inner">
                                         <div className="tablefilelist_grid">
                                             <h4>Dog Name</h4>
-                                            <p>{dogData.dog_name}</p>
+                                            <p>{dogData?.dog_name}</p>
                                         </div>
                                         <div className="tablefilelist_grid">
                                             <h4>Breed</h4>
-                                            <p>{safeGetString(dogData.breed)}</p>
+                                            <p>{safeGetString(dogData?.breed)}</p>
                                         </div>
                                         <div className="tablefilelist_grid">
                                             <h4>Breed Classification</h4>
                                             <p>
-                                                <Badge bg={dogData.breed_classification === 'purebred' ? 'success' : 'info'}>
-                                                    {dogData.breed_classification?.replace(/_/g, ' ').charAt(0).toUpperCase() + dogData.breed_classification?.replace(/_/g, ' ').slice(1)}
+                                                <Badge bg={dogData?.breed_classification === 'purebred' ? 'success' : 'info'}>
+                                                    {dogData?.breed_classification?.replace(/_/g, ' ').charAt(0).toUpperCase() + dogData?.breed_classification?.replace(/_/g, ' ').slice(1)}
                                                 </Badge>
                                             </p>
                                         </div>
                                         <div className="tablefilelist_grid">
                                             <h4>Gender</h4>
                                             <p>
-                                                <Badge bg={dogData.gender === 'male' ? 'primary' : 'danger'}>
+                                                <Badge bg={dogData?.gender === 'male' ? 'primary' : 'danger'}>
                                                     {dogData.gender.charAt(0).toUpperCase() + dogData.gender.slice(1)}
                                                 </Badge>
                                             </p>
                                         </div>
                                         <div className="tablefilelist_grid">
                                             <h4>Age</h4>
-                                            <p>{dogData.age} year{dogData.age > 1 ? 's' : ''}</p>
+                                            <p>{dogData?.age} year{dogData?.age > 1 ? 's' : ''}</p>
                                         </div>
                                         <div className="tablefilelist_grid">
                                             <h4>Color</h4>
-                                            <p>{dogData.colour}</p>
+                                            <p>{dogData?.colour}</p>
                                         </div>
                                         <div className="tablefilelist_grid">
                                             <h4>Character</h4>
-                                            <p>{extractNames(dogData.character).join(', ')}</p>
+                                            <p>{extractNames(dogData?.character).join(', ')}</p>
                                         </div>
                                         <div className="tablefilelist_grid">
                                             <h4>Personality</h4>
-                                            <p>{dogData.personality}</p>
+                                            <p>{dogData?.personality}</p>
                                         </div>
 
                                         <div className="tablefilelist_grid">
                                             <h4>What's Your Dog Like?</h4>
-                                            <p>{extractNames(dogData.dog_likes).join(', ')}</p>
+                                            <p>{extractNames(dogData?.dog_likes).join(', ')}</p>
                                         </div>
                                         <div className="tablefilelist_grid">
                                             <h4>Profile Type</h4>
                                             <p>
-                                                <Badge bg={getProfileTypeBadge(dogData.profile_type)}>
+                                                <Badge bg={getProfileTypeBadge(dogData?.profile_type)}>
                                                     {dogData.profile_type.charAt(0).toUpperCase() + dogData.profile_type.slice(1)}
                                                 </Badge>
                                             </p>
@@ -474,27 +474,27 @@ const ViewDog: React.FC = () => {
                                     <div className="tablefilelist_grid">
                                         <h4>Profile Status</h4>
                                         <p>
-                                            <Badge bg={getStatusBadge(dogData.profile_status)}>
+                                            <Badge bg={getStatusBadge(dogData?.profile_status)}>
                                                 {dogData.profile_status.charAt(0).toUpperCase() + dogData.profile_status.slice(1)}
                                             </Badge>
                                         </p>
                                     </div>
                                     <div className="tablefilelist_grid">
                                         <h4>Dog Date Tagline</h4>
-                                        <p>"{dogData.dog_date_tagline}"</p>
+                                        <p>"{dogData?.dog_date_tagline}"</p>
                                     </div>
                                     <div className="tablefilelist_grid">
                                         <h4>Favorite Dog Treat</h4>
-                                        <p>{dogData.favorite_dog_treat}</p>
+                                        <p>{dogData?.favorite_dog_treat}</p>
                                     </div>
-                                    <div className="tablefilelist_grid">
+                                    {/* <div className="tablefilelist_grid">
                                         <h4>Breeding Price</h4>
                                         <p>${dogData.breeding_price}</p>
-                                    </div>
+                                    </div> */}
                                     <div className="tablefilelist_grid">
                                         <h4>Available for Breeding?</h4>
                                         <p>
-                                            <Badge bg={dogData.available_for_breeding ? 'success' : 'danger'}>
+                                            <Badge bg={dogData?.available_for_breeding ? 'success' : 'danger'}>
                                                 {dogData.available_for_breeding ? 'Yes' : 'No'}
                                             </Badge>
                                         </p>
@@ -502,31 +502,31 @@ const ViewDog: React.FC = () => {
                                     <div className="tablefilelist_grid">
                                         <h4>Status</h4>
                                         <p>
-                                            <Badge bg={getStatusBadge(dogData.status)}>
+                                            <Badge bg={getStatusBadge(dogData?.status)}>
                                                 {dogData.status.charAt(0).toUpperCase() + dogData.status.slice(1)}
                                             </Badge>
                                         </p>
                                     </div>
                                     <div className="tablefilelist_grid">
                                         <h4>Created At</h4>
-                                        <p>{formatDate(dogData.created_at)}</p>
+                                        <p>{formatDate(dogData?.created_at)}</p>
                                     </div>
                                     <div className="tablefilelist_grid">
                                         <h4>Updated At</h4>
-                                        <p>{formatDate(dogData.updated_at)}</p>
+                                        <p>{formatDate(dogData?.updated_at)}</p>
                                     </div>
                                     <div className="userinfo_inner">
                                         <div className="tablefilelist_grid">
                                             <h4>Dog Owner</h4>
-                                            <p>{dogData.user_details?.name || 'N/A'}</p>
+                                            <p>{dogData?.user_details?.name || 'N/A'}</p>
                                         </div>
                                         <div className="tablefilelist_grid">
                                             <h4>Owner Email</h4>
-                                            <p>{dogData.user_details?.email || 'N/A'}</p>
+                                            <p>{dogData?.user_details?.email || 'N/A'}</p>
                                         </div>
                                         <div className="tablefilelist_grid">
                                             <h4>Owner Phone</h4>
-                                            <p>{dogData.user_details?.phone_number || 'N/A'}</p>
+                                            <p>{dogData?.user_details?.phone_number || 'N/A'}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -539,7 +539,7 @@ const ViewDog: React.FC = () => {
                                 <h5 className="mb-3">Dog Images</h5>
                                 <Row>
                                     {/* Profile Picture */}
-                                    {dogData.profile_picture && (
+                                    {dogData?.profile_picture && (
                                         <Col md={4} lg={3} className="mb-3">
                                             <Card>
                                                 <Card.Body className="text-center p-2">

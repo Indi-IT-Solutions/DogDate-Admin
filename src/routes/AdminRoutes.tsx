@@ -16,6 +16,7 @@ import UserView from "@/screens/admin/users/view-user";
 import Report from "@/screens/admin/report";
 import Dogs from "@/screens/admin/dogs";
 import ViewDog from "@/screens/admin/dogs/view-dog";
+import EditDog from "@/screens/admin/dogs/edit-dog";
 import FAQs from "@/screens/admin/faqs";
 import DogBreeds from "@/screens/admin/pages/dog-breeds";
 import DogCharacters from "@/screens/admin/pages/dog-characters";
@@ -184,6 +185,16 @@ const AdminRoutes = () => {
           <ProtectedRoute>
             <Layout title={"View Dog"}>
               <ViewDog />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/dogs/edit-dog"
+        element={
+          <ProtectedRoute>
+            <Layout title={"Edit Dog"}>
+              <EditDog />
             </Layout>
           </ProtectedRoute>
         }

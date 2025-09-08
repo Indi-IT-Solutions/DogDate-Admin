@@ -44,6 +44,7 @@ export const DOG_ENDPOINTS = {
     STATS: '/common/user/dog_v1/stats',
     BREEDING_DATA: (id: string) => `/common/user/dog_v1/${id}/breeding`,
     PLAYDATE_DATA: (id: string) => `/common/user/dog_v1/${id}/playdate`,
+    ADMIN_EDIT: (id: string) => `/admin/dog_profile_v1/${id}/edit`,
 };
 
 // Payment Management Endpoints
@@ -190,4 +191,5 @@ export const REDEEMABLE_COIN_ENDPOINTS = {
     ADD: '/admin/redeemable_coin_v1/add',
     LIST: '/admin/redeemable_coin_v1/list',
     BULK_ADD: '/admin/redeemable_coin_v1/bulk_add',
+    LIST_BY_USER: (id: string) => `/admin/redeemable_coin_v1/user/${id}`,
 };

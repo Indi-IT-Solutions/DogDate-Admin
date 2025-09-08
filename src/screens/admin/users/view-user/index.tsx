@@ -5,7 +5,7 @@ import { Button, Card, Col, Modal, OverlayTrigger, Row, Tab, Tabs, Tooltip, Aler
 import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import Matches from "../matches";
-import { UserService, type User } from "@/services";
+import { UserService, RedeemableCoinService, type User } from "@/services";
 import { getUserProfileImage, getDogProfileImage } from "@/utils/imageUtils";
 import { formatDate } from "@/utils/dateUtils";
 
@@ -52,6 +52,12 @@ const UserView: React.FC = () => {
         totalRows: 0,
         perPage: 10
     });
+
+    // State for gifted matches
+    const [giftTotals, setGiftTotals] = useState<{ total_gifted: number; available: number; redeemed: number } | null>(null);
+    const [giftItems, setGiftItems] = useState<any[]>([]);
+    const [giftLoading, setGiftLoading] = useState(false);
+    const [giftError, setGiftError] = useState<string>("");
 
     // Other states
     const [key, setKey] = useState<string>("dogs");
@@ -167,6 +173,30 @@ const UserView: React.FC = () => {
         }
     };
 
+    // Fetch user's admin-gifted matches
+    const fetchUserGifts = async () => {
+        if (!userId) return;
+        try {
+            setGiftLoading(true);
+            setGiftError("");
+            const res: any = await RedeemableCoinService.listByUser(userId);
+            if (res.status === 1) {
+                setGiftTotals(res.data?.totals || { total_gifted: 0, available: 0, redeemed: 0 });
+                setGiftItems(res.data?.items || []);
+            } else {
+                setGiftTotals(null);
+                setGiftItems([]);
+                setGiftError(res.message || 'Failed to fetch gifted matches');
+            }
+        } catch (err: any) {
+            setGiftTotals(null);
+            setGiftItems([]);
+            setGiftError(err.message || 'Failed to fetch gifted matches');
+        } finally {
+            setGiftLoading(false);
+        }
+    };
+
     // Load user data on component mount
     useEffect(() => {
         fetchUserData();
@@ -185,6 +215,11 @@ const UserView: React.FC = () => {
             fetchUserPayments(1, 10);
         }
     }, [key, userId]);
+
+    // Fetch gifts when User Details loads
+    useEffect(() => {
+        if (userId) fetchUserGifts();
+    }, [userId]);
 
     // Handle search for dogs with debounce
     useEffect(() => {
@@ -632,6 +667,34 @@ const UserView: React.FC = () => {
                                                 <p>{formatDate(userData.created_at)}</p>
                                             </div>
 
+                                            {/* Free Features (Gifted Matches) */}
+                                            <div className="tablefilelist_grid">
+                                                <h4>Free Features (Gifted Matches)</h4>
+                                                {giftTotals ? (
+                                                    <div>
+
+                                                        {giftItems.length > 0 ? (
+                                                            <div className="border rounded p-2" style={{ maxHeight: 180, overflowY: 'auto' }}>
+                                                                {giftItems.map((g: any) => (
+                                                                    <div key={g._id} className="d-flex justify-content-between py-1">
+                                                                        <div>
+                                                                            <strong>{g.amount}</strong> match(es)
+                                                                        </div>
+                                                                        <div className="text-muted small">
+                                                                            {g.expires_at ? `Expires: ${new Date(g.expires_at).toLocaleDateString()}` : 'No expiry'}
+                                                                        </div>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        ) : (
+                                                            <div className="text-muted">No free matches gifted.</div>
+                                                        )}
+                                                    </div>
+                                                ) : (
+                                                    <div className="text-muted">No free matches gifted.</div>
+                                                )}
+                                            </div>
+
                                         </Col>
                                     </Row>
                                 </div>
@@ -819,6 +882,7 @@ const UserView: React.FC = () => {
                     </Tabs>
                 </Card.Body>
             </Card>
+
 
             {/* Delete Modal */}
             <Modal className="modal_Delete" show={show} onHide={handleClose} centered>

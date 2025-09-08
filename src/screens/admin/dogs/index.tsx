@@ -241,6 +241,14 @@ const Dogs: React.FC = () => {
                     </OverlayTrigger>
                     <OverlayTrigger
                         placement="top"
+                        overlay={<Tooltip id={`edit-tooltip-${row._id}`}>Edit</Tooltip>}
+                    >
+                        <Link to={`/dogs/edit-dog?id=${row._id}`}>
+                            <Icon icon="tabler:edit" width={20} height={20} className="text-warning" />
+                        </Link>
+                    </OverlayTrigger>
+                    <OverlayTrigger
+                        placement="top"
                         overlay={
                             <Tooltip id={`block-tooltip-${row._id}`}>
                                 {row.status === "active" ? "Block" : "Unblock"}
