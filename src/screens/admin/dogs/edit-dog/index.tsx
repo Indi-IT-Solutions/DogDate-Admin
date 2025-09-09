@@ -53,15 +53,26 @@ const EditDog: React.FC = () => {
         } catch { return fallback; }
     };
 
-    const handleDownload = (url: string, fileName?: string) => {
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = fileName || getFileNameFromUrl(url);
-        a.target = '_blank';
-        a.rel = 'noopener';
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
+    const handleDownload = async (url: string, fileName?: string) => {
+        try {
+            const response = await fetch(url, { mode: 'cors' });
+            const blob = await response.blob();
+            const objectUrl = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = objectUrl;
+            a.download = fileName || getFileNameFromUrl(url);
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(objectUrl);
+        } catch {
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName || getFileNameFromUrl(url);
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+        }
     };
 
     const handleEditProfilePicture = (file: File | null) => {
@@ -297,9 +308,9 @@ const EditDog: React.FC = () => {
                 const pres = await AWSService.generateMultiplePresignedUrls(req);
                 console.log('presprespresprespres :', pres);
                 if (pres.status === 1) {
-                    const map = pres.data?.files || [];
-                    await AWSService.uploadMultipleFilesToS3(map.map((m: any, idx: number) => ({ presignedUrl: m.presignedUrl, file: pendingHealthDocs[idx].file })));
-                    groups.push({ relation_field: 'health_document', files: map.map((m: any, idx: number) => ({ title: pendingHealthDocs[idx].title, file_path: m.fileUrl, file_type: normalizeFileType(m.file_type) })) });
+                    const map: any = pres.data ? pres.data : [];
+                    await AWSService.uploadMultipleFilesToS3(map?.map((m: any, idx: number) => ({ presignedUrl: m.presignedUrl, file: pendingHealthDocs[idx].file })));
+                    groups.push({ relation_field: 'health_document', files: map?.map((m: any, idx: number) => ({ title: pendingHealthDocs[idx].title, file_path: m.fileUrl, file_type: normalizeFileType(m.file_type) })) });
                 }
             }
             return groups;
@@ -338,6 +349,30 @@ const EditDog: React.FC = () => {
             console.log('payloadpayloadpayload', payload);
             const res: any = await DogService.adminEditDog(dogId, payload);
             if (res.status === 1) {
+                // clear temp states
+                setPendingHealthDocs([]);
+                setNewFiles({});
+                newFilesRef.current = {};
+                setNewFilePreviews({});
+                setRemoveFileIds([]);
+
+                // refetch to reflect newly uploaded docs/files
+                const refreshed: any = await DogService.getDogById(dogId);
+                if (refreshed.status === 1 && refreshed.data) {
+                    const d = refreshed.data as any;
+                    const ef: any = { profile_picture: [], pictures: [], video: [], thumbnail: [], health_document: [], pedigree: [], breed_certification: [], vaccination_certification: [], flea_documents: [] };
+                    if (d.profile_picture) ef.profile_picture = [d.profile_picture];
+                    if (Array.isArray(d.pictures)) ef.pictures = d.pictures;
+                    if (d.video) ef.video = [d.video];
+                    if (d.thumbnail) ef.thumbnail = [d.thumbnail];
+                    if (Array.isArray(d.health_document)) ef.health_document = d.health_document;
+                    if (Array.isArray(d.pedigree)) ef.pedigree = d.pedigree;
+                    if (d.breed_certification) ef.breed_certification = [d.breed_certification];
+                    if (d.vaccination_certification) ef.vaccination_certification = [d.vaccination_certification];
+                    if (d.flea_documents) ef.flea_documents = [d.flea_documents];
+                    setExistingFiles(ef);
+                }
+
                 showSuccess('Saved', 'Dog profile updated successfully');
             } else {
                 showError('Error', res.message || 'Failed to update dog');
