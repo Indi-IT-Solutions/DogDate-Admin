@@ -185,15 +185,40 @@ const EditDog: React.FC = () => {
 
     const handleNewFilesChange = (field: string, files: FileList | null) => {
         if (!files) return;
+        const incoming = Array.from(files);
+        if (field === 'pictures') {
+            const currentCount = Array.isArray(existingFiles.pictures) ? existingFiles.pictures.length : 0;
+            const remaining = Math.max(0, 4 - currentCount);
+            if (remaining <= 0) return;
+            const selected = incoming.slice(0, remaining);
+            setNewFiles((prev: Record<string, File[]>) => {
+                const existing = prev.pictures || [];
+                const next = { ...prev, pictures: [...existing, ...selected] };
+                newFilesRef.current = next;
+                return next;
+            });
+            // push previews so user sees newly added images
+            setExistingFiles((prev: any) => {
+                const next = { ...prev } as any;
+                const arr = Array.isArray(prev.pictures) ? [...prev.pictures] : [];
+                for (const file of selected) {
+                    const url = URL.createObjectURL(file);
+                    arr.push({ file_path: url });
+                }
+                next.pictures = arr;
+                return next;
+            });
+            return;
+        }
         setNewFiles((prev: Record<string, File[]>) => {
             const existing = prev[field] || [];
-            const next = { ...prev, [field]: [...existing, ...Array.from(files)] };
+            const next = { ...prev, [field]: [...existing, ...incoming] };
             newFilesRef.current = next;
             return next;
         });
     };
 
-    const handleEditSpecificDoc = (field: 'breed_certification' | 'vaccination_certification' | 'flea_documents', file: File | null) => {
+    const handleEditSpecificDoc = (field: 'breed_certification' | 'vaccination_certification' | 'flea_documents' | 'pedigree', file: File | null) => {
         if (!file) return;
         // mark existing file for removal if present
         const existing = existingFiles[field]?.[0];
@@ -259,11 +284,12 @@ const EditDog: React.FC = () => {
                 const pres = await AWSService.generateMultiplePresignedUrls(req as any);
                 console.log('presprespres :', pres);
                 if (pres.status !== 1) continue;
-                const map = pres.data?.files || [];
+                const map: any = pres.data ? pres.data : [];
+                console.log('mapmapmap :', map);
                 // upload
-                await AWSService.uploadMultipleFilesToS3(map.map((m: any, idx: number) => ({ presignedUrl: m.presignedUrl, file: files[idx] })));
+                await AWSService.uploadMultipleFilesToS3(map?.map((m: any, idx: number) => ({ presignedUrl: m.presignedUrl, file: files[idx] })));
                 // group
-                groups.push({ relation_field: field, files: map.map((m: any) => ({ file_path: m.fileUrl, file_type: normalizeFileType(m.file_type) })) });
+                groups.push({ relation_field: field, files: map?.map((m: any) => ({ file_path: m.fileUrl, file_type: normalizeFileType(m.file_type) })) });
             }
             // handle titled health documents separately
             if (pendingHealthDocs.length > 0) {
@@ -310,12 +336,12 @@ const EditDog: React.FC = () => {
             };
 
             console.log('payloadpayloadpayload', payload);
-            // const res: any = await DogService.adminEditDog(dogId, payload);
-            // if (res.status === 1) {
-            //     showSuccess('Saved', 'Dog profile updated successfully');
-            // } else {
-            //     showError('Error', res.message || 'Failed to update dog');
-            // }
+            const res: any = await DogService.adminEditDog(dogId, payload);
+            if (res.status === 1) {
+                showSuccess('Saved', 'Dog profile updated successfully');
+            } else {
+                showError('Error', res.message || 'Failed to update dog');
+            }
         } catch (err: any) {
             handleApiError(err, 'Failed to update dog');
         } finally {
@@ -328,483 +354,486 @@ const EditDog: React.FC = () => {
 
     return (
         <React.Fragment>
-            <Card>
-                <Card.Header className="d-flex align-items-center justify-content-between flex-wrap">
-                    <h5>Edit Dog</h5>
-                    <div>
-                        <Link to={`/dogs/view-dog?id=${dogId}`} className="btn btn-outline-secondary me-2">Back</Link>
-                        <Button onClick={handleSave} disabled={saving}>{saving ? 'Saving...' : 'Save Changes'}</Button>
-                    </div>
-                </Card.Header>
-                <Card.Body>
-                    <Row className="gy-3">
-                        <Col md={6}>
-                            <Form.Group className="mb-3 form-group">
-                                <Form.Label>Dog Name</Form.Label>
-                                <Form.Control value={dogName} onChange={(e) => setDogName(e.target.value)} />
-                            </Form.Group>
-                        </Col>
-                        <Col md={3}>
-                            <Form.Group className="mb-3 form-group">
-                                <Form.Label>Gender</Form.Label>
-                                <Form.Select value={gender} onChange={(e) => setGender(e.target.value)}>
-                                    <option value="male">Male</option>
-                                    <option value="female">Female</option>
-                                    <option value="neutered male">Neutered Male</option>
-                                    <option value="spayed female">Spayed Female</option>
-                                </Form.Select>
-                            </Form.Group>
-                        </Col>
-                        <Col md={3}>
-                            <Form.Group className="mb-3 form-group">
-                                <Form.Label>Age (years)</Form.Label>
-                                <Form.Control type="number" min={0} value={age} onChange={(e) => setAge(e.target.value === '' ? '' : Math.max(0, Math.floor(Number(e.target.value))))} />
-                            </Form.Group>
-                        </Col>
+            <form>
+                <Card>
+                    <Card.Header className="d-flex align-items-center justify-content-between flex-wrap">
+                        <h5>Edit Dog</h5>
+                        <div>
+                            {/* <Link to={`/dogs/view-dog?id=${dogId}`} className="btn btn-outline-secondary me-2 h-[60px] block">Back</Link> */}
+                            <Button onClick={handleSave} disabled={saving}>{saving ? 'Saving...' : 'Save Changes'}</Button>
+                        </div>
+                    </Card.Header>
+                    <Card.Body>
+                        <Row className="gy-3">
+                            <Col md={6}>
+                                <Form.Group className="mb-3 form-group">
+                                    <Form.Label>Dog Name</Form.Label>
+                                    <Form.Control value={dogName} onChange={(e) => setDogName(e.target.value)} />
+                                </Form.Group>
+                            </Col>
+                            <Col md={3}>
+                                <Form.Group className="mb-3 form-group">
+                                    <Form.Label>Gender</Form.Label>
+                                    <Form.Select value={gender} onChange={(e) => setGender(e.target.value)}>
+                                        <option value="male">Male</option>
+                                        <option value="female">Female</option>
+                                        <option value="neutered male">Neutered Male</option>
+                                        <option value="spayed female">Spayed Female</option>
+                                    </Form.Select>
+                                </Form.Group>
+                            </Col>
+                            <Col md={3}>
+                                <Form.Group className="mb-3 form-group">
+                                    <Form.Label>Age (years)</Form.Label>
+                                    <Form.Control type="number" min={0} value={age} onChange={(e) => setAge(e.target.value === '' ? '' : Math.max(0, Math.floor(Number(e.target.value))))} />
+                                </Form.Group>
+                            </Col>
 
-                        <Col md={4}>
-                            <Form.Group className="mb-3 form-group">
-                                <Form.Label>Colour</Form.Label>
-                                <Form.Control value={colour} onChange={(e) => setColour(e.target.value)} />
-                            </Form.Group>
-                        </Col>
-                        <Col md={4}>
-                            <Form.Group className="mb-3 form-group">
-                                <Form.Label>Profile Type</Form.Label>
-                                <Form.Select value={profileType} onChange={(e) => setProfileType(e.target.value)}>
-                                    <option value="breeding">Breeding</option>
-                                    <option value="playmates">Playmates</option>
-                                </Form.Select>
-                            </Form.Group>
-                        </Col>
-                        <Col md={4}>
-                            <Form.Group className="mb-3 form-group">
-                                <Form.Label>Breed Classification</Form.Label>
-                                <Form.Select value={breedClassification} onChange={(e) => setBreedClassification(e.target.value)}>
-                                    <option value="mixed_breed">Mixed Breed</option>
-                                    <option value="majority_breed">Majority Breed</option>
-                                    <option value="purebred">Purebred</option>
-                                </Form.Select>
-                            </Form.Group>
-                        </Col>
+                            <Col md={4}>
+                                <Form.Group className="mb-3 form-group">
+                                    <Form.Label>Colour</Form.Label>
+                                    <Form.Control value={colour} onChange={(e) => setColour(e.target.value)} />
+                                </Form.Group>
+                            </Col>
+                            <Col md={4}>
+                                <Form.Group className="mb-3 form-group">
+                                    <Form.Label>Profile Type</Form.Label>
+                                    <Form.Select value={profileType} onChange={(e) => setProfileType(e.target.value)}>
+                                        <option value="breeding">Breeding</option>
+                                        <option value="playmates">Playmates</option>
+                                    </Form.Select>
+                                </Form.Group>
+                            </Col>
+                            <Col md={4}>
+                                <Form.Group className="mb-3 form-group">
+                                    <Form.Label>Breed Classification</Form.Label>
+                                    <Form.Select value={breedClassification} onChange={(e) => setBreedClassification(e.target.value)}>
+                                        <option value="mixed_breed">Mixed Breed</option>
+                                        <option value="majority_breed">Majority Breed</option>
+                                        <option value="purebred">Purebred</option>
+                                    </Form.Select>
+                                </Form.Group>
+                            </Col>
 
-                        <Col md={6}>
-                            <Form.Group className="mb-3 form-group">
-                                <Form.Label>Dog Likes</Form.Label>
-                                <div className="position-relative">
-                                    <div className="form-control d-flex align-items-center flex-wrap gap-2" onClick={() => setLikesOpen(true)}>
-                                        {dogLikes.map((id) => {
-                                            const name = dogLikeOptions.find(o => o._id === id)?.name || id;
-                                            return (
-                                                <span key={id} className="badge bg-secondary">
-                                                    {name}
-                                                    <button
-                                                        type="button"
-                                                        className="btn btn-sm btn-link text-white ms-2 p-0"
-                                                        onClick={(e) => { e.stopPropagation(); setDogLikes(prev => prev.filter(x => x !== id)); }}
-                                                    >
-                                                        ×
-                                                    </button>
-                                                </span>
-                                            );
-                                        })}
-                                        <input
-                                            className="border-0 flex-grow-1"
-                                            style={{ outline: 'none' }}
-                                            value={dogLikeQuery}
-                                            onFocus={() => setLikesOpen(true)}
-                                            onChange={(e) => setDogLikeQuery(e.target.value)}
-                                            onBlur={() => setTimeout(() => setLikesOpen(false), 150)}
-                                            placeholder="Type to search..."
-                                        />
-                                    </div>
-                                    {likesOpen && (
-                                        <div className="dropdown-menu show w-100" style={{ maxHeight: 220, overflowY: 'auto' }}>
-                                            {dogLikeOptions
-                                                .filter(o => !dogLikes.includes(o._id) && o.name.toLowerCase().includes(dogLikeQuery.toLowerCase()))
-                                                .map(o => (
-                                                    <button
-                                                        key={o._id}
-                                                        type="button"
-                                                        className="dropdown-item"
-                                                        onMouseDown={(e) => { e.preventDefault(); }}
-                                                        onClick={() => {
-                                                            setDogLikes(prev => [...prev, o._id]);
-                                                            setDogLikeQuery('');
-                                                            setLikesOpen(true);
-                                                        }}
-                                                    >
-                                                        {o.name}
-                                                    </button>
-                                                ))}
-                                            {dogLikeOptions.filter(o => !dogLikes.includes(o._id) && o.name.toLowerCase().includes(dogLikeQuery.toLowerCase())).length === 0 && (
-                                                <div className="px-3 py-2 text-muted small">No matches</div>
-                                            )}
+                            <Col md={6}>
+                                <Form.Group className="mb-3">
+                                    <Form.Label>Dog Likes</Form.Label>
+                                    <div className="position-relative">
+                                        <div className="form-control d-flex align-items-center flex-wrap gap-2" onClick={() => setLikesOpen(true)}>
+                                            {dogLikes.map((id) => {
+                                                const name = dogLikeOptions.find(o => o._id === id)?.name || id;
+                                                return (
+                                                    <span key={id} className="badge bg-secondary">
+                                                        {name}
+                                                        <button
+                                                            type="button"
+                                                            className="btn btn-sm btn-link text-white ms-2 p-0"
+                                                            onClick={(e) => { e.stopPropagation(); setDogLikes(prev => prev.filter(x => x !== id)); }}
+                                                        >
+                                                            ×
+                                                        </button>
+                                                    </span>
+                                                );
+                                            })}
+                                            <input
+                                                className="border-0 flex-grow-1"
+                                                style={{ outline: 'none' }}
+                                                value={dogLikeQuery}
+                                                onFocus={() => setLikesOpen(true)}
+                                                onChange={(e) => setDogLikeQuery(e.target.value)}
+                                                onBlur={() => setTimeout(() => setLikesOpen(false), 150)}
+                                                placeholder="Type to search..."
+                                            />
                                         </div>
-                                    )}
-                                </div>
-                            </Form.Group>
-                        </Col>
-                        <Col md={6}>
-                            <Form.Group className="mb-3 form-group">
-                                <Form.Label>Character</Form.Label>
-                                <div className="position-relative">
-                                    <div className="form-control d-flex align-items-center flex-wrap gap-2" onClick={() => setCharsOpen(true)}>
-                                        {character.map((id) => {
-                                            const name = dogCharacterOptions.find(o => o._id === id)?.name || id;
-                                            return (
-                                                <span key={id} className="badge bg-secondary">
-                                                    {name}
-                                                    <button
-                                                        type="button"
-                                                        className="btn btn-sm btn-link text-white ms-2 p-0"
-                                                        onClick={(e) => { e.stopPropagation(); setCharacter(prev => prev.filter(x => x !== id)); }}
-                                                    >
-                                                        ×
-                                                    </button>
-                                                </span>
-                                            );
-                                        })}
-                                        <input
-                                            className="border-0 flex-grow-1"
-                                            style={{ outline: 'none' }}
-                                            value={dogCharQuery}
-                                            onFocus={() => setCharsOpen(true)}
-                                            onChange={(e) => setDogCharQuery(e.target.value)}
-                                            onBlur={() => setTimeout(() => setCharsOpen(false), 150)}
-                                            placeholder="Type to search..."
-                                        />
-                                    </div>
-                                    {charsOpen && (
-                                        <div className="dropdown-menu show w-100" style={{ maxHeight: 220, overflowY: 'auto' }}>
-                                            {dogCharacterOptions
-                                                .filter(o => !character.includes(o._id) && o.name.toLowerCase().includes(dogCharQuery.toLowerCase()))
-                                                .map(o => (
-                                                    <button
-                                                        key={o._id}
-                                                        type="button"
-                                                        className="dropdown-item"
-                                                        onMouseDown={(e) => { e.preventDefault(); }}
-                                                        onClick={() => {
-                                                            setCharacter(prev => [...prev, o._id]);
-                                                            setDogCharQuery('');
-                                                            setCharsOpen(true);
-                                                        }}
-                                                    >
-                                                        {o.name}
-                                                    </button>
-                                                ))}
-                                            {dogCharacterOptions.filter(o => !character.includes(o._id) && o.name.toLowerCase().includes(dogCharQuery.toLowerCase())).length === 0 && (
-                                                <div className="px-3 py-2 text-muted small">No matches</div>
-                                            )}
-                                        </div>
-                                    )}
-                                </div>
-                            </Form.Group>
-                        </Col>
-
-                        <Col md={6}>
-                            <Form.Group className="mb-3 form-group">
-                                <Form.Label>Breed</Form.Label>
-                                <Form.Select value={breed} onChange={(e) => setBreed(e.target.value)}>
-                                    <option value="">Select breed</option>
-                                    {breedOptions.map(opt => (
-                                        <option key={opt._id} value={opt._id}>{opt.name}</option>
-                                    ))}
-                                </Form.Select>
-                            </Form.Group>
-                        </Col>
-
-                        <Col md={6}>
-                            <Form.Group className="mb-3 form-group">
-                                <Form.Label>Tagline</Form.Label>
-                                <Form.Control value={tagline} onChange={(e) => setTagline(e.target.value)} />
-                            </Form.Group>
-                        </Col>
-                        <Col md={6}>
-                            <Form.Group className="mb-3 form-group">
-                                <Form.Label>Favorite Treat</Form.Label>
-                                <Form.Control value={treat} onChange={(e) => setTreat(e.target.value)} />
-                            </Form.Group>
-                        </Col>
-
-                        <Col md={4}>
-                            <Form.Group className="mb-3 form-group">
-                                <Form.Label>Status</Form.Label>
-                                <Form.Select value={status} onChange={(e) => setStatus(e.target.value)}>
-                                    <option value="active">Active</option>
-                                    <option value="inactive">Inactive</option>
-                                </Form.Select>
-                            </Form.Group>
-                        </Col>
-                        <Col md={4}>
-                            <Form.Group className="mb-3 form-group">
-                                <Form.Label>Profile Status</Form.Label>
-                                <Form.Select value={profileStatus} onChange={(e) => setProfileStatus(e.target.value)}>
-                                    <option value="submitted">Submitted</option>
-                                    <option value="approved">Approved</option>
-                                    <option value="rejected">Rejected</option>
-                                </Form.Select>
-                            </Form.Group>
-                        </Col>
-                        <Col md={4} className="d-flex align-items-center">
-                            <Form.Check type="switch" id="available_for_breeding" label="Available for breeding" checked={availableForBreeding} onChange={(e) => setAvailableForBreeding(e.target.checked)} />
-                        </Col>
-
-                        <Col md={12}>
-                            <h6 className="mt-2">Files</h6>
-                            <div className="text-muted small mb-2">Use inputs below to upload new files. Existing files can be marked for removal.</div>
-
-                            <Row className="mt-1">
-                                <Col md={6}>
-                                    <h6 className="mb-2 mt-3">Images</h6>
-                                    {existingFiles.profile_picture?.length > 0 && (
-                                        <div className="mb-3">
-                                            <div style={{ position: 'relative', width: '100%', backgroundColor: '#f8f9fa', border: '1px solid #dee2e6', borderRadius: '12px', overflow: 'hidden' }}>
-                                                <div style={{ width: '100%', paddingTop: '40%', position: 'relative', cursor: 'zoom-in' }} onClick={() => openPreview(existingFiles.profile_picture[0]?.file_path || IMAGES.Dog, 'Profile Picture')}>
-                                                    <img
-                                                        src={existingFiles.profile_picture[0]?.file_path || IMAGES.Dog}
-                                                        alt="Profile Picture"
-                                                        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
-                                                        onError={(e) => { (e.target as HTMLImageElement).src = IMAGES.Dog; }}
-                                                    />
-                                                </div>
-                                                <div style={{ position: 'absolute', right: 12, bottom: 12 }}>
-                                                    <input id="change_profile_picture_input" type="file" accept="image/*" hidden onChange={(e) => handleEditProfilePicture((e.target as HTMLInputElement).files?.[0] || null)} />
-                                                    <Button size="sm" onClick={() => (document.getElementById('change_profile_picture_input') as HTMLInputElement)?.click()}>
-                                                        Change profile picture
-                                                    </Button>
-                                                </div>
-                                                {existingFiles.profile_picture[0]?.file_path && (
-                                                    <button type="button" onClick={(e) => { e.stopPropagation(); handleDownload(existingFiles.profile_picture[0]?.file_path, 'profile_picture'); }}
-                                                        style={{ position: 'absolute', top: 12, right: 12, background: '#fff', border: '1px solid #dee2e6', borderRadius: '50%', width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                                                        aria-label="Download">
-                                                        <Icon icon="mdi:cloud-download-outline" width={18} height={18} />
-                                                    </button>
+                                        {likesOpen && (
+                                            <div className="dropdown-menu show w-100" style={{ maxHeight: 220, overflowY: 'auto' }}>
+                                                {dogLikeOptions
+                                                    .filter(o => !dogLikes.includes(o._id) && o.name.toLowerCase().includes(dogLikeQuery.toLowerCase()))
+                                                    .map(o => (
+                                                        <button
+                                                            key={o._id}
+                                                            type="button"
+                                                            className="dropdown-item"
+                                                            onMouseDown={(e) => { e.preventDefault(); }}
+                                                            onClick={() => {
+                                                                setDogLikes(prev => [...prev, o._id]);
+                                                                setDogLikeQuery('');
+                                                                setLikesOpen(true);
+                                                            }}
+                                                        >
+                                                            {o.name}
+                                                        </button>
+                                                    ))}
+                                                {dogLikeOptions.filter(o => !dogLikes.includes(o._id) && o.name.toLowerCase().includes(dogLikeQuery.toLowerCase())).length === 0 && (
+                                                    <div className="px-3 py-2 text-muted small">No matches</div>
                                                 )}
                                             </div>
-                                        </div>
-                                    )}
-                                    <Row>
-                                        {Array.isArray(existingFiles.pictures) && existingFiles.pictures.map((p: any, idx: number) => (
-                                            <Col xs={6} sm={6} md={3} className="mb-3" key={p._id || idx}>
-                                                <div style={{ position: 'relative', width: '100%', aspectRatio: '1', backgroundColor: '#f8f9fa', border: '1px solid #dee2e6', borderRadius: '12px', overflow: 'hidden', cursor: 'zoom-in' }} onClick={() => openPreview(p.file_path || IMAGES.Dog, `Picture ${idx + 1}`)}>
-                                                    <img src={p.file_path || IMAGES.Dog} alt={`Picture ${idx + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => { (e.target as HTMLImageElement).src = IMAGES.Dog; }} />
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => removeExistingFile('pictures', p, idx)}
-                                                        style={{ position: 'absolute', top: 8, right: 8, background: '#fff', border: '1px solid #dee2e6', borderRadius: '50%', width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                                                        aria-label="Remove"
-                                                    >
-                                                        <Icon icon="mdi:close" width={16} height={16} />
-                                                    </button>
-                                                    {p.file_path && (
-                                                        <button
-                                                            type="button"
-                                                            onClick={(e) => { e.stopPropagation(); handleDownload(p.file_path); }}
-                                                            style={{ position: 'absolute', top: 8, left: 8, background: '#fff', border: '1px solid #dee2e6', borderRadius: '50%', width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                                                            aria-label="Download"
-                                                        >
-                                                            <Icon icon="mdi:cloud-download-outline" width={16} height={16} />
-                                                        </button>
-                                                    )}
-                                                    <input id={`edit_picture_${idx}_input`} type="file" accept="image/*" hidden onChange={(e) => handleEditPictureAtIndex(idx, (e.target as HTMLInputElement).files?.[0] || null)} />
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => (document.getElementById(`edit_picture_${idx}_input`) as HTMLInputElement)?.click()}
-                                                        style={{ position: 'absolute', bottom: 8, right: 8, background: '#fff', border: '1px solid #dee2e6', borderRadius: '50%', width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                                                        aria-label="Edit"
-                                                    >
-                                                        <Icon icon="mdi:pencil" width={16} height={16} />
-                                                    </button>
-                                                </div>
-                                            </Col>
-                                        ))}
-                                    </Row>
-
-                                    <div className="d-flex gap-2 mb-3">
-                                        <input id="add_profile_picture_input" type="file" accept="image/*" hidden onChange={(e) => {
-                                            const files = (e.target as HTMLInputElement).files;
-                                            if (!files || files.length === 0) return;
-                                            setNewFiles(prev => ({ ...prev, profile_picture: [files[0]] }));
-                                            handleEditProfilePicture(files[0]);
-                                        }} />
-                                        <Button variant="outline-primary" size="sm" onClick={() => (document.getElementById('add_profile_picture_input') as HTMLInputElement)?.click()}>+ Add Profile Picture</Button>
-
-                                        <input id="add_pictures_input" type="file" accept="image/*" multiple hidden onChange={(e) => handleNewFilesChange('pictures', (e.target as HTMLInputElement).files)} />
-                                        <Button variant="outline-primary" size="sm" onClick={() => (document.getElementById('add_pictures_input') as HTMLInputElement)?.click()}>+ Add Pictures</Button>
+                                        )}
                                     </div>
-
-                                    {Array.isArray(existingFiles.video) && existingFiles.video.length > 0 && (
-                                        <>
-                                            <h6 className="mb-2 mt-3">Video</h6>
-                                            <Row className="mt-1">
-                                                {existingFiles.video.map((v: any, idx: number) => (
-                                                    <Col md={12} className="mb-3" key={v._id || idx}>
-                                                        <Card>
-                                                            <Card.Body className="text-center p-2">
-                                                                <div className="w-100" style={{ backgroundColor: '#f8f9fa', border: '1px solid #dee2e6', borderRadius: '8px' }}>
-                                                                    <video controls style={{ width: '100%', height: '260px' }} src={v.file_path} />
-                                                                </div>
-                                                                <div className="mt-2">
-                                                                    <Button variant="outline-danger" size="sm" onClick={() => removeExistingFile('video', v, idx)}>Remove</Button>
-                                                                </div>
-                                                            </Card.Body>
-                                                        </Card>
-                                                    </Col>
-                                                ))}
-                                            </Row>
-                                        </>
-                                    )}
-                                </Col>
-
-                                <Col md={6}>
-                                    <h6 className="mb-2 mt-3">Documents</h6>
-                                    <Row className="mt-1">
-                                        {Array.isArray(existingFiles.health_document) && existingFiles.health_document.map((doc: any, idx: number) => (
-                                            <Col md={6} className="mb-3" key={doc._id || idx}>
-                                                <div style={{ position: 'relative', border: '1px solid #dee2e6', borderRadius: '12px', padding: '12px' }}>
-                                                    <p className="text-center" style={{ fontSize: '12px', marginBottom: 8 }}>{doc.title || `Health Document ${idx + 1}`}</p>
-                                                    {doc.file_path && (
-                                                        <div className="text-center">
-                                                            <a href={doc.file_path} target="_blank" rel="noreferrer" className="btn btn-outline-warning btn-sm">View</a>
-                                                        </div>
-                                                    )}
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => removeExistingFile('health_document', doc, idx)}
-                                                        style={{ position: 'absolute', top: 8, right: 8, background: '#fff', border: '1px solid #dee2e6', borderRadius: '50%', width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                                                        aria-label="Remove"
-                                                    >
-                                                        <Icon icon="mdi:close" width={16} height={16} />
-                                                    </button>
-                                                    {doc.file_path && (
+                                </Form.Group>
+                            </Col>
+                            <Col md={6}>
+                                <Form.Group className="mb-3">
+                                    <Form.Label>Character</Form.Label>
+                                    <div className="position-relative">
+                                        <div className="form-control d-flex align-items-center flex-wrap gap-2" onClick={() => setCharsOpen(true)}>
+                                            {character.map((id) => {
+                                                const name = dogCharacterOptions.find(o => o._id === id)?.name || id;
+                                                return (
+                                                    <span key={id} className="badge bg-secondary">
+                                                        {name}
                                                         <button
                                                             type="button"
-                                                            onClick={() => handleDownload(doc.file_path)}
-                                                            style={{ position: 'absolute', top: 8, left: 8, background: '#fff', border: '1px solid #dee2e6', borderRadius: '50%', width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                                                            aria-label="Download"
+                                                            className="btn btn-sm btn-link text-white ms-2 p-0"
+                                                            onClick={(e) => { e.stopPropagation(); setCharacter(prev => prev.filter(x => x !== id)); }}
                                                         >
-                                                            <Icon icon="mdi:cloud-download-outline" width={16} height={16} />
+                                                            ×
                                                         </button>
-                                                    )}
-                                                    <input id={`edit_health_doc_${idx}_input`} type="file" hidden onChange={(e) => handleEditHealthDocAtIndex(idx, doc, (e.target as HTMLInputElement).files?.[0] || null)} />
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => (document.getElementById(`edit_health_doc_${idx}_input`) as HTMLInputElement)?.click()}
-                                                        style={{ position: 'absolute', bottom: 8, right: 8, background: '#fff', border: '1px solid #dee2e6', borderRadius: '50%', width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                                                        aria-label="Edit"
-                                                    >
-                                                        <Icon icon="mdi:pencil" width={16} height={16} />
-                                                    </button>
-                                                </div>
-                                            </Col>
+                                                    </span>
+                                                );
+                                            })}
+                                            <input
+                                                className="border-0 flex-grow-1"
+                                                style={{ outline: 'none' }}
+                                                value={dogCharQuery}
+                                                onFocus={() => setCharsOpen(true)}
+                                                onChange={(e) => setDogCharQuery(e.target.value)}
+                                                onBlur={() => setTimeout(() => setCharsOpen(false), 150)}
+                                                placeholder="Type to search..."
+                                            />
+                                        </div>
+                                        {charsOpen && (
+                                            <div className="dropdown-menu show w-100" style={{ maxHeight: 220, overflowY: 'auto' }}>
+                                                {dogCharacterOptions
+                                                    .filter(o => !character.includes(o._id) && o.name.toLowerCase().includes(dogCharQuery.toLowerCase()))
+                                                    .map(o => (
+                                                        <button
+                                                            key={o._id}
+                                                            type="button"
+                                                            className="dropdown-item"
+                                                            onMouseDown={(e) => { e.preventDefault(); }}
+                                                            onClick={() => {
+                                                                setCharacter(prev => [...prev, o._id]);
+                                                                setDogCharQuery('');
+                                                                setCharsOpen(true);
+                                                            }}
+                                                        >
+                                                            {o.name}
+                                                        </button>
+                                                    ))}
+                                                {dogCharacterOptions.filter(o => !character.includes(o._id) && o.name.toLowerCase().includes(dogCharQuery.toLowerCase())).length === 0 && (
+                                                    <div className="px-3 py-2 text-muted small">No matches</div>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+                                </Form.Group>
+                            </Col>
+
+                            <Col md={6}>
+                                <Form.Group className="mb-3 form-group">
+                                    <Form.Label>Breed</Form.Label>
+                                    <Form.Select value={breed} onChange={(e) => setBreed(e.target.value)}>
+                                        <option value="">Select breed</option>
+                                        {breedOptions.map(opt => (
+                                            <option key={opt._id} value={opt._id}>{opt.name}</option>
                                         ))}
-                                        {[{ key: 'breed_certification', label: 'Breed Certification' }, { key: 'vaccination_certification', label: 'Vaccination Certification' }, { key: 'flea_documents', label: 'Flea Documents' }].map(({ key, label }) => {
-                                            const preview = newFilePreviews[key];
-                                            const hasExisting = existingFiles[key]?.length > 0;
-                                            const viewUrl = preview || (hasExisting ? existingFiles[key][0]?.file_path : undefined);
-                                            return (
-                                                <Col md={6} className="mb-3" key={key}>
-                                                    <div style={{ position: 'relative', border: '1px solid #dee2e6', borderRadius: '12px', padding: '12px' }}>
-                                                        <p className="text-center" style={{ fontSize: '12px', marginBottom: 8 }}>{label}</p>
-                                                        {viewUrl ? (
-                                                            <div className="text-center">
-                                                                <a href={viewUrl} target="_blank" rel="noreferrer" className="btn btn-outline-secondary btn-sm">View</a>
-                                                            </div>
-                                                        ) : (
-                                                            <span className="text-muted small d-block mb-2 text-center">No file</span>
-                                                        )}
-                                                        <input id={`edit_${key}_input`} type="file" hidden onChange={(e) => handleEditSpecificDoc(key as any, (e.target as HTMLInputElement).files?.[0] || null)} />
+                                    </Form.Select>
+                                </Form.Group>
+                            </Col>
+
+                            <Col md={6}>
+                                <Form.Group className="mb-3 form-group">
+                                    <Form.Label>Tagline</Form.Label>
+                                    <Form.Control value={tagline} onChange={(e) => setTagline(e.target.value)} />
+                                </Form.Group>
+                            </Col>
+                            <Col md={6}>
+                                <Form.Group className="mb-3 form-group">
+                                    <Form.Label>Favorite Treat</Form.Label>
+                                    <Form.Control value={treat} onChange={(e) => setTreat(e.target.value)} />
+                                </Form.Group>
+                            </Col>
+
+                            <Col md={4}>
+                                <Form.Group className="mb-3 form-group">
+                                    <Form.Label>Status</Form.Label>
+                                    <Form.Select value={status} onChange={(e) => setStatus(e.target.value)}>
+                                        <option value="active">Active</option>
+                                        <option value="inactive">Inactive</option>
+                                    </Form.Select>
+                                </Form.Group>
+                            </Col>
+                            <Col md={4}>
+                                <Form.Group className="mb-3 form-group">
+                                    <Form.Label>Profile Status</Form.Label>
+                                    <Form.Select value={profileStatus} onChange={(e) => setProfileStatus(e.target.value)}>
+                                        <option value="submitted">Submitted</option>
+                                        <option value="approved">Approved</option>
+                                        <option value="rejected">Rejected</option>
+                                    </Form.Select>
+                                </Form.Group>
+                            </Col>
+                            <Col md={4} className="d-flex align-items-center">
+                                <Form.Check type="switch" id="available_for_breeding" label="Available for breeding" checked={availableForBreeding} onChange={(e) => setAvailableForBreeding(e.target.checked)} />
+                            </Col>
+
+                            <Col md={12}>
+                                <h6 className="mt-2">Files</h6>
+                                <div className="text-muted small mb-2">Use inputs below to upload new files. Existing files can be marked for removal.</div>
+
+                                <Row className="mt-1">
+                                    <Col md={6}>
+                                        <h6 className="mb-2 mt-3">Images</h6>
+                                        {existingFiles.profile_picture?.length > 0 && (
+                                            <div className="mb-3">
+                                                <div style={{ position: 'relative', width: '100%', backgroundColor: '#f8f9fa', border: '1px solid #dee2e6', borderRadius: '12px', overflow: 'hidden' }}>
+                                                    <div style={{ width: '100%', paddingTop: '40%', position: 'relative', cursor: 'zoom-in' }} onClick={() => openPreview(existingFiles.profile_picture[0]?.file_path || IMAGES.Dog, 'Profile Picture')}>
+                                                        <img
+                                                            src={existingFiles.profile_picture[0]?.file_path || IMAGES.Dog}
+                                                            alt="Profile Picture"
+                                                            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+                                                            onError={(e) => { (e.target as HTMLImageElement).src = IMAGES.Dog; }}
+                                                        />
+                                                    </div>
+                                                    <div style={{ position: 'absolute', right: 12, bottom: 12 }}>
+                                                        <input id="change_profile_picture_input" type="file" accept="image/*" hidden onChange={(e) => handleEditProfilePicture((e.target as HTMLInputElement).files?.[0] || null)} />
+                                                        <Button size="sm" onClick={(e) => { e.stopPropagation(); (document.getElementById('change_profile_picture_input') as HTMLInputElement)?.click(); }}>
+                                                            Change profile picture
+                                                        </Button>
+                                                    </div>
+                                                    {existingFiles.profile_picture[0]?.file_path && (
+                                                        <button type="button" onClick={(e) => { e.stopPropagation(); handleDownload(existingFiles.profile_picture[0]?.file_path, 'profile_picture'); }}
+                                                            style={{ position: 'absolute', top: 12, right: 12, background: '#fff', border: '1px solid #dee2e6', borderRadius: '50%', width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                                            aria-label="Download">
+                                                            <Icon icon="mdi:cloud-download-outline" width={18} height={18} />
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        )}
+                                        <Row>
+                                            {Array.isArray(existingFiles.pictures) && existingFiles.pictures.map((p: any, idx: number) => (
+                                                <Col xs={6} sm={6} md={3} className="mb-3" key={p._id || idx}>
+                                                    <div style={{ position: 'relative', width: '100%', aspectRatio: '1', backgroundColor: '#f8f9fa', border: '1px solid #dee2e6', borderRadius: '12px', overflow: 'hidden', cursor: 'zoom-in' }} onClick={() => openPreview(p.file_path || IMAGES.Dog, `Picture ${idx + 1}`)}>
+                                                        <img src={p.file_path || IMAGES.Dog} alt={`Picture ${idx + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => { (e.target as HTMLImageElement).src = IMAGES.Dog; }} />
                                                         <button
                                                             type="button"
-                                                            onClick={() => (document.getElementById(`edit_${key}_input`) as HTMLInputElement)?.click()}
-                                                            style={{ position: 'absolute', bottom: 8, right: 8, background: '#fff', border: '1px solid #dee2e6', borderRadius: '50%', width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                                                            aria-label="Edit"
+                                                            onClick={(e) => { e.stopPropagation(); removeExistingFile('pictures', p, idx); }}
+                                                            style={{ position: 'absolute', top: 8, right: 8, background: '#fff', border: '1px solid #dee2e6', borderRadius: '50%', width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                                            aria-label="Remove"
                                                         >
-                                                            <Icon icon="mdi:pencil" width={16} height={16} />
+                                                            <Icon icon="mdi:close" width={16} height={16} />
                                                         </button>
-                                                        {(hasExisting || preview) && (
+                                                        {p.file_path && (
                                                             <button
                                                                 type="button"
-                                                                onClick={() => {
-                                                                    if (preview) {
-                                                                        setNewFilePreviews(prev => { const n = { ...prev }; delete n[key]; return n; });
-                                                                        setNewFiles(prev => { const n: any = { ...prev }; delete n[key]; return n; });
-                                                                    }
-                                                                    if (hasExisting) {
-                                                                        removeExistingFile(key as any, existingFiles[key][0], 0);
-                                                                    }
-                                                                }}
-                                                                style={{ position: 'absolute', top: 8, right: 8, background: '#fff', border: '1px solid #dee2e6', borderRadius: '50%', width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                                                                aria-label="Remove"
-                                                            >
-                                                                <Icon icon="mdi:close" width={16} height={16} />
-                                                            </button>
-                                                        )}
-                                                        {viewUrl && (
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => handleDownload(viewUrl)}
+                                                                onClick={(e) => { e.stopPropagation(); handleDownload(p.file_path); }}
                                                                 style={{ position: 'absolute', top: 8, left: 8, background: '#fff', border: '1px solid #dee2e6', borderRadius: '50%', width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                                                                 aria-label="Download"
                                                             >
                                                                 <Icon icon="mdi:cloud-download-outline" width={16} height={16} />
                                                             </button>
                                                         )}
+                                                        <input id={`edit_picture_${idx}_input`} type="file" accept="image/*" hidden onChange={(e) => handleEditPictureAtIndex(idx, (e.target as HTMLInputElement).files?.[0] || null)} />
+                                                        <button
+                                                            type="button"
+                                                            onClick={(e) => { e.stopPropagation(); (document.getElementById(`edit_picture_${idx}_input`) as HTMLInputElement)?.click(); }}
+                                                            style={{ position: 'absolute', bottom: 8, right: 8, background: '#fff', border: '1px solid #dee2e6', borderRadius: '50%', width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                                            aria-label="Edit"
+                                                        >
+                                                            <Icon icon="mdi:pencil" width={16} height={16} />
+                                                        </button>
                                                     </div>
                                                 </Col>
-                                            );
-                                        })}
-                                    </Row>
+                                            ))}
+                                            {Array.isArray(existingFiles.pictures) && existingFiles.pictures.length < 4 && (
+                                                <Col xs={6} sm={6} md={3} className="mb-3">
+                                                    <div style={{ position: 'relative', width: '100%', aspectRatio: '1', border: '2px dashed #dee2e6', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', background: '#f8f9fa' }}
+                                                        onClick={() => (document.getElementById('add_pictures_input') as HTMLInputElement)?.click()}>
+                                                        <Icon icon="mdi:plus" width={28} height={28} />
+                                                        <input id="add_pictures_input" type="file" accept="image/*" multiple hidden onChange={(e) => handleNewFilesChange('pictures', (e.target as HTMLInputElement).files)} />
+                                                    </div>
+                                                </Col>
+                                            )}
+                                        </Row>
 
-                                    <div className="mt-3">
-                                        <div style={{ border: '1px dashed #dee2e6', borderRadius: '12px', padding: '16px', background: '#f8f9fa' }}>
-                                            <Row className="g-2 align-items-end">
-                                                <Col md={8}>
-                                                    <Form.Label className="mb-1">Health Document Title</Form.Label>
-                                                    <Form.Control value={healthDocTitle} onChange={(e) => setHealthDocTitle(e.target.value)} placeholder="e.g. Bloodwork, X-Ray" />
+                                        {Array.isArray(existingFiles.video) && existingFiles.video.length > 0 && (
+                                            <>
+                                                <h6 className="mb-2 mt-3">Video</h6>
+                                                <Row className="mt-1">
+                                                    {existingFiles.video.map((v: any, idx: number) => (
+                                                        <Col md={12} className="mb-3" key={v._id || idx}>
+                                                            <Card>
+                                                                <Card.Body className="text-center p-2">
+                                                                    <div className="w-100" style={{ backgroundColor: '#f8f9fa', border: '1px solid #dee2e6', borderRadius: '8px', position: 'relative', overflow: 'hidden' }}>
+                                                                        <video controls style={{ width: '100%', height: '260px' }} src={v.file_path} />
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={(e) => { e.stopPropagation(); removeExistingFile('video', v, idx); }}
+                                                                            style={{ position: 'absolute', top: 8, right: 8, background: '#fff', border: '1px solid #dee2e6', borderRadius: '50%', width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                                                            aria-label="Remove"
+                                                                        >
+                                                                            <Icon icon="mdi:close" width={16} height={16} />
+                                                                        </button>
+                                                                    </div>
+                                                                </Card.Body>
+                                                            </Card>
+                                                        </Col>
+                                                    ))}
+                                                </Row>
+                                            </>
+                                        )}
+                                    </Col>
+
+                                    <Col md={6}>
+                                        <h6 className="mb-2 mt-3">Documents</h6>
+                                        <Row className="mt-1">
+                                            {Array.isArray(existingFiles.health_document) && existingFiles.health_document.map((doc: any, idx: number) => (
+                                                <Col md={6} className="mb-3" key={doc._id || idx}>
+                                                    <div style={{ position: 'relative', border: '1px solid #dee2e6', borderRadius: '12px', padding: '12px' }}>
+                                                        <p className="text-center" style={{ fontSize: '12px', marginBottom: 8 }}>{doc.title || `Health Document ${idx + 1}`}</p>
+                                                        {doc.file_path && (
+                                                            <div className="text-center">
+                                                                <a href={doc.file_path} target="_blank" rel="noreferrer" className="btn btn-outline-warning btn-sm">View</a>
+                                                            </div>
+                                                        )}
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => removeExistingFile('health_document', doc, idx)}
+                                                            style={{ position: 'absolute', top: 8, right: 8, background: '#fff', border: '1px solid #dee2e6', borderRadius: '50%', width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                                            aria-label="Remove"
+                                                        >
+                                                            <Icon icon="mdi:close" width={16} height={16} />
+                                                        </button>
+                                                        {doc.file_path && (
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => handleDownload(doc.file_path)}
+                                                                style={{ position: 'absolute', top: 8, left: 8, background: '#fff', border: '1px solid #dee2e6', borderRadius: '50%', width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                                                aria-label="Download"
+                                                            >
+                                                                <Icon icon="mdi:cloud-download-outline" width={16} height={16} />
+                                                            </button>
+                                                        )}
+                                                        <input id={`edit_health_doc_${idx}_input`} type="file" hidden onChange={(e) => handleEditHealthDocAtIndex(idx, doc, (e.target as HTMLInputElement).files?.[0] || null)} />
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => (document.getElementById(`edit_health_doc_${idx}_input`) as HTMLInputElement)?.click()}
+                                                            style={{ position: 'absolute', bottom: 8, right: 8, background: '#fff', border: '1px solid #dee2e6', borderRadius: '50%', width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                                            aria-label="Edit"
+                                                        >
+                                                            <Icon icon="mdi:pencil" width={16} height={16} />
+                                                        </button>
+                                                    </div>
                                                 </Col>
-                                                <Col md={4} className="pb-1 d-flex justify-content-end">
-                                                    <input id="add_health_doc_file_input" type="file" accept="image/*,application/pdf" hidden onChange={(e) => {
-                                                        const f = (e.target as HTMLInputElement).files?.[0] || null;
-                                                        if (f) addPendingHealthDoc(f);
-                                                    }} />
-                                                    <Button variant="primary" onClick={() => {
-                                                        if (!healthDocTitle.trim()) return;
-                                                        (document.getElementById('add_health_doc_file_input') as HTMLInputElement)?.click();
-                                                    }}>
-                                                        <Icon icon="mdi:file-plus-outline" width={18} height={18} className="me-1" /> Add
-                                                    </Button>
-                                                </Col>
-                                            </Row>
-                                        </div>
-                                    </div>
-                                    {pendingHealthDocs.length > 0 && (
-                                        <div className="mt-2">
-                                            <div className="text-muted small mb-1">Pending Health Documents</div>
-                                            <Row>
-                                                {pendingHealthDocs.map((d, i) => (
-                                                    <Col md={6} className="mb-2" key={`${d.title}-${i}`}>
-                                                        <Card>
-                                                            <Card.Body className="text-center">
-                                                                <p style={{ fontSize: '12px', marginBottom: 8 }}>{d.title}</p>
-                                                                <div className="mt-1">
-                                                                    <Button variant="outline-danger" size="sm" onClick={() => removePendingHealthDoc(i)}>Remove</Button>
+                                            ))}
+                                            {[{ key: 'breed_certification', label: 'Breed Certification' }, { key: 'vaccination_certification', label: 'Vaccination Certification' }, { key: 'flea_documents', label: 'Flea Documents' }, { key: 'pedigree', label: 'Pedigree' }].map(({ key, label }) => {
+                                                const preview = newFilePreviews[key];
+                                                const hasExisting = existingFiles[key]?.length > 0;
+                                                const viewUrl = preview || (hasExisting ? existingFiles[key][0]?.file_path : undefined);
+                                                return (
+                                                    <Col md={6} className="mb-3" key={key}>
+                                                        <div style={{ position: 'relative', border: '1px solid #dee2e6', borderRadius: '12px', padding: '12px' }}>
+                                                            <p className="text-center" style={{ fontSize: '12px', marginBottom: 8 }}>{label}</p>
+                                                            {viewUrl ? (
+                                                                <div className="text-center">
+                                                                    <a href={viewUrl} target="_blank" rel="noreferrer" className="btn btn-outline-secondary btn-sm">View</a>
                                                                 </div>
-                                                            </Card.Body>
-                                                        </Card>
+                                                            ) : (
+                                                                <span className="text-muted small d-block mb-2 text-center">No file</span>
+                                                            )}
+                                                            <input id={`edit_${key}_input`} type="file" hidden onChange={(e) => handleEditSpecificDoc(key as any, (e.target as HTMLInputElement).files?.[0] || null)} />
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => (document.getElementById(`edit_${key}_input`) as HTMLInputElement)?.click()}
+                                                                style={{ position: 'absolute', bottom: 8, right: 8, background: '#fff', border: '1px solid #dee2e6', borderRadius: '50%', width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                                                aria-label="Edit"
+                                                            >
+                                                                <Icon icon="mdi:pencil" width={16} height={16} />
+                                                            </button>
+                                                            {(hasExisting || preview) && (
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => {
+                                                                        if (preview) {
+                                                                            setNewFilePreviews(prev => { const n = { ...prev }; delete n[key]; return n; });
+                                                                            setNewFiles(prev => { const n: any = { ...prev }; delete n[key]; return n; });
+                                                                        }
+                                                                        if (hasExisting) {
+                                                                            removeExistingFile(key as any, existingFiles[key][0], 0);
+                                                                        }
+                                                                    }}
+                                                                    style={{ position: 'absolute', top: 8, right: 8, background: '#fff', border: '1px solid #dee2e6', borderRadius: '50%', width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                                                    aria-label="Remove"
+                                                                >
+                                                                    <Icon icon="mdi:close" width={16} height={16} />
+                                                                </button>
+                                                            )}
+                                                            {viewUrl && (
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => handleDownload(viewUrl)}
+                                                                    style={{ position: 'absolute', top: 8, left: 8, background: '#fff', border: '1px solid #dee2e6', borderRadius: '50%', width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                                                    aria-label="Download"
+                                                                >
+                                                                    <Icon icon="mdi:cloud-download-outline" width={16} height={16} />
+                                                                </button>
+                                                            )}
+                                                        </div>
                                                     </Col>
-                                                ))}
-                                            </Row>
+                                                );
+                                            })}
+                                        </Row>
+
+                                        <div className="mt-3">
+                                            <div style={{ border: '1px dashed #dee2e6', borderRadius: '12px', padding: '16px', background: '#f8f9fa' }}>
+                                                <Row className="g-2 align-items-end">
+                                                    <Col md={8}>
+                                                        <Form.Label className="mb-1">Health Document Title</Form.Label>
+                                                        <Form.Control value={healthDocTitle} onChange={(e) => setHealthDocTitle(e.target.value)} placeholder="e.g. Bloodwork, X-Ray" />
+                                                    </Col>
+                                                    <Col md={4} className="pb-1 d-flex justify-content-end">
+                                                        <input id="add_health_doc_file_input" type="file" accept="image/*,application/pdf" hidden onChange={(e) => {
+                                                            const f = (e.target as HTMLInputElement).files?.[0] || null;
+                                                            if (f) addPendingHealthDoc(f);
+                                                        }} />
+                                                        <Button variant="primary" onClick={() => {
+                                                            if (!healthDocTitle.trim()) return;
+                                                            (document.getElementById('add_health_doc_file_input') as HTMLInputElement)?.click();
+                                                        }}>
+                                                            <Icon icon="mdi:file-plus-outline" width={18} height={18} className="me-1" /> Add
+                                                        </Button>
+                                                    </Col>
+                                                </Row>
+                                            </div>
                                         </div>
-                                    )}
-                                </Col>
-                            </Row>
-                        </Col>
-                    </Row>
-                </Card.Body>
-            </Card>
+                                        {pendingHealthDocs.length > 0 && (
+                                            <div className="mt-2">
+                                                <div className="text-muted small mb-1">Pending Health Documents</div>
+                                                <Row>
+                                                    {pendingHealthDocs.map((d, i) => (
+                                                        <Col md={6} className="mb-2" key={`${d.title}-${i}`}>
+                                                            <Card>
+                                                                <Card.Body className="text-center">
+                                                                    <p style={{ fontSize: '12px', marginBottom: 8 }}>{d.title}</p>
+                                                                    <div className="mt-1">
+                                                                        <Button variant="outline-danger" size="sm" onClick={() => removePendingHealthDoc(i)}>Remove</Button>
+                                                                    </div>
+                                                                </Card.Body>
+                                                            </Card>
+                                                        </Col>
+                                                    ))}
+                                                </Row>
+                                            </div>
+                                        )}
+                                    </Col>
+                                </Row>
+                            </Col>
+                        </Row>
+                    </Card.Body>
+                </Card>
+            </form>
             {/* Preview modal */}
             <Modal show={preview.visible} onHide={closePreview} size="lg" centered>
                 <Modal.Header closeButton>
@@ -814,7 +843,7 @@ const EditDog: React.FC = () => {
                     <img src={preview.url} alt={preview.title || 'preview'} style={{ maxWidth: '100%', maxHeight: '70vh', objectFit: 'contain' }} />
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button variant="secondary" onClick={closePreview}>Close</Button>
+                    {/* <Button variant="secondary" onClick={closePreview}>Close</Button> */}
                     <Button variant="primary" onClick={() => handleDownload(preview.url)}>Download</Button>
                 </Modal.Footer>
             </Modal>
