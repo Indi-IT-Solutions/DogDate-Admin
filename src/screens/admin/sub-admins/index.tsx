@@ -139,7 +139,7 @@ const SubAdmins: React.FC = () => {
                         <Col md={6} className="text-end">
                             <InputGroup className="mb-2 justify-content-end">
                                 <Form.Control style={{ maxWidth: 260 }} placeholder="Search by name or email" value={search} onChange={(e) => setSearch(e.target.value)} />
-                                <Button variant="primary" onClick={() => navigate('/sub-admins/add')}>
+                                <Button variant="primary" className='ms-2' onClick={() => navigate('/sub-admins/add')}>
                                     <Icon icon="mdi:plus" className="me-1" /> Add Admin
                                 </Button>
                             </InputGroup>
