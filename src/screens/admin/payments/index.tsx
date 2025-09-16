@@ -1,19 +1,11 @@
-import { IMAGES } from "@/contants/images";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import React, { useState, useEffect } from "react";
-import { Row, Col, OverlayTrigger, Tooltip, Image, Alert } from "react-bootstrap";
+import { Row, Col, OverlayTrigger, Tooltip } from "react-bootstrap";
 import DataTable, { TableColumn } from "react-data-table-component";
-import { Link } from "react-router-dom";
-import { PaymentService, PaymentHistory, PaginationMeta } from "@/services";
+import { PaymentService, PaymentHistory } from "@/services";
 import { formatDate } from "@/utils/dateUtils";
 import AppLoader from "@/components/Apploader";
 
-// Helper function to safely extract string values from populated objects
-const safeGetString = (value: any): string => {
-    if (typeof value === 'string') return value;
-    if (value && typeof value === 'object' && value.name) return value.name;
-    return '';
-};
 
 // Helper function to map payment type from backend enums to display format
 const getPaymentTypeDisplay = (relationWith: string, transactionType: string): string => {
@@ -70,13 +62,8 @@ const Payments: React.FC = () => {
     const [searchText, setSearchText] = useState<string>("");
     const [paymentsData, setPaymentsData] = useState<PaymentHistory[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
-    const [error, setError] = useState<string>("");
-    const [pagination, setPagination] = useState<any>({
-        page: 1,
-        limit: 10,
-        totalPages: 1,
-        total: 0,
-    });
+    const [totalRows, setTotalRows] = useState<number>(0);
+    const [perPage, setPerPage] = useState<number>(10);
 
     const paymentsColumns: TableColumn<PaymentHistory>[] = [
         {
@@ -86,7 +73,7 @@ const Payments: React.FC = () => {
             wrap: true,
             cell: (row: PaymentHistory) => (
                 <span className="text-primary" style={{ fontWeight: 500, fontSize: 12 }}>
-                    {row?.purchase_id}
+                    {row?.purchase_id || 'N/A'}
                 </span>
             ),
         },
@@ -227,45 +214,56 @@ const Payments: React.FC = () => {
     ];
 
     // Fetch payments data
-    const fetchPayments = async (page: number = 1, searchTerm: string = '') => {
+    const fetchPayments = async (page: number = 1, limit: number = 10, search?: string) => {
         try {
-
-            setError('');
-
             const response = await PaymentService.getPayments({
                 page,
-                limit: 10,
-                search: searchTerm,
+                limit,
+                search: search || undefined,
             });
 
-            setPaymentsData(response.data || []);
-            setPagination(response.meta);
+            if (response?.status === 1) {
+                setPaymentsData(response?.data || []);
+                setTotalRows(response?.meta?.total_payments || 0);
+                setPerPage(response?.meta?.limit || 10);
+            } else {
+                setPaymentsData([]);
+                setTotalRows(0);
+            }
         } catch (err: any) {
             console.error('❌ Error fetching payments:', err);
-            setError(err.message || 'Failed to fetch payments');
             setPaymentsData([]);
+            setTotalRows(0);
         } finally {
             setLoading(false);
         }
     };
 
-    // Load payments on component mount
+    // Initial data load
     useEffect(() => {
-        fetchPayments(1, searchText);
+        fetchPayments(1, 10);
     }, []);
 
-    // Handle search with debounce
+    // Debounced search
     useEffect(() => {
         const timeoutId = setTimeout(() => {
-            fetchPayments(1, searchText);
+            if (searchText.trim() !== '') {
+                fetchPayments(1, perPage, searchText.trim());
+            } else {
+                fetchPayments(1, perPage);
+            }
         }, 500);
 
         return () => clearTimeout(timeoutId);
-    }, [searchText]);
+    }, [searchText, perPage]);
 
-    // Handle pagination
+    // Pagination handlers
     const handlePageChange = (page: number) => {
-        fetchPayments(page, searchText);
+        fetchPayments(page, perPage, searchText.trim() || undefined);
+    };
+
+    const handlePerRowsChange = (perPage: number, page: number) => {
+        fetchPayments(page, perPage, searchText.trim() || undefined);
     };
 
     return (
@@ -300,14 +298,16 @@ const Payments: React.FC = () => {
                         data={paymentsData}
                         pagination
                         paginationServer
-                        paginationTotalRows={pagination.total_payments}
-                        paginationDefaultPage={pagination.current_page}
-                        paginationPerPage={pagination.per_page}
+                        paginationTotalRows={totalRows}
                         onChangePage={handlePageChange}
+                        onChangeRowsPerPage={handlePerRowsChange}
+                        paginationRowsPerPageOptions={[10, 25, 50, 100]}
                         progressPending={loading}
-                        progressComponent={
-                            <AppLoader size={150} />
-                        }
+                        progressComponent={<AppLoader size={150} />}
+                        responsive
+                        className="custom-table"
+                        striped
+                        highlightOnHover
                         noDataComponent={
                             <div className="text-center p-4">
                                 <Icon icon="mdi:credit-card-off" width={48} height={48} className="text-muted mb-3" />
@@ -317,10 +317,6 @@ const Payments: React.FC = () => {
                                 </p>
                             </div>
                         }
-                        responsive
-                        className="custom-table"
-                        striped
-                        highlightOnHover
                     />
 
                     {/* Pagination Info */}

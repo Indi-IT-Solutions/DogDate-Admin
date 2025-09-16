@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { Row, Col, Button, Modal, OverlayTrigger, Tooltip, Alert, Spinner, Badge } from "react-bootstrap";
+import { Row, Col, Button, Modal, OverlayTrigger, Tooltip, Badge } from "react-bootstrap";
 import { Icon } from "@iconify/react";
-import DataTable, { TableColumn } from "react-data-table-component";
-import { ReportService, PaginationMeta } from "@/services";
-import { showError, showSuccess, showDeleteConfirmation, handleApiError } from "@/utils/sweetAlert";
+import DataTable from "react-data-table-component";
+import { ReportService } from "@/services";
+import { showSuccess, handleApiError } from "@/utils/sweetAlert";
 import { Report as ReportType } from "@/types/api.types";
 import { formatDateTime } from "@/utils/dateUtils";
 import { Link } from "react-router-dom";
@@ -24,16 +24,6 @@ const safeGetUserData = (userData: any): { name: string; email: string } => {
     return { name: 'Unknown User', email: 'N/A' };
 };
 
-const getActionBadge = (action: string) => {
-    switch (action) {
-        case 'pending':
-            return <Badge bg="warning">Pending</Badge>;
-        case 'processed':
-            return <Badge bg="success">Processed</Badge>;
-        default:
-            return <Badge bg="secondary">{action}</Badge>;
-    }
-};
 
 const getStatusBadge = (status: string) => {
     switch (status) {
@@ -52,19 +42,9 @@ const Report: React.FC = () => {
     const [selectedReport, setSelectedReport] = useState<any | null>(null);
     const [reportData, setReportData] = useState<any[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
-    const [error, setError] = useState<string>("");
     const [deleting, setDeleting] = useState<boolean>(false);
-    const [pagination, setPagination] = useState<PaginationMeta>({
-        current_page: 1,
-        total_pages: 1,
-        total: 0,
-        per_page: 10,
-        has_next_page: false,
-        has_prev_page: false,
-        page: 1,
-        limit: 10,
-        totalPages: 1,
-    });
+    const [totalRows, setTotalRows] = useState<number>(0);
+    const [perPage, setPerPage] = useState<number>(10);
 
     const handleCloseDeleteModal = (): void => {
         setShowDeleteModal(false);
@@ -76,56 +56,56 @@ const Report: React.FC = () => {
         setShowDeleteModal(true);
     };
 
-    const fetchReports = async (page: number = 1, searchTerm: string = '') => {
+    const fetchReports = async (page: number = 1, limit: number = 10, search?: string) => {
         try {
-
-            setError("");
-
             const response: any = await ReportService.getReports({
                 page,
-                limit: 10,
-                search: searchTerm
+                limit,
+                search: search || undefined
             });
 
-            setReportData(response.data || []);
-
-            // Debug: Log the first report to see the data structure
-            if (response.data && response.data.length > 0) {
-                console.log('🔍 First report data:', JSON.stringify(response.data[0], null, 2));
+            if (response?.status === 1) {
+                setReportData(response?.data || []);
+                setTotalRows(response?.meta?.total_reports || 0);
+                setPerPage(response?.meta?.limit || 10);
+            } else {
+                setReportData([]);
+                setTotalRows(0);
             }
-            setPagination({
-                current_page: response.meta?.current_page || 1,
-                total_pages: response.meta?.total_pages || 1,
-                total: response.meta?.total_reports || 0,
-                per_page: response.meta?.per_page || 10,
-                has_next_page: response.meta?.has_next_page || false,
-                has_prev_page: response.meta?.has_prev_page || false,
-                page: response.meta?.current_page || 1,
-                limit: response.meta?.per_page || 10,
-                totalPages: response.meta?.total_pages || 1,
-            });
         } catch (err: any) {
             console.error('❌ Error fetching reports:', err);
-            handleApiError(err, 'Failed to fetch reports');
+            setReportData([]);
+            setTotalRows(0);
         } finally {
             setLoading(false);
         }
     };
 
+    // Initial data load
     useEffect(() => {
-        fetchReports(1, searchText);
+        fetchReports(1, 10);
     }, []);
 
+    // Debounced search
     useEffect(() => {
         const timeoutId = setTimeout(() => {
-            fetchReports(1, searchText);
+            if (searchText.trim() !== '') {
+                fetchReports(1, perPage, searchText.trim());
+            } else {
+                fetchReports(1, perPage);
+            }
         }, 500);
 
         return () => clearTimeout(timeoutId);
-    }, [searchText]);
+    }, [searchText, perPage]);
 
+    // Pagination handlers
     const handlePageChange = (page: number) => {
-        fetchReports(page, searchText);
+        fetchReports(page, perPage, searchText.trim() || undefined);
+    };
+
+    const handlePerRowsChange = (perPage: number, page: number) => {
+        fetchReports(page, perPage, searchText.trim() || undefined);
     };
 
     const handleDeleteReport = async () => {
@@ -137,7 +117,7 @@ const Report: React.FC = () => {
             await ReportService.deleteReport(selectedReport?._id as string);
 
             // Refresh the data
-            fetchReports(pagination.current_page, searchText);
+            fetchReports(1, perPage, searchText.trim() || undefined);
 
             showSuccess('Success', 'Report deleted successfully');
             handleCloseDeleteModal();
@@ -261,23 +241,25 @@ const Report: React.FC = () => {
                             data={reportData}
                             pagination
                             paginationServer
-                            paginationTotalRows={pagination.total || 0}
-                            paginationDefaultPage={pagination.current_page}
-                            paginationPerPage={pagination.per_page}
+                            paginationTotalRows={totalRows}
                             onChangePage={handlePageChange}
+                            onChangeRowsPerPage={handlePerRowsChange}
+                            paginationRowsPerPageOptions={[10, 25, 50, 100]}
                             progressPending={loading}
-                            progressComponent={
-                                <AppLoader size={150} />
-                            }
-                            noDataComponent={
-                                <div className="text-center p-4">
-                                    <p className="text-muted">No reports found</p>
-                                </div>
-                            }
+                            progressComponent={<AppLoader size={150} />}
                             responsive
                             className="custom-table"
                             striped
                             highlightOnHover
+                            noDataComponent={
+                                <div className="text-center p-4">
+                                    <Icon icon="mdi:alert-circle-outline" width={48} height={48} className="text-muted mb-3" />
+                                    <h5 className="text-muted">No Reports Found</h5>
+                                    <p className="text-muted">
+                                        {searchText ? 'Try adjusting your search criteria' : 'No report records available'}
+                                    </p>
+                                </div>
+                            }
                         />
                     </div>
 
