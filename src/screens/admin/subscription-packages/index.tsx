@@ -5,6 +5,7 @@ import { Icon } from "@iconify/react/dist/iconify.js";
 import { Link } from "react-router-dom";
 import { SubscriptionService, SubscriptionPackage, PaginationMeta } from "@/services";
 import { formatDate } from "@/utils/dateUtils";
+import AppLoader from "@/components/Apploader";
 
 // Helper function to format amount
 const formatAmount = (amount: number): string => {
@@ -350,12 +351,7 @@ const SubscriptionPackages: React.FC = () => {
                     onChangePage={handlePageChange}
                     progressPending={loading}
                     progressComponent={
-                        <div className="d-flex justify-content-center align-items-center p-4">
-                            <Spinner animation="border" role="status">
-                                <span className="visually-hidden">Loading...</span>
-                            </Spinner>
-                            <span className="ms-2">Loading subscription packages...</span>
-                        </div>
+                        <AppLoader size={150} />
                     }
                     noDataComponent={
                         <div className="text-center p-4">
@@ -523,7 +519,7 @@ const SubscriptionPackages: React.FC = () => {
                             </Form.Group>
                         </Form>
                     </div>
-                    <Button onClick={handleSubmit} className="btn btn-primary px-4 w-100">
+                    <Button onClick={handleSubmit} className="btn btn-primary px-4 w-100 py-0">
                         {isCreateMode ? 'Create Package' : 'Update Package'}
                     </Button>
                 </Modal.Body>

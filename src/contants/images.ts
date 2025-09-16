@@ -8,7 +8,7 @@ import Avatar5 from "@/assets/img/avatars/5.png";
 import Document from "@/assets/img/doc.jpg";
 import Post from "@/assets/img/post.jpg";
 import Dog from "@/assets/img/dog.png";
-
+import Dummyimage from "@/assets/img/dummyImage.png";
 
 export const IMAGES = {
   Document,
@@ -20,6 +20,7 @@ export const IMAGES = {
   Avatar3,
   Avatar4,
   Avatar5,
-  Dog
+  Dog,
+  Dummyimage
 };
 

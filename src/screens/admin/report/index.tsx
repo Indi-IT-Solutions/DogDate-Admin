@@ -7,6 +7,8 @@ import { showError, showSuccess, showDeleteConfirmation, handleApiError } from "
 import { Report as ReportType } from "@/types/api.types";
 import { formatDateTime } from "@/utils/dateUtils";
 import { Link } from "react-router-dom";
+import AppLoader from "@/components/Apploader";
+import AppLoaderbtn from "@/components/Apploaderbtn";
 
 
 const safeGetUserData = (userData: any): { name: string; email: string } => {
@@ -265,11 +267,7 @@ const Report: React.FC = () => {
                             onChangePage={handlePageChange}
                             progressPending={loading}
                             progressComponent={
-                                <div className="text-center p-4">
-                                    <Spinner animation="border" role="status">
-                                        <span className="visually-hidden">Loading...</span>
-                                    </Spinner>
-                                </div>
+                                <AppLoader size={150} />
                             }
                             noDataComponent={
                                 <div className="text-center p-4">
@@ -321,14 +319,13 @@ const Report: React.FC = () => {
                         </Button>
                         <Button
                             variant="danger"
-                            className="px-4"
+                            className="px-4 py-0"
                             onClick={handleDeleteReport}
                             disabled={deleting}
                         >
                             {deleting ? (
                                 <>
-                                    <Spinner animation="border" size="sm" className="me-2" />
-                                    Deleting...
+                                    <AppLoaderbtn size={40} />
                                 </>
                             ) : (
                                 'Delete'

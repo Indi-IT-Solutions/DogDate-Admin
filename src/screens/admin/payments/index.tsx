@@ -1,11 +1,12 @@
 import { IMAGES } from "@/contants/images";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import React, { useState, useEffect } from "react";
-import { Row, Col, OverlayTrigger, Tooltip, Image, Alert, Spinner } from "react-bootstrap";
+import { Row, Col, OverlayTrigger, Tooltip, Image, Alert } from "react-bootstrap";
 import DataTable, { TableColumn } from "react-data-table-component";
 import { Link } from "react-router-dom";
 import { PaymentService, PaymentHistory, PaginationMeta } from "@/services";
 import { formatDate } from "@/utils/dateUtils";
+import AppLoader from "@/components/Apploader";
 
 // Helper function to safely extract string values from populated objects
 const safeGetString = (value: any): string => {
@@ -305,12 +306,7 @@ const Payments: React.FC = () => {
                         onChangePage={handlePageChange}
                         progressPending={loading}
                         progressComponent={
-                            <div className="d-flex justify-content-center align-items-center p-4">
-                                <Spinner animation="border" role="status">
-                                    <span className="visually-hidden">Loading...</span>
-                                </Spinner>
-                                <span className="ms-2">Loading payments...</span>
-                            </div>
+                            <AppLoader size={150} />
                         }
                         noDataComponent={
                             <div className="text-center p-4">

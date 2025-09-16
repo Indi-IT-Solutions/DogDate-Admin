@@ -5,6 +5,8 @@ import { useSearchParams, Link } from 'react-router-dom';
 import { DogService, AWSService, DogCharacterService, DogLikeService, BreedService } from '@/services';
 import { showError, showSuccess, handleApiError } from '@/utils/sweetAlert';
 import { IMAGES } from '@/contants/images';
+import AppLoaderbtn from '@/components/Apploaderbtn';
+import AppLoader from '@/components/Apploader';
 
 const EditDog: React.FC = () => {
     const [searchParams] = useSearchParams();
@@ -385,7 +387,7 @@ const EditDog: React.FC = () => {
     };
 
     if (!dogId) return <div className="p-3">Dog ID missing</div>;
-    if (loading) return <div className="p-4 text-center"><Spinner animation="border" /></div>;
+    if (loading) return <div className="p-4 text-center">   <AppLoader size={150} /></div>;
 
     return (
         <React.Fragment>
@@ -395,7 +397,7 @@ const EditDog: React.FC = () => {
                         <h5>Edit Dog</h5>
                         <div>
                             {/* <Link to={`/dogs/view-dog?id=${dogId}`} className="btn btn-outline-secondary me-2 h-[60px] block">Back</Link> */}
-                            <Button onClick={handleSave} disabled={saving}>{saving ? 'Saving...' : 'Save Changes'}</Button>
+                            <Button className="py-0" onClick={handleSave} disabled={saving}>{saving ? <AppLoaderbtn size={70} /> : 'Save Changes'}</Button>
                         </div>
                     </Card.Header>
                     <Card.Body>
@@ -548,10 +550,13 @@ const EditDog: React.FC = () => {
                                                             className="dropdown-item"
                                                             onMouseDown={(e) => { e.preventDefault(); }}
                                                             onClick={() => {
-                                                                setCharacter(prev => [...prev, o._id]);
-                                                                setDogCharQuery('');
-                                                                setCharsOpen(true);
+                                                                if (character.length < 2) {
+                                                                    setCharacter(prev => [...prev, o._id]);
+                                                                    setDogCharQuery('');
+                                                                    setCharsOpen(true);
+                                                                }
                                                             }}
+                                                            disabled={character.length >= 2}
                                                         >
                                                             {o.name}
                                                         </button>
@@ -562,6 +567,11 @@ const EditDog: React.FC = () => {
                                             </div>
                                         )}
                                     </div>
+                                    {character.length > 2 && (
+                                        <div className="text-danger small mt-1">
+                                            Maximum 2 characters can be selected
+                                        </div>
+                                    )}
                                 </Form.Group>
                             </Col>
 

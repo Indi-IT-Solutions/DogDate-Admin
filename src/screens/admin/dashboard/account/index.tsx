@@ -7,6 +7,8 @@ import { Link } from "react-router-dom";
 import { DashboardService, type AccountRequest } from "@/services";
 import { showError, showSuccess, handleApiError } from "@/utils/sweetAlert";
 import { formatDate } from "@/utils/dateUtils";
+import AppLoader from "@/components/Apploader";
+import AppLoaderbtn from "@/components/Apploaderbtn";
 
 interface AccountProps {
     data?: AccountRequest[];
@@ -17,7 +19,7 @@ const Account: React.FC<AccountProps> = ({ data = [], onRefresh }) => {
     const [reason, setReason] = useState<string>("");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [selectedRequest, setSelectedRequest] = useState<AccountRequest | null>(null);
-
+    const [loading, setLoading] = useState(false);
     // Modal
     const [show, setShow] = useState(false);
     const handleClose = () => {
@@ -37,6 +39,7 @@ const Account: React.FC<AccountProps> = ({ data = [], onRefresh }) => {
         if (!selectedRequest) return;
         try {
             setIsSubmitting(true);
+            setLoading(true);
             let response;
 
             if (modalType === "accept") {
@@ -63,6 +66,7 @@ const Account: React.FC<AccountProps> = ({ data = [], onRefresh }) => {
             handleApiError(error, "Failed to process account request");
         } finally {
             setIsSubmitting(false);
+            setLoading(false);
         }
     };
 
@@ -177,6 +181,8 @@ const Account: React.FC<AccountProps> = ({ data = [], onRefresh }) => {
                                     <p>No pending account requests</p>
                                 </div>
                             }
+                            progressPending={loading}
+                            progressComponent={<AppLoader size={150} />}
                         />
                     </div>
                 </Col>
@@ -227,12 +233,12 @@ const Account: React.FC<AccountProps> = ({ data = [], onRefresh }) => {
                         </Button>
                         <Button
                             variant={modalType === "accept" ? "success" : "danger"}
-                            className="px-4 min_width110"
+                            className="px-4 min_width110 py-0"
                             onClick={handleConfirm}
                             style={{ height: '50px' }}
                             disabled={isSubmitting || (modalType === "reject" && !reason.trim())}
                         >
-                            {isSubmitting ? "Processing..." : modalType === "accept" ? "Approve" : "Reject"}
+                            {isSubmitting ? <AppLoaderbtn size={70} /> : modalType === "accept" ? "Approve" : "Reject"}
                         </Button>
                     </div>
                 </Modal.Body>

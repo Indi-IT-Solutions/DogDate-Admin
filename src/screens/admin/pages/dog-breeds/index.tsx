@@ -5,8 +5,8 @@ import DataTable, { TableColumn } from "react-data-table-component";
 import { BreedService, DogBreed } from "@/services";
 import { formatDateTime } from "@/utils/dateUtils";
 import { Link } from "react-router-dom";
-
-
+import AppLoader from "@/components/Apploader";
+import AppLoaderbtn from "@/components/Apploaderbtn";
 const DogBreeds: React.FC = () => {
     const [breeds, setBreeds] = useState<DogBreed[]>([]);
     const [searchText, setSearchText] = useState<string>("");
@@ -176,11 +176,7 @@ const DogBreeds: React.FC = () => {
                             className="custom-table"
                             progressPending={loading}
                             progressComponent={
-                                <div className="text-center p-4">
-                                    <Spinner animation="border" role="status">
-                                        <span className="visually-hidden">Loading...</span>
-                                    </Spinner>
-                                </div>
+                                <AppLoader size={150} />
                             }
                             noDataComponent={
                                 <div className="text-center p-4">
@@ -238,11 +234,11 @@ const DogBreeds: React.FC = () => {
                             type="submit"
                             disabled={saving}
                             style={{ height: "49px", width: '100px' }}
+                            className="py-0"
                         >
                             {saving ? (
                                 <>
-                                    <Spinner animation="border" size="sm" className="me-2" />
-                                    {editBreed ? "Updating..." : "Adding..."}
+                                    <AppLoaderbtn size={70} />
                                 </>
                             ) : (
                                 editBreed ? "Update" : "Add"

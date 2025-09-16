@@ -2,13 +2,14 @@ import React, { useState } from 'react';
 import { Row, Col, Card, Form, Button, Badge } from 'react-bootstrap';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { SubAdminService } from '@/services';
+import AppLoaderbtn from '@/components/Apploaderbtn';
 
 const ALL_ROUTE_OPTIONS: { label: string; value: string }[] = [
     { label: 'Dashboard', value: '/dashboard' },
     { label: 'Users', value: '/users' },
     { label: 'Dogs', value: '/dogs' },
     { label: 'Payments', value: '/payments' },
-    { label: 'Subscription Packages', value: '/subscription-packages' },
+    // { label: 'Subscription Packages', value: '/subscription-packages' },
     { label: 'Contact', value: '/contact' },
     { label: 'Report', value: '/report' },
     { label: 'FAQs', value: '/faqs' },
@@ -103,7 +104,7 @@ const AddSubAdmin: React.FC = () => {
                             </Col>
                         </Row>
                         <div className="text-end">
-                            <Button type="submit" disabled={submitting}>{submitting ? 'Saving...' : (editId ? 'Save Changes' : 'Create Sub Admin')}</Button>
+                            <Button className="py-0" type="submit" disabled={submitting}>{submitting ? <AppLoaderbtn size={70} /> : (editId ? 'Save Changes' : 'Create Sub Admin')}</Button>
                         </div>
                     </Form>
                 </Card.Body>

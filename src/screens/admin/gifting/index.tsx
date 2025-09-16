@@ -3,10 +3,12 @@ import { Card, Row, Col, Form, Button, InputGroup } from 'react-bootstrap';
 import DataTable from 'react-data-table-component';
 import { RedeemableCoinService, UserService } from '@/services';
 import { showError, showSuccess, handleApiError } from '@/utils/sweetAlert';
+import AppLoader from '@/components/Apploader';
+import AppLoaderbtn from '@/components/Apploaderbtn';
 
 const Gifting: React.FC = () => {
     const [search, setSearch] = React.useState('');
-    const [loading, setLoading] = React.useState(false);
+    const [loading, setLoading] = React.useState(true);
     const [page, setPage] = React.useState(1);
     const [perPage, setPerPage] = React.useState(10);
     const [total, setTotal] = React.useState(0);
@@ -20,7 +22,6 @@ const Gifting: React.FC = () => {
 
     const fetchList = async (p = 1, l = 10, s?: string) => {
         try {
-            setLoading(true);
             const res = await RedeemableCoinService.list({ page: p, limit: l, search: s });
             if (res.status === 1) {
                 setData(res.data.items || []);
@@ -88,82 +89,92 @@ const Gifting: React.FC = () => {
                 </Col>
             </Row>
 
-            <Card className="mb-3">
-                <Card.Body>
-                    <Row>
-                        <Col md={6} className="mb-3">
-                            <Form.Label>Add users to gift</Form.Label>
-                            <Form.Control placeholder="Search users by name or email" value={userSearch} onChange={(e) => setUserSearch(e.target.value)} />
-                            {!!userResults.length && (
-                                <div className="border rounded p-2 mt-2" style={{ maxHeight: 220, overflowY: 'auto' }}>
-                                    {userResults.map((u: any) => (
-                                        <div key={u._id} className="d-flex justify-content-between align-items-center py-1">
-                                            <div>
-                                                <strong>{u.name}</strong>
-                                                <div className="text-muted small">{u.email}</div>
+            <form>
+                <Card className="mb-3">
+                    <Card.Body>
+                        <Row>
+                            <Col md={6} className="mb-3">
+                                <Form.Group className='mb-3 form-group'>
+                                    <Form.Label>Add users to gift</Form.Label>
+                                    <Form.Control placeholder="Search users by name or email" value={userSearch} onChange={(e) => setUserSearch(e.target.value)} />
+                                    {!!userResults.length && (
+                                        <div className="border rounded p-2 mt-2" style={{ maxHeight: 220, overflowY: 'auto' }}>
+                                            {userResults.map((u: any) => (
+                                                <div key={u._id} className="d-flex justify-content-between align-items-center py-1">
+                                                    <div>
+                                                        <strong>{u.name}</strong>
+                                                        <div className="text-muted small">{u.email}</div>
+                                                    </div>
+                                                    <Button size="sm" variant="outline-primary" onClick={() => addUser(u)}>Add</Button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </Form.Group>
+                            </Col>
+                            <Col md={6} className="mb-3">
+                                <Form.Group className='mb-3 form-group'>
+                                    <Form.Label>Selected users</Form.Label>
+                                    <div className="border rounded p-2" style={{ minHeight: 100 }}>
+                                        {selectedUsers.length === 0 && <div className="text-muted">No users selected</div>}
+                                        {selectedUsers.map(u => (
+                                            <div key={u._id} className="d-flex justify-content-between align-items-center py-1">
+                                                <div>
+                                                    <strong>{u.name}</strong>
+                                                    <div className="text-muted small">{u.email}</div>
+                                                </div>
+                                                <Button size="sm" variant="outline-danger" onClick={() => removeUser(u._id)}>Remove</Button>
                                             </div>
-                                            <Button size="sm" variant="outline-primary" onClick={() => addUser(u)}>Add</Button>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </Col>
-                        <Col md={6} className="mb-3">
-                            <Form.Label>Selected users</Form.Label>
-                            <div className="border rounded p-2" style={{ minHeight: 100 }}>
-                                {selectedUsers.length === 0 && <div className="text-muted">No users selected</div>}
-                                {selectedUsers.map(u => (
-                                    <div key={u._id} className="d-flex justify-content-between align-items-center py-1">
-                                        <div>
-                                            <strong>{u.name}</strong>
-                                            <div className="text-muted small">{u.email}</div>
-                                        </div>
-                                        <Button size="sm" variant="outline-danger" onClick={() => removeUser(u._id)}>Remove</Button>
+                                        ))}
                                     </div>
-                                ))}
-                            </div>
-                            <div className="d-flex align-items-center gap-2 mt-3">
-                                <Form.Control
-                                    type="number"
-                                    placeholder="Matches to gift"
-                                    value={giftAmount}
-                                    min={1}
-                                    onChange={(e) => {
-                                        const v = e.target.value;
-                                        const n = Number(v);
-                                        if (v === '') setGiftAmount('');
-                                        else if (!Number.isNaN(n)) setGiftAmount(Math.max(1, Math.floor(n)));
-                                    }}
-                                />
-                                <Button
-                                    disabled={submitting || selectedUsers.length === 0 || !giftAmount || Number(giftAmount) <= 0}
-                                    onClick={async () => {
-                                        try {
-                                            setSubmitting(true);
-                                            const ids = selectedUsers.map(u => u._id);
-                                            const res = await RedeemableCoinService.bulkAdd({ user_ids: ids, amount: Number(giftAmount) });
-                                            if (res.status === 1) {
-                                                showSuccess('Success', `Gifted ${giftAmount} matches to ${selectedUsers.length} user(s).`);
-                                                setSelectedUsers([]);
-                                                setGiftAmount('');
-                                                fetchList(page, perPage, search.trim() || undefined);
-                                            } else {
-                                                showError('Error', res.message || 'Failed to gift matches');
+                                </Form.Group>
+                                <div className="d-flex align-items-end gap-2 mt-3">
+                                    <Form.Group className='mb-0 form-group'>
+                                        <Form.Label>Gift amount</Form.Label>
+                                        <Form.Control
+                                            type="number"
+                                            placeholder="Matches to gift"
+                                            value={giftAmount}
+                                            min={1}
+                                            onChange={(e) => {
+                                                const v = e.target.value;
+                                                const n = Number(v);
+                                                if (v === '') setGiftAmount('');
+                                                else if (!Number.isNaN(n)) setGiftAmount(Math.max(1, Math.floor(n)));
+                                            }}
+                                        />
+                                    </Form.Group>
+                                    <Button
+                                        disabled={submitting || selectedUsers.length === 0 || !giftAmount || Number(giftAmount) <= 0}
+                                        className="py-0"
+                                        onClick={async () => {
+                                            try {
+                                                setSubmitting(true);
+                                                const ids = selectedUsers.map(u => u._id);
+                                                const res = await RedeemableCoinService.bulkAdd({ user_ids: ids, amount: Number(giftAmount) });
+                                                if (res.status === 1) {
+                                                    showSuccess('Success', `Gifted ${giftAmount} matches to ${selectedUsers.length} user(s).`);
+                                                    setSelectedUsers([]);
+                                                    setGiftAmount('');
+                                                    fetchList(page, perPage, search.trim() || undefined);
+                                                } else {
+                                                    showError('Error', res.message || 'Failed to gift matches');
+                                                }
+                                            } catch (err: any) {
+                                                handleApiError(err, 'Failed to gift matches');
+                                            } finally {
+                                                setSubmitting(false);
                                             }
-                                        } catch (err: any) {
-                                            handleApiError(err, 'Failed to gift matches');
-                                        } finally {
-                                            setSubmitting(false);
-                                        }
-                                    }}
-                                >
-                                    {submitting ? 'Gifting...' : 'Gift Matches'}
-                                </Button>
-                            </div>
-                        </Col>
-                    </Row>
-                </Card.Body>
-            </Card>
+                                        }}
+                                    >
+                                        {submitting ? <AppLoaderbtn size={70} /> : 'Gift Matches'}
+                                    </Button>
+                                </div>
+                            </Col>
+                        </Row>
+                    </Card.Body>
+                </Card>
+            </form>
 
             <Card>
                 <Card.Body>
@@ -178,6 +189,7 @@ const Gifting: React.FC = () => {
                         onChangeRowsPerPage={(n, p) => fetchList(p, n, search.trim() || undefined)}
                         progressPending={loading}
                         className="custom-table"
+                        progressComponent={<AppLoader size={150} />}
                     />
                 </Card.Body>
             </Card>

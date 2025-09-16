@@ -3,13 +3,14 @@ import { Row, Col, Button, Modal, Badge, Alert, Spinner, OverlayTrigger, Tooltip
 import { Icon } from "@iconify/react";
 import DataTable from "react-data-table-component";
 import { Link } from "react-router-dom";
-import { toast } from "react-toastify";
 import { IMAGES } from "@/contants/images";
 import { DogService } from "@/services";
 import type { Dog, DogFilters, PaginatedResponse } from "@/types/api.types";
 import { showError, showSuccess, showDeleteConfirmation, handleApiError } from "@/utils/sweetAlert";
 import { getDogProfileImage } from "@/utils/imageUtils";
 import { formatDate } from "@/utils/dateUtils";
+import AppLoader from "@/components/Apploader";
+import AppLoaderbtn from "@/components/Apploaderbtn";
 
 const Dogs: React.FC = () => {
     const [searchText, setSearchText] = useState<string>("");
@@ -309,7 +310,7 @@ const Dogs: React.FC = () => {
                             onChangeRowsPerPage={handlePerRowsChange}
                             paginationRowsPerPageOptions={[10, 25, 50, 100]}
                             progressPending={loading}
-                            progressComponent={<Spinner animation="border" role="status" />}
+                            progressComponent={<AppLoader size={150} />}
                             responsive
                             className="custom-table"
                             noDataComponent={
@@ -347,11 +348,11 @@ const Dogs: React.FC = () => {
                         </Button>
                         <Button
                             variant="success"
-                            className="px-4 min_width110"
+                            className="px-4 min_width110 py-0"
                             onClick={handleToggleStatus}
                             disabled={loading}
                         >
-                            {loading ? <Spinner size="sm" /> : 'Ok'}
+                            {loading ? <AppLoaderbtn size={70} /> : 'Ok'}
                         </Button>
                     </div>
                 </Modal.Body>
@@ -376,11 +377,11 @@ const Dogs: React.FC = () => {
                         </Button>
                         <Button
                             variant="danger"
-                            className="px-4 min_width110"
+                            className="px-4 min_width110 py-0"
                             onClick={handleDelete}
                             disabled={isDeleting}
                         >
-                            {isDeleting ? "Deleting..." : "Delete"}
+                            {isDeleting ? <AppLoaderbtn size={70} /> : "Delete"}
                         </Button>
                     </div>
                 </Modal.Body>

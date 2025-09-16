@@ -7,6 +7,7 @@ import LoginHeader from "@/components/LoginHeader";
 import TextField from "@/components/TextField";
 import { AuthService, tokenManager } from "@/services";
 import * as Yup from 'yup';
+import AppLoaderbtn from "@/components/Apploaderbtn";
 
 const initialValues = {
   email: "",
@@ -150,10 +151,10 @@ const Login: React.FC = () => {
                   </Form.Group>
                   <Button
                     type="submit"
-                    className="btn btn-primary w-100"
+                    className="btn btn-primary w-100 py-0"
                     disabled={isLoading}
                   >
-                    {isLoading ? "Logging in..." : "Login"}
+                    {isLoading ? <AppLoaderbtn size={70} /> : "Login"}
                   </Button>
                 </FormikForm>
               )}

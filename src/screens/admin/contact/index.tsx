@@ -7,6 +7,8 @@ import { showError, showSuccess, handleApiError } from "@/utils/sweetAlert";
 import { formatDateTime } from "@/utils/dateUtils";
 import { Link } from "react-router-dom";
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
+import AppLoader from "@/components/Apploader";
+import AppLoaderbtn from "@/components/Apploaderbtn";
 
 
 const getStatusBadge = (status: string) => {
@@ -239,11 +241,7 @@ const ContactUs: React.FC = () => {
                             onChangePage={handlePageChange}
                             progressPending={loading}
                             progressComponent={
-                                <div className="text-center p-4">
-                                    <Spinner animation="border" role="status">
-                                        <span className="visually-hidden">Loading...</span>
-                                    </Spinner>
-                                </div>
+                                <AppLoader size={150} />
                             }
                             noDataComponent={
                                 <div className="text-center p-4">
@@ -338,13 +336,12 @@ const ContactUs: React.FC = () => {
                         </Button>
                         <Button
                             onClick={handleSendReply}
-                            className="btn btn-primary px-4"
+                            className="btn btn-primary px-4 py-0"
                             disabled={sendingReply || !replyMessage.trim()}
                         >
                             {sendingReply ? (
                                 <>
-                                    <Spinner animation="border" size="sm" className="me-2" />
-                                    Sending...
+                                    <AppLoaderbtn size={70} />
                                 </>
                             ) : (
                                 <>

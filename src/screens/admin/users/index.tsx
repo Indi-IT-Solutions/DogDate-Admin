@@ -8,6 +8,8 @@ import { UserService, RedeemableCoinService, type User, type UserFilters } from 
 import { showError, showSuccess, handleApiError } from "@/utils/sweetAlert";
 import { getUserProfileImage } from "@/utils/imageUtils";
 import { formatDate } from "@/utils/dateUtils";
+import AppLoader from "@/components/Apploader";
+import AppLoaderbtn from "@/components/Apploaderbtn";
 
 const Users: React.FC = () => {
   const [searchText, setSearchText] = useState("");
@@ -354,8 +356,6 @@ const Users: React.FC = () => {
           <div className="d-flex justify-content-between align-items-center dropSelect_option">
 
             <h5 className="text-dark">Users</h5>
-
-
             <div className="text-end">
               <input
                 type="text"
@@ -366,9 +366,6 @@ const Users: React.FC = () => {
               />
             </div>
           </div>
-
-
-
           <div className="scrollable-table">
             <DataTable
               columns={userColumns as any}
@@ -384,7 +381,7 @@ const Users: React.FC = () => {
               responsive
               className="custom-table"
               progressPending={loading}
-              progressComponent={<div>Loading users...</div>}
+              progressComponent={<AppLoader size={150} />}
               noDataComponent={<div className="text-center py-4">No users found</div>}
             />
           </div>
@@ -410,11 +407,11 @@ const Users: React.FC = () => {
             </Button>
             <Button
               variant="danger"
-              className="px-4 min_width110"
+              className="px-4 min_width110 py-0"
               onClick={handleDeleteUser}
               disabled={isSubmitting}
             >
-              {isSubmitting ? "Deleting..." : "Delete"}
+              {isSubmitting ? <AppLoaderbtn size={70} /> : "Delete"}
             </Button>
           </div>
         </Modal.Body>
@@ -476,10 +473,10 @@ const Users: React.FC = () => {
           </div>
           <Button
             onClick={handleResetPassword}
-            className="btn btn-primary px-4 w-100"
+            className="btn btn-primary px-4 w-100 py-0"
             disabled={isSubmitting || !newPassword || !passwordValidation.length || !passwordValidation.capital || !passwordValidation.number || !passwordValidation.special}
           >
-            {isSubmitting ? "Updating..." : "Update Password"}
+            {isSubmitting ? <AppLoaderbtn size={70} /> : "Update Password"}
           </Button>
         </Modal.Body>
       </Modal>

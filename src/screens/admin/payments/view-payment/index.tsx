@@ -1,10 +1,11 @@
 
 import { IMAGES } from "@/contants/images";
 import React, { useState, useEffect } from "react";
-import { Card, Col, Row, Image, Alert, Spinner } from "react-bootstrap";
+import { Card, Col, Row, Image, Alert } from "react-bootstrap";
 import { Link, useSearchParams } from "react-router-dom";
 import { PaymentService, PaymentHistory } from "@/services";
 import { Icon } from "@iconify/react/dist/iconify.js";
+import AppLoader from "@/components/Apploader";
 
 // Helper function to safely extract string values from populated objects
 const safeGetString = (value: any): string => {
@@ -114,10 +115,7 @@ const ViewPayment: React.FC = () => {
     if (loading) {
         return (
             <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '400px' }}>
-                <Spinner animation="border" role="status">
-                    <span className="visually-hidden">Loading...</span>
-                </Spinner>
-                <span className="ms-2">Loading payment details...</span>
+                <AppLoader size={150} />
             </div>
         );
     }

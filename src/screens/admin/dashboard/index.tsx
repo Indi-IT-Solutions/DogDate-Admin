@@ -5,6 +5,7 @@ import Account from "./account";
 import UserVendorGrowthChart from "./UserVendorGrowthChart";
 import RevenueStatsChart from "./RevenueStatsChart";
 import { DashboardService, type DashboardOverview } from "@/services";
+import AppLoader from "@/components/Apploader";
 
 const Dashboard: React.FC = () => {
   const [dashboardData, setDashboardData] = useState<DashboardOverview | null>(null);
@@ -15,9 +16,7 @@ const Dashboard: React.FC = () => {
   const fetchDashboardData = async () => {
     try {
       setError("");
-
       const response = await DashboardService.getDashboardOverview();
-
       if (response.status === 1 && response.data) {
         setDashboardData(response.data);
       } else {
@@ -39,9 +38,7 @@ const Dashboard: React.FC = () => {
   if (loading) {
     return (
       <div className="d-flex justify-content-center align-items-center" style={{ height: '400px' }}>
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">Loading...</span>
-        </div>
+        <AppLoader size={150} />
       </div>
     );
   }
@@ -53,9 +50,7 @@ const Dashboard: React.FC = () => {
           {error}
         </Alert>
       )}
-
       <Stats data={dashboardData?.stats} />
-
       <Row className="mt-4">
         <Col lg={12}>
           <Account
@@ -64,7 +59,6 @@ const Dashboard: React.FC = () => {
           />
         </Col>
       </Row>
-
       <Row className="mt-4">
         <Col lg={6} className="pe-4">
           <UserVendorGrowthChart data={dashboardData?.user_growth} />

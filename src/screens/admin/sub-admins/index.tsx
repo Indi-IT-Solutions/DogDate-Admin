@@ -4,6 +4,7 @@ import DataTable from 'react-data-table-component';
 import { Link, useNavigate } from 'react-router-dom';
 import { Icon } from '@iconify/react';
 import { SubAdminService } from '@/services';
+import AppLoader from '@/components/Apploader';
 
 const SubAdmins: React.FC = () => {
     const [search, setSearch] = useState('');
@@ -155,6 +156,7 @@ const SubAdmins: React.FC = () => {
                         onChangePage={(p) => fetchAdmins(p, perPage, search.trim() || undefined)}
                         onChangeRowsPerPage={(n, p) => fetchAdmins(p, n, search.trim() || undefined)}
                         progressPending={loading}
+                        progressComponent={<AppLoader size={150} />}
                         className="custom-table"
                     />
                 </Card.Body>

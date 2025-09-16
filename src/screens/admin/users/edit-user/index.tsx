@@ -11,6 +11,8 @@ import type { MeetupAvailability } from "@/types/api.types";
 import { showError, showSuccess, handleApiError } from "@/utils/sweetAlert";
 import { getUserProfileImage } from "@/utils/imageUtils";
 import { IMAGES } from "@/contants/images";
+import AppLoaderbtn from "@/components/Apploaderbtn";
+import AppLoader from "@/components/Apploader";
 console.log('VITE_GOOGLE_PLACES_API_KEY :', import.meta.env.VITE_GOOGLE_PLACES_API_KEY);
 const ageRangeList = ["18 yrs+", "30 yrs+", "40 yrs+", "50 yrs+"];
 
@@ -308,12 +310,7 @@ const EditUser: React.FC = () => {
   // Show loading state
   if (loading) {
     return (
-      <div className="d-flex justify-content-center align-items-center" style={{ height: '400px' }}>
-        <Spinner animation="border" role="status">
-          <span className="visually-hidden">Loading...</span>
-        </Spinner>
-        <span className="ms-2">Loading user data...</span>
-      </div>
+      <AppLoader size={150} />
     );
   }
 
@@ -546,11 +543,11 @@ const EditUser: React.FC = () => {
           </Row>
           <div className="text-start">
             <Button
-              className="btn btn-primary px-4 mt-4 min_width140"
+              className="btn btn-primary px-4 mt-4 min_width140 py-0"
               onClick={handleSubmit}
               disabled={isSubmitting}
             >
-              {isSubmitting ? "Updating..." : "Update User"}
+              {isSubmitting ? <AppLoaderbtn size={70} /> : "Update User"}
             </Button>
           </div>
         </Form>
