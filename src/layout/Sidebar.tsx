@@ -89,12 +89,12 @@ const Sidebar: React.FC = () => {
       link: "/dashboard",
       icon: "mdi:view-grid-outline",
     },
-    {
-      id: "SubAdmins",
-      title: "Sub Admins",
-      link: "/sub-admins",
-      icon: "mdi:account-cog-outline",
-    },
+    // {
+    //   id: "SubAdmins",
+    //   title: "Sub Admins",
+    //   link: "/sub-admins",
+    //   icon: "mdi:account-cog-outline",
+    // },
     {
       id: "Users",
       title: "Users",
@@ -114,12 +114,12 @@ const Sidebar: React.FC = () => {
       link: "/payments",
       icon: "fluent:payment-28-regular",
     },
-    {
-      id: "Subscription Packages",
-      title: "Subscription Packages",
-      link: "/subscription-packages",
-      icon: "streamline:subscription-cashflow",
-    },
+    // {
+    //   id: "Subscription Packages",
+    //   title: "Subscription Packages",
+    //   link: "/subscription-packages",
+    //   icon: "streamline:subscription-cashflow",
+    // },
     {
       id: "Contact",
       title: "Contact",
