@@ -89,12 +89,12 @@ const Sidebar: React.FC = () => {
       link: "/dashboard",
       icon: "mdi:view-grid-outline",
     },
-    // {
-    //   id: "SubAdmins",
-    //   title: "Sub Admins",
-    //   link: "/sub-admins",
-    //   icon: "mdi:account-cog-outline",
-    // },
+    {
+      id: "SubAdmins",
+      title: "Sub Admins",
+      link: "/sub-admins",
+      icon: "mdi:account-cog-outline",
+    },
     {
       id: "Users",
       title: "Users",

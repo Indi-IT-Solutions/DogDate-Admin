@@ -8,7 +8,7 @@ const ALL_ROUTE_OPTIONS: { label: string; value: string }[] = [
     { label: 'Users', value: '/users' },
     { label: 'Dogs', value: '/dogs' },
     { label: 'Payments', value: '/payments' },
-    { label: 'Subscription Packages', value: '/subscription-packages' },
+    // { label: 'Subscription Packages', value: '/subscription-packages' },
     { label: 'Contact', value: '/contact' },
     { label: 'Report', value: '/report' },
     { label: 'FAQs', value: '/faqs' },
