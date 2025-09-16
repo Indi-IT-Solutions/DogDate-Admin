@@ -209,7 +209,7 @@ const AdminRoutes = () => {
           </ProtectedRoute>
         }
       />
-      {/* <Route
+      <Route
         path="/sub-admins"
         element={
           <ProtectedRoute>
@@ -218,7 +218,7 @@ const AdminRoutes = () => {
             </Layout>
           </ProtectedRoute>
         }
-      /> */}
+      />
       <Route
         path="/sub-admins/add"
         element={
