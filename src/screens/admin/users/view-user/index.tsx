@@ -300,18 +300,80 @@ const UserView: React.FC = () => {
     const paymentsColumns = [
         {
             name: "Payment ID",
-            selector: (row: any) => row.transaction_id || row._id,
+            selector: (row: any) => row.transaction_id || "N/A  ",
+            cell: (row: any) => {
+                const fullId = (row?.transaction_id)?.toString();
+                const truncatedId = fullId ? fullId?.substring(0, 10) + '...' : "N/A";
 
+                const handleCopy = async () => {
+                    try {
+                        await navigator.clipboard.writeText(fullId);
+                        // You could add a toast notification here if needed
+                    } catch (err) {
+                        console.error('Failed to copy: ', err);
+                    }
+                };
+
+                return (
+                    <OverlayTrigger
+                        placement="top"
+                        delay={{ show: 250, hide: 1000 }}
+                        overlay={
+                            fullId ?
+                                <Tooltip
+                                    id={`payment-id-${row._id}`}
+                                    style={{
+                                        maxWidth: '300px',
+                                        wordBreak: 'break-all',
+                                        fontSize: '11px'
+                                    }}
+                                >
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                        <span style={{ flex: 1 }}>{fullId}</span>
+                                        <button
+                                            onClick={handleCopy}
+                                            style={{
+                                                background: 'rgba(255,255,255,0.2)',
+                                                border: '1px solid rgba(255,255,255,0.3)',
+                                                borderRadius: '3px',
+                                                color: 'white',
+                                                padding: '2px 6px',
+                                                fontSize: '10px',
+
+                                            }}
+                                            onMouseDown={(e) => e.stopPropagation()}
+                                        >
+                                            Copy
+                                        </button>
+                                    </div>
+                                </Tooltip> : <></>
+                        }
+                    >
+                        <span
+                            style={{
+                                fontSize: '12px',
+                                fontFamily: 'monospace',
+                                cursor: 'help',
+                                borderBottom: '1px dotted #666'
+                            }}
+                        >
+                            {truncatedId || "N/A"}
+                        </span>
+                    </OverlayTrigger>
+                );
+            },
         },
         {
             name: "Type",
             selector: (row: any) => row.relation_with,
-
-            wrap: true,
             cell: (row: any) => (
                 <span className="badge bg-info text-capitalize" style={{
-                    whiteSpace: 'break-spaces',
-                    textAlign: 'left'
+                    fontSize: '11px',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    maxWidth: '120px',
+                    display: 'inline-block'
                 }}>
                     {row?.relation_with?.replace(/_/g, ' ') || 'N/A'}
                 </span>
@@ -320,60 +382,27 @@ const UserView: React.FC = () => {
         {
             name: "Transaction Type",
             selector: (row: any) => row.transaction_type,
-
             cell: (row: any) => (
-                <span className={`badge ${row.transaction_type === "Auto-Renewable Subscription" ? "bg-success" : "bg-warning"}`}>
+                <span className={`badge ${row.transaction_type === "Auto-Renewable Subscription" ? "bg-success" : "bg-warning"}`} style={{ fontSize: '11px' }}>
                     {row.transaction_type === "Auto-Renewable Subscription" ? "Subscription" : "One-time"}
                 </span>
             ),
         },
-        // {
-        //     name: "Dog",
-        //     width: "220px",
-        //     cell: (row: any) => (
-        //         <div className="d-flex align-items-center gap-2">
-        //             {row.dog_details ? (
-        //                 <>
-        //                     <img
-        //                         src={row.dog_details.profile_picture || IMAGES.Dog}
-        //                         alt={row.dog_details.dog_name || 'Dog'}
-        //                         className="rounded"
-        //                         width={40}
-        //                         height={40}
-        //                         style={{ objectFit: "cover", border: "1px solid #eee" }}
-        //                         onError={(e) => {
-        //                             const target = e.target as HTMLImageElement;
-        //                             target.src = IMAGES.Dog;
-        //                         }}
-        //                     />
-        //                     <div>
-        //                         <div><strong>{row.dog_details.dog_name || 'Unknown'}</strong></div>
-        //                         <small className="text-muted">{row.dog_details.breed || 'Unknown breed'}</small>
-        //                     </div>
-        //                 </>
-        //             ) : (
-        //                 <span className="text-muted">No dog associated</span>
-        //             )}
-        //         </div>
-        //     ),
-        // },
         {
             name: "Amount",
             selector: (row: any) => row.paid_price,
             cell: (row: any) => {
                 const amount = row.paid_price ? (row.paid_price / 1000).toFixed(2) : '0.00';
                 return (
-                    <span className="text-dark" style={{ fontWeight: 600 }}>${amount}</span>
+                    <span className="text-dark" style={{ fontWeight: 600, fontSize: '13px' }}>${amount}</span>
                 );
             },
-
         },
         {
             name: "Platform",
             selector: (row: any) => row.payment_platform,
-
             cell: (row: any) => (
-                <span className={`badge ${row.payment_platform === 'ios_iap' ? 'bg-dark' : 'bg-success'}`}>
+                <span className={`badge ${row.payment_platform === 'ios_iap' ? 'bg-dark' : 'bg-success'}`} style={{ fontSize: '11px' }}>
                     {row.payment_platform === 'ios_iap' ? 'iOS' : 'Android'}
                 </span>
             ),
@@ -381,13 +410,17 @@ const UserView: React.FC = () => {
         {
             name: "Paid on",
             selector: (row: any) => row.payment_time,
-            cell: (row: any) => formatDate(row.payment_time),
+            cell: (row: any) => (
+                <span style={{ fontSize: '12px' }}>
+                    {formatDate(row.payment_time)}
+                </span>
+            ),
         },
         {
             name: "Status",
             cell: (row: any) => (
-                <span className={`badge ${row.status === "paid" ? "bg-success" : "bg-danger"} text-capitalize`}>
-                    {row.status || 'Unknown'}
+                <span className={`badge ${row.status === "paid" || row.status === "skipped" ? "bg-success" : "bg-danger"} text-capitalize`} style={{ fontSize: '11px' }}>
+                    {row.status === "paid" || row.status === "skipped" ? "Success" : "Failed"}
                 </span>
             ),
         },
@@ -398,7 +431,7 @@ const UserView: React.FC = () => {
             name: "Dog",
             cell: (row: any) => (
                 <div className="d-flex gap-3 align-items-center py-2">
-                    <img
+                    {/* <img
                         src={getDogProfileImage(row)}
                         alt={row.dog_name || 'Dog'}
                         className="rounded"
@@ -409,7 +442,7 @@ const UserView: React.FC = () => {
                             const target = e.target as HTMLImageElement;
                             target.src = IMAGES.Dog; // Fallback to default dog image on error
                         }}
-                    />
+                    /> */}
                     <div>
                         <div className="d-flex align-items-center gap-2">
                             <strong>{row.dog_name || 'Unknown'}</strong>
@@ -613,13 +646,7 @@ const UserView: React.FC = () => {
                                                 <p>{userData.address?.city || userData.address?.full_address || 'N/A'}</p>
                                             </div>
 
-                                            {/* About */}
-                                            <div className="tablefilelist_grid">
-                                                <h4>About</h4>
-                                                <div className="about-box">
-                                                    <p>{userData.about || 'No description provided'}</p>
-                                                </div>
-                                            </div>
+
 
                                         </Col>
                                         <Col lg={6}>
@@ -674,14 +701,18 @@ const UserView: React.FC = () => {
                                                         {giftItems.length > 0 ? (
                                                             <div className="border rounded p-2" style={{ maxHeight: 180, overflowY: 'auto' }}>
                                                                 {giftItems.map((g: any) => (
-                                                                    <div key={g._id} className="d-flex justify-content-between py-1">
-                                                                        <div>
-                                                                            <strong>{g.amount}</strong> match(es)
+                                                                    g.amount > 0 ? (
+                                                                        <div key={g._id} className="d-flex justify-content-between py-1">
+                                                                            <div>
+                                                                                <strong>{g.amount}</strong> match(es)
+                                                                            </div>
+                                                                            <div className="text-muted small">
+                                                                                {g.expires_at ? `Expires: ${new Date(g.expires_at).toLocaleDateString()}` : 'No expiry'}
+                                                                            </div>
                                                                         </div>
-                                                                        <div className="text-muted small">
-                                                                            {g.expires_at ? `Expires: ${new Date(g.expires_at).toLocaleDateString()}` : 'No expiry'}
-                                                                        </div>
-                                                                    </div>
+                                                                    ) : (
+                                                                        <div className="text-muted">No free matches gifted.</div>
+                                                                    )
                                                                 ))}
                                                             </div>
                                                         ) : (
@@ -864,6 +895,46 @@ const UserView: React.FC = () => {
                                                 )}
                                             </div>
                                         }
+                                        customStyles={{
+                                            table: {
+                                                style: {
+                                                    fontSize: '12px',
+                                                    width: '100%',
+                                                    maxWidth: '100%'
+                                                }
+                                            },
+                                            headRow: {
+                                                style: {
+                                                    fontSize: '12px',
+                                                    fontWeight: '600',
+                                                    backgroundColor: '#f8f9fa',
+                                                    height: '65px'
+                                                }
+                                            },
+                                            headCells: {
+                                                style: {
+                                                    fontSize: '12px',
+                                                    fontWeight: '600',
+                                                    padding: '10px 8px',
+                                                    textAlign: 'left'
+                                                }
+                                            },
+                                            cells: {
+                                                style: {
+                                                    fontSize: '12px',
+                                                    padding: '10px 8px',
+                                                    textAlign: 'left'
+                                                }
+                                            },
+                                            rows: {
+                                                style: {
+                                                    height: '50px',
+                                                    '&:nth-of-type(odd)': {
+                                                        backgroundColor: '#f8f9fa'
+                                                    }
+                                                }
+                                            }
+                                        }}
                                     />
 
                                     {paymentsPagination.totalRows > 0 && (

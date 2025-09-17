@@ -7,6 +7,7 @@ interface UserVendorGrowthChartProps {
 }
 
 const UserVendorGrowthChart: React.FC<UserVendorGrowthChartProps> = ({ data }) => {
+    console.log('datadatadatadatadatadata :', data);
     // Default fallback data
     const defaultData = [
         { month: 'Jan', users: 0, dogs: 0 },
@@ -30,7 +31,11 @@ const UserVendorGrowthChart: React.FC<UserVendorGrowthChartProps> = ({ data }) =
                     <XAxis dataKey="month" />
                     <YAxis />
                     <Tooltip
-                        formatter={(value, name) => [value, name === 'users' ? 'Users' : 'Dogs']}
+                        formatter={(value, name) => {
+                            if (name === 'users') return [value, 'Users'];
+                            if (name === 'dogs') return [value, 'Dogs'];
+                            return [value, name];
+                        }}
                         labelFormatter={(label) => `Month: ${label}`}
                     />
                     <Legend />

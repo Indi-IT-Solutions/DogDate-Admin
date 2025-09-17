@@ -147,7 +147,7 @@ const ReceivedRequests: React.FC = () => {
             name: "My Dog",
             cell: (row: any) => (
                 <div className="d-flex gap-2 align-items-center">
-                    <img
+                    {/* <img
                         src={getDogProfileImage(row.receiver_dog_details)}
                         alt={row.receiver_dog_details?.dog_name || 'Dog'}
                         className="rounded"
@@ -158,7 +158,7 @@ const ReceivedRequests: React.FC = () => {
                             const target = e.target as HTMLImageElement;
                             target.src = IMAGES.Dog; // Fallback to default dog image on error
                         }}
-                    />
+                    /> */}
                     <div>
                         <div style={{ fontWeight: 500 }}>{row.receiver_dog_details?.dog_name || 'Unknown'}</div>
                         <div style={{ fontSize: 12 }}>{safeGetString(row.receiver_dog_details?.breed) || 'Unknown breed'}</div>
@@ -171,7 +171,7 @@ const ReceivedRequests: React.FC = () => {
             name: "Other Dog",
             cell: (row: any) => (
                 <div className="d-flex gap-2 align-items-center">
-                    <img
+                    {/* <img
                         src={getDogProfileImage(row.initiator_dog_details)}
                         alt={row.initiator_dog_details?.dog_name || 'Dog'}
                         className="rounded"
@@ -182,7 +182,7 @@ const ReceivedRequests: React.FC = () => {
                             const target = e.target as HTMLImageElement;
                             target.src = IMAGES.Dog; // Fallback to default dog image on error
                         }}
-                    />
+                    /> */}
                     <div>
                         <div style={{ fontWeight: 500 }}>{row.initiator_dog_details?.dog_name || 'Unknown'}</div>
                         <div style={{ fontSize: 12 }}>{safeGetString(row.initiator_dog_details?.breed) || 'Unknown breed'}</div>
@@ -195,7 +195,7 @@ const ReceivedRequests: React.FC = () => {
             name: "Other User",
             cell: (row: any) => (
                 <div className="d-flex gap-2 align-items-center">
-                    <img
+                    {/* <img
                         src={getUserProfileImage(row.initiator)}
                         alt={row.initiator?.name || 'User'}
                         className="rounded-circle"
@@ -206,7 +206,7 @@ const ReceivedRequests: React.FC = () => {
                             const target = e.target as HTMLImageElement;
                             target.src = IMAGES.Avatar1; // Fallback to default avatar on error
                         }}
-                    />
+                    /> */}
                     <div>
                         <div style={{ fontWeight: 500 }}>{safeGetString(row.initiator?.name) || 'Unknown User'}</div>
                         <div style={{ fontSize: 12 }}>{safeGetString(row.initiator?.email) || 'No email'}</div>

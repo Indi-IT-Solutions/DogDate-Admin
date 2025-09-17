@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Row, Col, Button, Card, Form, InputGroup, Dropdown, OverlayTrigger, Tooltip } from 'react-bootstrap';
+import { Row, Col, Button, Card, Form, InputGroup, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import DataTable from 'react-data-table-component';
 import { Link, useNavigate } from 'react-router-dom';
 import { Icon } from '@iconify/react';
@@ -41,6 +41,7 @@ const SubAdmins: React.FC = () => {
     }, [search]);
 
     const columns = [
+        { name: 'Sr. No.', selector: (_row: any, rowIndex: number | undefined) => (rowIndex ?? 0) + 1, width: '90px', sortable: false },
         { name: 'Name', selector: (row: any) => row.name, sortable: true },
         { name: 'Email', selector: (row: any) => row.email, sortable: true },
         {
@@ -68,9 +69,9 @@ const SubAdmins: React.FC = () => {
         },
         {
             name: 'Action',
-            width: '160px',
+            width: '200px',
             cell: (row: any) => (
-                <div className="d-flex align-items-center gap-3">
+                <div className="d-flex align-items-center gap-2">
                     <OverlayTrigger
                         placement="top"
                         overlay={<Tooltip id="edit-tooltip">Edit</Tooltip>}
@@ -82,20 +83,20 @@ const SubAdmins: React.FC = () => {
                     {row.status === 'active' ? (
                         <OverlayTrigger
                             placement="top"
-                            overlay={<Tooltip id="ban-tooltip">Ban Admin</Tooltip>}
+                            overlay={<Tooltip id="ban-tooltip">Block Admin</Tooltip>}
                         >
                             <Link to="javascript:void(0)" onClick={async () => {
                                 const { showConfirmation, showSuccess } = await import('@/utils/sweetAlert');
                                 const { isConfirmed } = await showConfirmation(
-                                    'Ban Sub Admin',
-                                    'Are you sure you want to ban this sub-admin? They will be unable to login until unbanned.',
-                                    'Yes, Ban',
+                                    'Block Sub Admin',
+                                    'Are you sure you want to block this sub-admin? They will be unable to login until unblocked.',
+                                    'Yes, Block',
                                     'Cancel'
                                 );
                                 if (!isConfirmed) return;
                                 const res = await SubAdminService.updateStatus(row._id, 'inactive');
                                 if (res.status === 1) {
-                                    await showSuccess('Banned', 'The sub-admin has been banned successfully.');
+                                    await showSuccess('Blocked', 'The sub-admin has been blocked successfully.');
                                     fetchAdmins(1, perPage, search.trim() || undefined);
                                 }
                             }}>
@@ -105,20 +106,20 @@ const SubAdmins: React.FC = () => {
                     ) : (
                         <OverlayTrigger
                             placement="top"
-                            overlay={<Tooltip id="unban-tooltip">Unban Admin</Tooltip>}
+                            overlay={<Tooltip id="unban-tooltip">Unblock Admin</Tooltip>}
                         >
                             <Link to="javascript:void(0)" onClick={async () => {
                                 const { showConfirmation, showSuccess } = await import('@/utils/sweetAlert');
                                 const { isConfirmed } = await showConfirmation(
-                                    'Unban Sub Admin',
-                                    'Are you sure you want to unban this sub-admin? They will be able to login again.',
-                                    'Yes, Unban',
+                                    'Unblock Sub Admin',
+                                    'Are you sure you want to unblock this sub-admin? They will be able to login again.',
+                                    'Yes, Unblock',
                                     'Cancel'
                                 );
                                 if (!isConfirmed) return;
                                 const res = await SubAdminService.updateStatus(row._id, 'active');
                                 if (res.status === 1) {
-                                    await showSuccess('Unbanned', 'The sub-admin has been unbanned successfully.');
+                                    await showSuccess('Unblocked', 'The sub-admin has been unblocked successfully.');
                                     fetchAdmins(1, perPage, search.trim() || undefined);
                                 }
                             }}>
@@ -126,6 +127,35 @@ const SubAdmins: React.FC = () => {
                             </Link>
                         </OverlayTrigger>
                     )}
+                    <OverlayTrigger
+                        placement="top"
+                        overlay={<Tooltip id="delete-tooltip">Delete Admin</Tooltip>}
+                    >
+                        <Link to="javascript:void(0)" onClick={async () => {
+                            const { showConfirmation, showSuccess, showError } = await import('@/utils/sweetAlert');
+                            const { isConfirmed } = await showConfirmation(
+                                'Delete Sub Admin',
+                                `Are you sure you want to permanently delete "${row.name}"? This action cannot be undone and will remove all their access to the admin panel.`,
+                                'Yes, Delete',
+                                'Cancel'
+                            );
+                            if (!isConfirmed) return;
+
+                            try {
+                                const res = await SubAdminService.delete(row._id);
+                                if (res.status === 1) {
+                                    await showSuccess('Deleted', 'The sub-admin has been deleted successfully.');
+                                    fetchAdmins(1, perPage, search.trim() || undefined);
+                                } else {
+                                    await showError('Error', res.message || 'Failed to delete sub-admin.');
+                                }
+                            } catch (error) {
+                                await showError('Error', 'An error occurred while deleting the sub-admin.');
+                            }
+                        }}>
+                            <Icon icon="mdi:delete" width={20} height={20} className="text-danger" />
+                        </Link>
+                    </OverlayTrigger>
                 </div>
             )
         }
@@ -141,7 +171,7 @@ const SubAdmins: React.FC = () => {
                             <InputGroup className="mb-2 justify-content-end">
                                 <Form.Control style={{ maxWidth: 260 }} placeholder="Search by name or email" value={search} onChange={(e) => setSearch(e.target.value)} />
                                 <Button variant="primary" className='ms-2' onClick={() => navigate('/sub-admins/add')}>
-                                    <Icon icon="mdi:plus" className="me-1" /> Add Admin
+                                    <Icon icon="mdi:plus" className="me-1" /> Add Sub Admin
                                 </Button>
                             </InputGroup>
                         </Col>

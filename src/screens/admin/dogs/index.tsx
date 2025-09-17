@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { Row, Col, Button, Modal, Badge, Alert, Spinner, OverlayTrigger, Tooltip } from "react-bootstrap";
+import { Row, Col, Button, Modal, Badge, Alert, OverlayTrigger, Tooltip } from "react-bootstrap";
 import { Icon } from "@iconify/react";
 import DataTable from "react-data-table-component";
 import { Link } from "react-router-dom";
 import { IMAGES } from "@/contants/images";
 import { DogService } from "@/services";
-import type { Dog, DogFilters, PaginatedResponse } from "@/types/api.types";
-import { showError, showSuccess, showDeleteConfirmation, handleApiError } from "@/utils/sweetAlert";
+import type { Dog, DogFilters } from "@/types/api.types";
+import { showError, showSuccess, handleApiError } from "@/utils/sweetAlert";
 import { getDogProfileImage } from "@/utils/imageUtils";
 import { formatDate } from "@/utils/dateUtils";
 import AppLoader from "@/components/Apploader";
@@ -37,6 +37,10 @@ const Dogs: React.FC = () => {
 
     const getStatusBadge = (status: string) => {
         return status === 'active' ? 'success' : 'danger';
+    };
+
+    const getStatusText = (status: string) => {
+        return status.charAt(0).toUpperCase() + status.slice(1);
     };
 
 
@@ -132,7 +136,7 @@ const Dogs: React.FC = () => {
 
             const response = await DogService.updateDogStatus(selectedDog._id, newStatus);
             if (response.status === 1) {
-                showSuccess("Success", `Dog ${newStatus === 'active' ? 'unblocked' : 'blocked'} successfully`);
+                showSuccess("Success", `Dog ${newStatus === 'active' ? 'activated' : 'deactivated'} successfully`);
                 fetchDogs(currentPage, perPage, searchText.trim() || undefined);
             } else {
                 showError("Error", response.message || "Failed to update dog status");
@@ -163,14 +167,14 @@ const Dogs: React.FC = () => {
     const columns = [
         {
             name: "S.no.",
-            cell: (row: Dog, index: number) => (currentPage - 1) * perPage + index + 1,
+            cell: (_row: Dog, index: number) => (currentPage - 1) * perPage + index + 1,
             width: '80px'
         },
         {
             name: "Dog",
             cell: (row: Dog) => (
                 <div className="d-flex align-items-center">
-                    <img
+                    {/* <img
                         src={getDogProfileImage(row)}
                         alt={row.dog_name}
                         style={{ width: 40, height: 40, borderRadius: "50%", objectFit: "cover", marginRight: 10 }}
@@ -178,7 +182,7 @@ const Dogs: React.FC = () => {
                             const target = e.target as HTMLImageElement;
                             target.src = IMAGES.Dog; // Fallback to default dog image on error
                         }}
-                    />
+                    /> */}
                     <div>
                         <div className="fw-bold">{row.dog_name}</div>
                         <div className="text-muted small">{row.profile_type}</div>
@@ -204,7 +208,7 @@ const Dogs: React.FC = () => {
         },
         {
             name: "Age",
-            selector: (row: Dog) => `${row.age} yr${row.age > 1 ? "s" : ""}`,
+            selector: (_row: Dog) => `${_row.age} yr${_row.age > 1 ? "s" : ""}`,
             width: "80px",
         },
         {
@@ -221,7 +225,7 @@ const Dogs: React.FC = () => {
             name: "Status",
             cell: (row: Dog) => (
                 <Badge bg={getStatusBadge(row.status)}>
-                    {row.status.charAt(0).toUpperCase() + row.status.slice(1)}
+                    {getStatusText(row.status)}
                 </Badge>
             ),
             width: "100px",
@@ -251,8 +255,8 @@ const Dogs: React.FC = () => {
                     <OverlayTrigger
                         placement="top"
                         overlay={
-                            <Tooltip id={`block-tooltip-${row._id}`}>
-                                {row.status === "active" ? "Block" : "Unblock"}
+                            <Tooltip id={`status-tooltip-${row._id}`}>
+                                {row.status === "active" ? "Deactivate" : "Activate"}
                             </Tooltip>
                         }
                     >
@@ -329,12 +333,12 @@ const Dogs: React.FC = () => {
                     <div className="modaldelete_div">
                         <Icon className="delete_icon" icon="mdi:alert-circle-outline" />
                         <h3>
-                            {selectedDog?.status === "active" ? "Block Dog?" : "Unblock Dog?"}
+                            {selectedDog?.status === "active" ? "Deactivate Dog?" : "Activate Dog?"}
                         </h3>
                         <p>
                             {selectedDog?.status === "active"
-                                ? `Are you sure you want to block ${selectedDog?.dog_name}? The dog will not be visible to other users.`
-                                : `Are you sure you want to unblock ${selectedDog?.dog_name}? The dog will be visible to other users again.`}
+                                ? `Are you sure you want to deactivate ${selectedDog?.dog_name}? The dog will not be visible to other users.`
+                                : `Are you sure you want to activate ${selectedDog?.dog_name}? The dog will be visible to other users again.`}
                         </p>
                     </div>
                     <div className="d-flex justify-content-end gap-3">

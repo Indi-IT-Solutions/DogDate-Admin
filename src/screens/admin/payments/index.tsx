@@ -33,7 +33,7 @@ const getPaymentTypeDisplay = (relationWith: string, transactionType: string): s
 
 // Helper function to map payment status
 const getPaymentStatusDisplay = (status: string): "Success" | "Failed" => {
-    return status === 'paid' ? 'Success' : 'Failed';
+    return status === 'paid' || status === 'skipped' ? 'Success' : 'Failed';
 };
 
 // Helper function to get payment purpose description

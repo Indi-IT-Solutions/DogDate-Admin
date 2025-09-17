@@ -223,7 +223,7 @@ const Users: React.FC = () => {
       selector: (row: User) => row.name,
       cell: (row: User) => (
         <div className="d-flex align-items-center gap-2">
-          <img
+          {/* <img
             src={getUserProfileImage(row)}
             alt={row.name}
             className="rounded-circle"
@@ -234,7 +234,7 @@ const Users: React.FC = () => {
               const target = e.target as HTMLImageElement;
               target.src = IMAGES.Avatar1; // Fallback to default avatar on error
             }}
-          />
+          /> */}
           <div>
             <strong>{row.name}</strong><br />
             <small>{row.email}</small><br />
@@ -268,11 +268,21 @@ const Users: React.FC = () => {
     {
       name: "Status",
       selector: (row: User) => (
-        <span className={`badge ${row.status === 'active' ? 'bg-success' : row.status === 'inactive' ? 'bg-warning' : 'bg-danger'} text-capitalize`}>
-          {row.status.charAt(0).toUpperCase() + row.status.slice(1)}
+        <span
+          className={`badge ${row.status === 'active' ? 'bg-success' : row.status === 'inactive' ? 'bg-warning' : 'bg-danger'} text-capitalize`}
+          style={{
+            whiteSpace: 'normal',
+            wordBreak: 'break-word',
+            lineHeight: '1.2',
+            display: 'inline-block',
+            maxWidth: '100%'
+          }}
+        >
+          {row.status.replace(/_/g, ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
         </span>
       ),
-      width: "100px",
+      width: "180px",
+      wrap: true,
     },
     {
       name: "Actions",

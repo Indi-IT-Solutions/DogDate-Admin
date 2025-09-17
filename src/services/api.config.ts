@@ -208,7 +208,7 @@ const createApiInstance = (): AxiosInstance => {
                         break;
 
                     case 403:
-                        toast.error('Access denied. You do not have permission to perform this action.');
+                        // toast.error('Access denied. You do not have permission to perform this action.');
                         break;
 
                     case 404:
@@ -221,15 +221,15 @@ const createApiInstance = (): AxiosInstance => {
                         if (error.response.data && typeof error.response.data === 'object' && 'errors' in error.response.data) {
                             const errors = (error.response.data as any).errors;
                             Object.keys(errors).forEach(key => {
-                                toast.error(`${key}: ${errors[key][0]}`);
+                                // toast.error(`${key}: ${errors[key][0]}`);
                             });
                         } else {
-                            toast.error((error.response.data as any)?.message || 'Validation failed.');
+                            // toast.error((error.response.data as any)?.message || 'Validation failed.');
                         }
                         break;
 
                     case 500:
-                        toast.error('Internal server error. Please try again later.');
+                        // toast.error('Internal server error. Please try again later.');
                         break;
 
                     default:
@@ -255,7 +255,7 @@ const createApiInstance = (): AxiosInstance => {
 const handleAuthError = (): void => {
     console.log('🚨 Handling auth error - clearing tokens and redirecting');
     tokenManager.removeToken();
-    toast.error('Session expired. Please login again.');
+    // toast.error('Session expired. Please login again.');
 
     // Redirect to login page
     if (window.location.pathname !== '/') {

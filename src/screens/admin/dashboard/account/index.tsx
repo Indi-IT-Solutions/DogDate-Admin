@@ -77,14 +77,14 @@ const Account: React.FC<AccountProps> = ({ data = [], onRefresh }) => {
             selector: (row: AccountRequest) => row.user.name,
             cell: (row: AccountRequest) => (
                 <div className="d-flex align-items-center gap-2">
-                    <img
+                    {/* <img
                         src={row.user.profile_image || IMAGES.Avatar1}
                         alt={row.user.name}
                         className="rounded-circle"
                         width={35}
                         height={35}
                         style={{ objectFit: "cover" }}
-                    />
+                    /> */}
                     <div>
                         <strong>{row?.user?.name}</strong><br />
                         <small>{row?.user?.email}</small><br />
@@ -104,14 +104,14 @@ const Account: React.FC<AccountProps> = ({ data = [], onRefresh }) => {
             width: "200px",
             cell: (row: AccountRequest) => (
                 <div className="d-flex align-items-center gap-2">
-                    <img
+                    {/* <img
                         src={row.dog.dog_images?.[0] || IMAGES.Dog}
                         alt={row.dog.dog_name}
                         className="rounded-circle"
                         width={35}
                         height={35}
                         style={{ objectFit: "cover" }}
-                    />
+                    /> */}
                     <div>
                         <strong>{row.dog.dog_name}</strong><br />
                         <small>{row.dog.profile_type}</small><br />
