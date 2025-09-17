@@ -264,7 +264,7 @@ const EditUser: React.FC = () => {
       }
 
       // Prepare update data
-      const updateData: any = {
+      const updateData: any = profilePictureData ? {
         name: name.trim(),
         email: email.trim(),
         age: ageRange,
@@ -280,6 +280,21 @@ const EditUser: React.FC = () => {
         phone_number: phoneNumber ? parseInt(phoneNumber) : undefined,
         country_code: countryCode,
         profile_picture: profilePictureData
+      } : {
+        name: name.trim(),
+        email: email.trim(),
+        age: ageRange,
+        address: {
+          full_address: location,
+          city: location.split(', ')[1] || "",
+          country: location.split(', ').pop() || ""
+        },
+        about,
+        hobbies,
+        meetup_availability: meetUpAvailability,
+        status,
+        phone_number: phoneNumber ? parseInt(phoneNumber) : undefined,
+        country_code: countryCode
       };
 
       console.log('🔍 Updating user with data:', updateData);

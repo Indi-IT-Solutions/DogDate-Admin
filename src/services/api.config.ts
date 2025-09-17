@@ -174,9 +174,9 @@ const createApiInstance = (): AxiosInstance => {
                         // Show the actual backend error message
                         const errorData = error.response?.data as any;
                         if (errorData?.message) {
-                            toast.error(`Authentication failed: ${errorData.message}`);
+                            // toast.error(`Authentication failed: ${errorData.message}`);
                         } else {
-                            toast.error('Authentication failed - please login again');
+                            // toast.error('Authentication failed - please login again');
                         }
 
                         // Auto-logout for protected routes
@@ -238,7 +238,7 @@ const createApiInstance = (): AxiosInstance => {
             } else if (error.request) {
                 // Network error
                 console.error('🌐 Network error:', error.request);
-                toast.error('Network error. Please check your connection and backend server.');
+                // toast.error('Network error. Please check your connection and backend server.');
             } else {
                 // Other error
                 console.error('❓ Other error:', error.message);
