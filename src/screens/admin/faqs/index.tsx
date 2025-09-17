@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { Row, Col, Button, Modal, Form, OverlayTrigger, Tooltip, Spinner } from "react-bootstrap";
+import { Row, Col, Button, Modal, Form, OverlayTrigger, Tooltip } from "react-bootstrap";
 import { Icon } from "@iconify/react";
 import DataTable, { TableColumn } from "react-data-table-component";
 import { FAQService, FAQ } from "@/services";
 import { showError, showSuccess, handleApiError } from "@/utils/sweetAlert";
 import { formatDateTime } from "@/utils/dateUtils";
 import { Link } from "react-router-dom";
+import AppLoader from "@/components/Apploader";
+import AppLoaderbtn from "@/components/Apploaderbtn";
 
 
 const FAQs: React.FC = () => {
@@ -259,11 +261,7 @@ const FAQs: React.FC = () => {
                             className="custom-table"
                             progressPending={loading}
                             progressComponent={
-                                <div className="text-center p-4">
-                                    <Spinner animation="border" role="status">
-                                        <span className="visually-hidden">Loading...</span>
-                                    </Spinner>
-                                </div>
+                                <AppLoader size={150} />
                             }
                             noDataComponent={
                                 <div className="text-center p-4">
@@ -360,11 +358,11 @@ const FAQs: React.FC = () => {
                             type="submit"
                             disabled={saving}
                             style={{ height: "49px", width: '100px' }}
+                            className="py-0"
                         >
                             {saving ? (
                                 <>
-                                    <Spinner animation="border" size="sm" className="me-2" />
-                                    {editFaq ? "Updating..." : "Adding..."}
+                                    <AppLoaderbtn size={70} />
                                 </>
                             ) : (
                                 editFaq ? "Update" : "Add"
@@ -393,14 +391,13 @@ const FAQs: React.FC = () => {
                         </Button>
                         <Button
                             variant="success"
-                            className="px-4 min_width110"
+                            className="px-4 min_width110 py-0"
                             onClick={confirmDelete}
                             disabled={deleting}
                         >
                             {deleting ? (
                                 <>
-                                    <Spinner animation="border" size="sm" className="me-2" />
-                                    Deleting...
+                                    <AppLoaderbtn size={70} />
                                 </>
                             ) : (
                                 'Ok'

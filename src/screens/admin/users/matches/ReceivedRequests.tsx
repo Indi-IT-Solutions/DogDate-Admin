@@ -7,6 +7,7 @@ import { Icon } from "@iconify/react/dist/iconify.js";
 import { UserService } from "@/services";
 import { getProfileImageUrl, getUserProfileImage, getDogProfileImage } from "@/utils/imageUtils";
 import { formatDate } from "@/utils/dateUtils";
+import AppLoader from "@/components/Apploader";
 
 interface Dog {
     id: number;
@@ -267,10 +268,7 @@ const ReceivedRequests: React.FC = () => {
                 className="custom-table"
                 progressPending={loading}
                 progressComponent={
-                    <div className="text-center py-4">
-                        <Spinner animation="border" size="sm" className="me-2" />
-                        Loading received requests...
-                    </div>
+                    <AppLoader size={150} />
                 }
                 noDataComponent={
                     <div className="text-center py-4">

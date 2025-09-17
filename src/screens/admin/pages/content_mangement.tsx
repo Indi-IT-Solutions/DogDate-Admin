@@ -7,6 +7,8 @@ import { ContentState, EditorState, convertToRaw, convertFromRaw } from 'draft-j
 import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css';
 import { PageService, Page } from "@/services";
 import { Link } from "react-router-dom";
+import AppLoader from "@/components/Apploader";
+import AppLoaderbtn from "@/components/Apploaderbtn";
 
 const formatDate = (dateString: string): string => {
   const date = new Date(dateString);
@@ -197,11 +199,7 @@ const Pages: React.FC = () => {
               className="custom-table"
               progressPending={loading}
               progressComponent={
-                <div className="text-center p-4">
-                  <Spinner animation="border" role="status">
-                    <span className="visually-hidden">Loading...</span>
-                  </Spinner>
-                </div>
+                <AppLoader size={150} />
               }
               noDataComponent={
                 <div className="text-center p-4">
@@ -289,11 +287,11 @@ const Pages: React.FC = () => {
             variant="primary"
             onClick={handleSave}
             disabled={saving}
+            className="py-0"
           >
             {saving ? (
               <>
-                <Spinner animation="border" size="sm" className="me-2" />
-                Updating...
+                <AppLoaderbtn size={70} />
               </>
             ) : (
               'Update Page'

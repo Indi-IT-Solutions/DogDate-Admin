@@ -5,6 +5,8 @@ import DataTable, { TableColumn } from "react-data-table-component";
 import { HobbyService, Hobby } from "@/services";
 import { formatDateTime } from "@/utils/dateUtils";
 import { Link } from "react-router-dom";
+import AppLoader from "@/components/Apploader";
+import AppLoaderbtn from "@/components/Apploaderbtn";
 
 
 const Hobbies: React.FC = () => {
@@ -218,11 +220,7 @@ const Hobbies: React.FC = () => {
                             className="custom-table"
                             progressPending={loading}
                             progressComponent={
-                                <div className="text-center p-4">
-                                    <Spinner animation="border" role="status">
-                                        <span className="visually-hidden">Loading...</span>
-                                    </Spinner>
-                                </div>
+                                <AppLoader size={150} />
                             }
                             noDataComponent={
                                 <div className="text-center p-4">
@@ -294,11 +292,11 @@ const Hobbies: React.FC = () => {
                             type="submit"
                             disabled={saving}
                             style={{ height: "49px", width: '100px' }}
+                            className="py-0"
                         >
                             {saving ? (
                                 <>
-                                    <Spinner animation="border" size="sm" className="me-2" />
-                                    {editHobby ? "Updating..." : "Adding..."}
+                                    <AppLoaderbtn size={70} />
                                 </>
                             ) : (
                                 editHobby ? "Update" : "Add"

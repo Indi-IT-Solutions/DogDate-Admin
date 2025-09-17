@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Row, Col, OverlayTrigger, Tooltip, Modal, Form, Button, Alert, InputGroup } from "react-bootstrap";
+import { Row, Col, OverlayTrigger, Tooltip, Modal, Form, Button, InputGroup } from "react-bootstrap";
 import { Icon } from "@iconify/react";
 import DataTable from "react-data-table-component";
 import { Link } from "react-router-dom";
@@ -8,12 +8,13 @@ import { UserService, RedeemableCoinService, type User, type UserFilters } from 
 import { showError, showSuccess, handleApiError } from "@/utils/sweetAlert";
 import { getUserProfileImage } from "@/utils/imageUtils";
 import { formatDate } from "@/utils/dateUtils";
+import AppLoader from "@/components/Apploader";
+import AppLoaderbtn from "@/components/Apploaderbtn";
 
 const Users: React.FC = () => {
   const [searchText, setSearchText] = useState("");
   const [userData, setUserData] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string>("");
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -99,8 +100,6 @@ const Users: React.FC = () => {
   const fetchUsers = async (page: number = 1, limit: number = 10, search?: string) => {
     try {
 
-      setError("");
-
       const filters: UserFilters = {
         page,
         limit,
@@ -143,7 +142,7 @@ const Users: React.FC = () => {
 
       if (response.status === 1) {
         // Refresh users list
-        await fetchUsers(currentPage, perPage, searchText);
+        await fetchUsers(currentPage, perPage, searchText.trim() || undefined);
         handleClose();
         showSuccess("Success", "User deleted successfully!");
       } else {
@@ -185,17 +184,13 @@ const Users: React.FC = () => {
     }
   };
 
-  // Handle pagination change
+  // Pagination handlers
   const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-    fetchUsers(page, perPage, searchText);
+    fetchUsers(page, perPage, searchText.trim() || undefined);
   };
 
-  // Handle per page change
-  const handlePerRowsChange = (newPerPage: number, page: number) => {
-    setPerPage(newPerPage);
-    setCurrentPage(page);
-    fetchUsers(page, newPerPage, searchText);
+  const handlePerRowsChange = (perPage: number, page: number) => {
+    fetchUsers(page, perPage, searchText.trim() || undefined);
   };
 
   // Load users on component mount
@@ -203,14 +198,15 @@ const Users: React.FC = () => {
     fetchUsers(1, 10);
   }, []);
 
-  // Handle search with debounce
+  // Debounced search
   useEffect(() => {
     const timeoutId = setTimeout(() => {
-      if (searchText !== undefined) {
-        setCurrentPage(1); // Reset to first page when searching
-        fetchUsers(1, perPage, searchText);
+      if (searchText.trim() !== '') {
+        fetchUsers(1, perPage, searchText.trim());
+      } else {
+        fetchUsers(1, perPage);
       }
-    }, 500); // Debounce search
+    }, 500);
 
     return () => clearTimeout(timeoutId);
   }, [searchText, perPage]);
@@ -354,8 +350,6 @@ const Users: React.FC = () => {
           <div className="d-flex justify-content-between align-items-center dropSelect_option">
 
             <h5 className="text-dark">Users</h5>
-
-
             <div className="text-end">
               <input
                 type="text"
@@ -366,9 +360,6 @@ const Users: React.FC = () => {
               />
             </div>
           </div>
-
-
-
           <div className="scrollable-table">
             <DataTable
               columns={userColumns as any}
@@ -376,16 +367,19 @@ const Users: React.FC = () => {
               pagination
               paginationServer
               paginationTotalRows={totalRows}
-              paginationDefaultPage={currentPage}
-              paginationPerPage={perPage}
-              paginationRowsPerPageOptions={[10, 20, 50, 100]}
-              onChangeRowsPerPage={handlePerRowsChange}
               onChangePage={handlePageChange}
+              onChangeRowsPerPage={handlePerRowsChange}
+              paginationRowsPerPageOptions={[10, 25, 50, 100]}
+              progressPending={loading}
+              progressComponent={<AppLoader size={150} />}
               responsive
               className="custom-table"
-              progressPending={loading}
-              progressComponent={<div>Loading users...</div>}
-              noDataComponent={<div className="text-center py-4">No users found</div>}
+              noDataComponent={
+                <div className="text-center p-4">
+                  <Icon icon="mdi:account" width={48} height={48} className="text-muted mb-3" />
+                  <p className="text-muted">No users found</p>
+                </div>
+              }
             />
           </div>
         </Col>
@@ -410,11 +404,11 @@ const Users: React.FC = () => {
             </Button>
             <Button
               variant="danger"
-              className="px-4 min_width110"
+              className="px-4 min_width110 py-0"
               onClick={handleDeleteUser}
               disabled={isSubmitting}
             >
-              {isSubmitting ? "Deleting..." : "Delete"}
+              {isSubmitting ? <AppLoaderbtn size={70} /> : "Delete"}
             </Button>
           </div>
         </Modal.Body>
@@ -476,10 +470,10 @@ const Users: React.FC = () => {
           </div>
           <Button
             onClick={handleResetPassword}
-            className="btn btn-primary px-4 w-100"
+            className="btn btn-primary px-4 w-100 py-0"
             disabled={isSubmitting || !newPassword || !passwordValidation.length || !passwordValidation.capital || !passwordValidation.number || !passwordValidation.special}
           >
-            {isSubmitting ? "Updating..." : "Update Password"}
+            {isSubmitting ? <AppLoaderbtn size={70} /> : "Update Password"}
           </Button>
         </Modal.Body>
       </Modal>

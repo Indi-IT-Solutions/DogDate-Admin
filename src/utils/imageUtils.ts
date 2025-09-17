@@ -3,7 +3,7 @@ import { IMAGES } from '@/contants/images';
 
 export const getProfileImageUrl = (profilePicture: any): string => {
     if (!profilePicture) {
-        return IMAGES.Avatar1; // Fallback to default avatar
+        return IMAGES.Dummyimage; // Fallback to default avatar
     }
 
     // If it's already a string (direct URL), return it
@@ -32,13 +32,13 @@ export const getProfileImageUrl = (profilePicture: any): string => {
         return imageUrl;
     }
 
-    return IMAGES.Avatar1; // Fallback to default avatar
+    return IMAGES.Dummyimage; // Fallback to default avatar
 };
 
 // Enhanced function to check for profile image in user object
 export const getUserProfileImage = (user: any): string => {
     if (!user) {
-        return IMAGES.Avatar1;
+        return IMAGES.Dummyimage;
     }
 
     // Check multiple possible field names
@@ -57,13 +57,13 @@ export const getUserProfileImage = (user: any): string => {
         }
     }
 
-    return IMAGES.Avatar1;
+    return IMAGES.Dummyimage;
 };
 
 // Enhanced function to check for profile image in dog object
 export const getDogProfileImage = (dog: any): string => {
     if (!dog) {
-        return IMAGES.Avatar1; // You might want to use a different default image for dogs
+        return IMAGES.Dummyimage; // You might want to use a different default image for dogs
     }
 
     // Check multiple possible field names
@@ -82,5 +82,5 @@ export const getDogProfileImage = (dog: any): string => {
         }
     }
 
-    return IMAGES.Avatar1; // You might want to use a different default image for dogs
+    return IMAGES.Dummyimage; // You might want to use a different default image for dogs
 };

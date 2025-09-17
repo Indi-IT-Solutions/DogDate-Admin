@@ -3,11 +3,10 @@ import "./assets/css/style.scss";
 import { BrowserRouter as Router } from "react-router-dom";
 import "react-activity/dist/library.css";
 import "bootstrap/dist/css/bootstrap.min.css";
-
-import { Sentry } from "react-activity";
 import AdminRoutes from "./routes/AdminRoutes";
 import { PermissionsProvider } from "./context/PermissionsContext";
 import ScrollToTop from "./components/ScrollToTop";
+import AppLoader from "./components/Apploader";
 
 function App() {
   const [loading, setLoading] = useState(false);
@@ -24,7 +23,7 @@ function App() {
     <>
       {loading ? (
         <div className="loaderdiv">
-          <Sentry color="#0d6efd" size={40} speed={1} animating={true} />
+          <AppLoader size={150} />
         </div>
       ) : (
         <Router basename={base}>

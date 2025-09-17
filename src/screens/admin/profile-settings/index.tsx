@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { Row, Col, Tab, Tabs, Form, Card, Button, Alert, Spinner } from "react-bootstrap";
+import { Row, Col, Tab, Tabs, Form, Card, Button, Alert } from "react-bootstrap";
 import { ProfileService, AdminProfile } from "@/services";
+import AppLoader from "@/components/Apploader";
+import AppLoaderbtn from "@/components/Apploaderbtn";
 
 const ProfileSettings: React.FC = () => {
   const [profile, setProfile] = useState<AdminProfile | null>(null);
@@ -146,12 +148,7 @@ const ProfileSettings: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="text-center p-5">
-        <Spinner animation="border" role="status">
-          <span className="visually-hidden">Loading...</span>
-        </Spinner>
-        <p className="mt-3">Loading profile...</p>
-      </div>
+      <AppLoader size={150} />
     );
   }
 
@@ -214,8 +211,7 @@ const ProfileSettings: React.FC = () => {
                     >
                       {saving ? (
                         <>
-                          <Spinner animation="border" size="sm" className="me-2" />
-                          Updating...
+                          <AppLoaderbtn size={70} />
                         </>
                       ) : (
                         'Update Profile'
@@ -283,14 +279,13 @@ const ProfileSettings: React.FC = () => {
                       </Col>
                     </Row>
                     <Button
-                      className="btn btn-primary px-4 mt-3"
+                      className="btn btn-primary px-4 mt-3 py-0"
                       type="submit"
                       disabled={changingPassword}
                     >
                       {changingPassword ? (
                         <>
-                          <Spinner animation="border" size="sm" className="me-2" />
-                          Changing Password...
+                          <AppLoaderbtn size={70} />
                         </>
                       ) : (
                         'Change Password'

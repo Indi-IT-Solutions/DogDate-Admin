@@ -7,6 +7,7 @@ import LoginHeader from "@/components/LoginHeader";
 import TextField from "@/components/TextField";
 import { AuthService } from "@/services";
 import * as Yup from 'yup';
+import AppLoaderbtn from "@/components/Apploaderbtn";
 
 const initialValues = {
   email: "",
@@ -93,20 +94,12 @@ const ForgotPassword: React.FC = () => {
                   />
                   <Button
                     type="submit"
-                    className="btn btn-primary w-100"
+                    className="btn btn-primary w-100 py-0"
                     disabled={loading}
                   >
                     {loading ? (
                       <>
-                        <Spinner
-                          as="span"
-                          animation="border"
-                          size="sm"
-                          role="status"
-                          aria-hidden="true"
-                          className="me-2"
-                        />
-                        Sending OTP...
+                        <AppLoaderbtn size={70} />
                       </>
                     ) : (
                       "Proceed"

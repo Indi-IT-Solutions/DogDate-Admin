@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { Row, Col, Button, Modal, Form, Alert, Spinner, Badge } from "react-bootstrap";
+import { Row, Col, Button, Modal, Form, Badge } from "react-bootstrap";
 import { Icon } from "@iconify/react";
-import DataTable, { TableColumn } from "react-data-table-component";
-import { ContactService, PaginationMeta } from "@/services";
+import DataTable from "react-data-table-component";
+import { ContactService } from "@/services";
 import { showError, showSuccess, handleApiError } from "@/utils/sweetAlert";
 import { formatDateTime } from "@/utils/dateUtils";
 import { Link } from "react-router-dom";
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
+import AppLoader from "@/components/Apploader";
+import AppLoaderbtn from "@/components/Apploaderbtn";
 
 
 const getStatusBadge = (status: string) => {
@@ -29,20 +31,9 @@ const ContactUs: React.FC = () => {
     const [replyMessage, setReplyMessage] = useState<string>("");
     const [contactData, setContactData] = useState<any[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
-    const [error, setError] = useState<string>("");
-    const [success, setSuccess] = useState<string>("");
     const [sendingReply, setSendingReply] = useState<boolean>(false);
-    const [pagination, setPagination] = useState<PaginationMeta>({
-        current_page: 1,
-        total_pages: 1,
-        total: 0,
-        per_page: 10,
-        has_next_page: false,
-        has_prev_page: false,
-        page: 1,
-        limit: 10,
-        totalPages: 1,
-    });
+    const [totalRows, setTotalRows] = useState<number>(0);
+    const [perPage, setPerPage] = useState<number>(10);
 
     const handleClose = (): void => {
         setShowModal(false);
@@ -55,48 +46,56 @@ const ContactUs: React.FC = () => {
         setShowModal(true);
     };
 
-    const fetchContactQueries = async (page: number = 1, searchTerm: string = '') => {
+    const fetchContactQueries = async (page: number = 1, limit: number = 10, search?: string) => {
         try {
-            setError("");
             const response: any = await ContactService.getContactQueries({
                 page,
-                limit: 10,
-                search: searchTerm
+                limit,
+                search: search || undefined
             });
-            setContactData(response.data || []);
-            setPagination({
-                current_page: response.meta?.current_page || 1,
-                total_pages: response.meta?.total_pages || 1,
-                total: response.meta?.total_queries || 0,
-                per_page: response.meta?.per_page || 10,
-                has_next_page: response.meta?.has_next_page || false,
-                has_prev_page: response.meta?.has_prev_page || false,
-                page: response.meta?.current_page || 1,
-                limit: response.meta?.per_page || 10,
-                totalPages: response.meta?.total_pages || 1,
-            });
+
+            if (response?.status === 1) {
+                setContactData(response?.data || []);
+                setTotalRows(response?.meta?.total_queries || 0);
+                setPerPage(response?.meta?.limit || 10);
+            } else {
+                setContactData([]);
+                setTotalRows(0);
+            }
         } catch (err: any) {
             console.error('❌ Error fetching contact queries:', err);
-            handleApiError(err, 'Failed to fetch contact queries');
+            setContactData([]);
+            setTotalRows(0);
         } finally {
             setLoading(false);
         }
     };
 
+    // Initial data load
     useEffect(() => {
-        fetchContactQueries(1, searchText);
+        fetchContactQueries(1, 10);
     }, []);
 
+    // Debounced search
     useEffect(() => {
         const timeoutId = setTimeout(() => {
-            fetchContactQueries(1, searchText);
+            if (searchText.trim() !== '') {
+                fetchContactQueries(1, perPage, searchText.trim());
+            } else {
+                fetchContactQueries(1, perPage);
+            }
         }, 500);
 
         return () => clearTimeout(timeoutId);
-    }, [searchText]);
+    }, [searchText, perPage]);
 
+    // Pagination handlers
     const handlePageChange = (page: number) => {
-        fetchContactQueries(page, searchText);
+        fetchContactQueries(page, perPage, searchText.trim() || undefined);
+    };
+
+    const handlePerRowsChange = (perPage: number, page: number) => {
+        fetchContactQueries(page, perPage, searchText.trim() || undefined);
     };
 
     const handleSendReply = async () => {
@@ -120,7 +119,7 @@ const ContactUs: React.FC = () => {
             });
 
             // Refresh the data
-            fetchContactQueries(pagination.current_page, searchText);
+            fetchContactQueries(1, perPage, searchText.trim() || undefined);
 
             showSuccess('Success', `Reply sent successfully to ${selectedContact.name} (${selectedContact.email})`);
             handleClose();
@@ -132,7 +131,7 @@ const ContactUs: React.FC = () => {
         }
     };
 
-    const columns: TableColumn<any>[] = [
+    const columns: any[] = [
         {
             name: "Sr. No.",
             selector: (row: any) => contactData.indexOf(row) + 1,
@@ -233,27 +232,25 @@ const ContactUs: React.FC = () => {
                             data={contactData}
                             pagination
                             paginationServer
-                            paginationTotalRows={pagination.total || 0}
-                            paginationDefaultPage={pagination.current_page}
-                            paginationPerPage={pagination.per_page}
+                            paginationTotalRows={totalRows}
                             onChangePage={handlePageChange}
+                            onChangeRowsPerPage={handlePerRowsChange}
+                            paginationRowsPerPageOptions={[10, 25, 50, 100]}
                             progressPending={loading}
-                            progressComponent={
-                                <div className="text-center p-4">
-                                    <Spinner animation="border" role="status">
-                                        <span className="visually-hidden">Loading...</span>
-                                    </Spinner>
-                                </div>
-                            }
-                            noDataComponent={
-                                <div className="text-center p-4">
-                                    <p className="text-muted">No contact queries found</p>
-                                </div>
-                            }
+                            progressComponent={<AppLoader size={150} />}
                             responsive
                             className="custom-table"
                             striped
                             highlightOnHover
+                            noDataComponent={
+                                <div className="text-center p-4">
+                                    <Icon icon="mdi:email-outline" width={48} height={48} className="text-muted mb-3" />
+                                    <h5 className="text-muted">No Contact Queries Found</h5>
+                                    <p className="text-muted">
+                                        {searchText ? 'Try adjusting your search criteria' : 'No contact queries available'}
+                                    </p>
+                                </div>
+                            }
                         />
                     </div>
 
@@ -338,13 +335,12 @@ const ContactUs: React.FC = () => {
                         </Button>
                         <Button
                             onClick={handleSendReply}
-                            className="btn btn-primary px-4"
+                            className="btn btn-primary px-4 py-0"
                             disabled={sendingReply || !replyMessage.trim()}
                         >
                             {sendingReply ? (
                                 <>
-                                    <Spinner animation="border" size="sm" className="me-2" />
-                                    Sending...
+                                    <AppLoaderbtn size={70} />
                                 </>
                             ) : (
                                 <>

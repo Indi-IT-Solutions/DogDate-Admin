@@ -99,7 +99,7 @@ const AdminRoutes = () => {
           </ProtectedRoute>
         }
       />
-      <Route
+      {/* <Route
         path="/subscription-packages"
         element={
           <ProtectedRoute>
@@ -108,7 +108,7 @@ const AdminRoutes = () => {
             </Layout>
           </ProtectedRoute>
         }
-      />
+      /> */}
       <Route
         path="/payments"
         element={

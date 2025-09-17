@@ -1,13 +1,14 @@
 import { IMAGES } from "@/contants/images";
 import React, { useState, useEffect } from "react";
 import DataTable from "react-data-table-component";
-import { Button, Card, Col, Modal, OverlayTrigger, Row, Tab, Tabs, Tooltip, Alert, Spinner } from "react-bootstrap";
+import { Button, Card, Col, Modal, OverlayTrigger, Row, Tab, Tabs, Tooltip, Alert } from "react-bootstrap";
 import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import Matches from "../matches";
 import { UserService, RedeemableCoinService, type User } from "@/services";
 import { getUserProfileImage, getDogProfileImage } from "@/utils/imageUtils";
 import { formatDate } from "@/utils/dateUtils";
+import AppLoader from "@/components/Apploader";
 
 
 interface Dog {
@@ -495,10 +496,7 @@ const UserView: React.FC = () => {
         return (
             <Card>
                 <Card.Body className="text-center py-5">
-                    <Spinner animation="border" role="status" className="mb-3">
-                        <span className="visually-hidden">Loading...</span>
-                    </Spinner>
-                    <p>Loading user details...</p>
+                    <AppLoader size={150} />
                 </Card.Body>
             </Card>
         );
@@ -795,7 +793,7 @@ const UserView: React.FC = () => {
                                         responsive
                                         className="custom-table"
                                         progressPending={dogsLoading}
-                                        progressComponent={<div>Loading dogs...</div>}
+                                        progressComponent={<AppLoader size={150} />}
                                         noDataComponent={
                                             <div className="text-center py-4">
                                                 <Icon icon="mdi:dog" width={48} height={48} className="text-muted mb-2" />
@@ -854,7 +852,7 @@ const UserView: React.FC = () => {
                                         responsive
                                         className="custom-table"
                                         progressPending={paymentsLoading}
-                                        progressComponent={<div>Loading payments...</div>}
+                                        progressComponent={<AppLoader size={150} />}
                                         noDataComponent={
                                             <div className="text-center py-4">
                                                 <Icon icon="mdi:credit-card-off" width={48} height={48} className="text-muted mb-2" />

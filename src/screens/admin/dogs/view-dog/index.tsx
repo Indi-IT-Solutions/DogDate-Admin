@@ -7,6 +7,7 @@ import { Icon } from "@iconify/react/dist/iconify.js";
 import { DogService } from "@/services";
 import type { Dog } from "@/types/api.types";
 import { getDogProfileImage, getProfileImageUrl } from "@/utils/imageUtils";
+import AppLoader from "@/components/Apploader";
 
 const ViewDog: React.FC = () => {
     const [searchParams] = useSearchParams();
@@ -363,8 +364,7 @@ const ViewDog: React.FC = () => {
     if (loading) {
         return (
             <div className="text-center p-4">
-                <Spinner animation="border" role="status" />
-                <p className="mt-2">Loading dog details...</p>
+                <AppLoader size={150} />
             </div>
         );
     }
@@ -400,7 +400,7 @@ const ViewDog: React.FC = () => {
             <Card>
                 <Card.Header className="d-flex align-items-center justify-content-between flex-wrap">
                     <h5>Dog Details</h5>
-                    <Link className="btn btn-primary px-4 py-2 h-auto" to="/users">
+                    <Link className="btn btn-primary px-4 py-2 h-auto" to="/dogs">
                         Back
                     </Link>
                 </Card.Header>
@@ -771,6 +771,7 @@ const ViewDog: React.FC = () => {
                                         onChangeRowsPerPage={handleBreedingPerRowsChange}
                                         paginationPerPage={breedingPagination.limit}
                                         progressPending={breedingLoading}
+                                        progressComponent={<AppLoader size={150} />}
                                         responsive
                                         className="custom-table"
                                         noDataComponent={
@@ -813,6 +814,7 @@ const ViewDog: React.FC = () => {
                                         onChangeRowsPerPage={handlePlaydatePerRowsChange}
                                         paginationPerPage={playdatePagination.limit}
                                         progressPending={playdateLoading}
+                                        progressComponent={<AppLoader size={150} />}
                                         responsive
                                         className="custom-table"
                                         noDataComponent={
