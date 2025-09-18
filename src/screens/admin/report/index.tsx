@@ -172,7 +172,7 @@ const Report: React.FC = () => {
             selector: (row: any) => row?.message,
             wrap: true,
             sortable: false,
-            width: "300px",
+            width: "400px",
             cell: (row: any) => (
                 <div style={{
                     maxWidth: '280px',
@@ -204,9 +204,15 @@ const Report: React.FC = () => {
                     placement="top"
                     overlay={<Tooltip id={`delete-tooltip-${row._id}`}>Delete</Tooltip>}
                 >
-                    <Link to="javascript:void(0)" onClick={() => handleShowDeleteModal(row)}>
+                    <span
+                        style={{
+                            cursor: row?.status === 'deleted' ? 'not-allowed' : 'pointer',
+                            opacity: row?.status === 'deleted' ? 0.5 : 1
+                        }}
+                        onClick={row?.status === 'deleted' ? undefined : () => handleShowDeleteModal(row)}
+                    >
                         <Icon icon="icon-park-outline:close-one" width={16} height={16} className="text-danger" />
-                    </Link>
+                    </span>
                 </OverlayTrigger>
             ),
             center: true,
@@ -218,8 +224,6 @@ const Report: React.FC = () => {
         <React.Fragment>
             <Row>
                 <Col lg={12}>
-
-
                     <div className="d-flex justify-content-between align-items-center mb-3">
                         <h5 className="text-dark">Reports</h5>
                         <div className="text-end">

@@ -274,7 +274,7 @@ const Dogs: React.FC = () => {
                         overlay={<Tooltip id={`delete-tooltip-${row._id}`}>Delete</Tooltip>}
                     >
                         <Link to="javascript:void(0)" onClick={() => handleShowDeleteModal(row)}>
-                            <Icon icon="icon-park-outline:close-one" width={16} height={16} className="text-danger" />
+                            <Icon icon="icon-park-outline:close-one" width={20} height={20} className="text-danger" />
                         </Link>
                     </OverlayTrigger>
                 </div>

@@ -3,7 +3,6 @@ import { DOG_ENDPOINTS, DOG_PROFILE_ENDPOINTS } from '../config/api.endpoints';
 import type {
     Dog,
     DogFilters,
-    PaginatedResponse,
     ApiResponse,
     ApproveRejectDogRequest,
     DeleteDogRequest,
@@ -17,10 +16,8 @@ export class DogService {
             const url = `${DOG_ENDPOINTS.LIST}${queryString ? `?${queryString}` : ''}`;
 
             const response: any = await apiClient.get(url);
-
             if (response.data.status === 1 && response.data.data) {
                 const backendData = response.data.data;
-
                 const paginatedResponse: any = {
                     status: response.data.status,
                     message: response.data.message,

@@ -169,7 +169,7 @@ const Account: React.FC<AccountProps> = ({ data = [], onRefresh }) => {
         <React.Fragment>
             <Row>
                 <Col lg={12}>
-                    <h5 className="fw-semibold mb-3">Account Requests ({data.length})</h5>
+                    <h5 className="fw-semibold mb-3">Dog Verification Requests ({data.length})</h5>
                     <div className="scrollable-table">
                         <DataTable
                             columns={columns as any}

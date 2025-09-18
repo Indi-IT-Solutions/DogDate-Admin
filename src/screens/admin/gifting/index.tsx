@@ -13,7 +13,6 @@ const Gifting: React.FC = () => {
     const [perPage, setPerPage] = React.useState(10);
     const [total, setTotal] = React.useState(0);
     const [data, setData] = React.useState<any[]>([]);
-
     const [userSearch, setUserSearch] = React.useState('');
     const [userResults, setUserResults] = React.useState<any[]>([]);
     const [selectedUsers, setSelectedUsers] = React.useState<any[]>([]);
@@ -81,12 +80,7 @@ const Gifting: React.FC = () => {
     return (
         <React.Fragment>
             <Row className="mb-3">
-                <Col md={6}><h5 className="mb-0">Free Matches</h5></Col>
-                <Col md={6} className="text-end">
-                    <InputGroup className="mb-2 justify-content-end">
-                        <Form.Control style={{ maxWidth: 260 }} placeholder="Search gifted users by name/email" value={search} onChange={(e) => setSearch(e.target.value)} />
-                    </InputGroup>
-                </Col>
+                <Col><h5 className="mb-0">Free Matches</h5></Col>
             </Row>
 
             <form>
@@ -115,7 +109,7 @@ const Gifting: React.FC = () => {
                             <Col md={6} className="mb-3">
                                 <Form.Group className='mb-3 form-group'>
                                     <Form.Label>Selected users</Form.Label>
-                                    <div className="border rounded p-2" style={{ minHeight: 100 }}>
+                                    <div className="border rounded p-2" style={{ minHeight: 100, maxHeight: 280, overflowY: 'auto' }}>
                                         {selectedUsers.length === 0 && <div className="text-muted">No users selected</div>}
                                         {selectedUsers.map(u => (
                                             <div key={u._id} className="d-flex justify-content-between align-items-center py-1">
@@ -174,8 +168,22 @@ const Gifting: React.FC = () => {
                         </Row>
                     </Card.Body>
                 </Card>
-            </form>
 
+                <Row className="mt-3 mb-3">
+                    <Col className="text-end">
+                        <InputGroup className="justify-content-end">
+                            <Form.Group className='mb-0 form-group'>
+                                <Form.Control
+                                    style={{ minWidth: 300 }}
+                                    placeholder="Search gifted users by name/email"
+                                    value={search}
+                                    onChange={(e) => setSearch(e.target.value)}
+                                />
+                            </Form.Group>
+                        </InputGroup>
+                    </Col>
+                </Row>
+            </form>
             <Card>
                 <Card.Body>
                     <DataTable
@@ -193,6 +201,8 @@ const Gifting: React.FC = () => {
                     />
                 </Card.Body>
             </Card>
+
+
         </React.Fragment>
     );
 };

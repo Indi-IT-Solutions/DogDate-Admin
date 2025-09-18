@@ -181,7 +181,7 @@ const LostMatches: React.FC = () => {
                 const details = getMatchDetails(row);
                 return (
                     <div className="d-flex gap-2 align-items-center">
-                        <img
+                        {/* <img
                             src={getDogProfileImage(details.myDog)}
                             alt={details.myDog?.dog_name || 'Dog'}
                             className="rounded"
@@ -192,7 +192,7 @@ const LostMatches: React.FC = () => {
                                 const target = e.target as HTMLImageElement;
                                 target.src = IMAGES.Dog; // Fallback to default dog image on error
                             }}
-                        />
+                        /> */}
                         <div>
                             <div style={{ fontWeight: 500 }}>{details.myDog?.dog_name || 'Unknown'}</div>
                             <div style={{ fontSize: 12 }}>{safeGetString(details.myDog?.breed) || 'Unknown breed'}</div>
@@ -208,7 +208,7 @@ const LostMatches: React.FC = () => {
                 const details = getMatchDetails(row);
                 return (
                     <div className="d-flex gap-2 align-items-center">
-                        <img
+                        {/* <img
                             src={getDogProfileImage(details.otherDog)}
                             alt={details.otherDog?.dog_name || 'Dog'}
                             className="rounded"
@@ -219,7 +219,7 @@ const LostMatches: React.FC = () => {
                                 const target = e.target as HTMLImageElement;
                                 target.src = IMAGES.Dog; // Fallback to default dog image on error
                             }}
-                        />
+                        /> */}
                         <div>
                             <div style={{ fontWeight: 500 }}>{details.otherDog?.dog_name || 'Unknown'}</div>
                             <div style={{ fontSize: 12 }}>{safeGetString(details.otherDog?.breed) || 'Unknown breed'}</div>
@@ -235,7 +235,7 @@ const LostMatches: React.FC = () => {
                 const details = getMatchDetails(row);
                 return (
                     <div className="d-flex gap-2 align-items-center">
-                        <img
+                        {/* <img
                             src={getUserProfileImage(details.otherUser)}
                             alt={details.otherUser?.name || 'User'}
                             className="rounded-circle"
@@ -246,7 +246,7 @@ const LostMatches: React.FC = () => {
                                 const target = e.target as HTMLImageElement;
                                 target.src = IMAGES.Avatar1; // Fallback to default avatar on error
                             }}
-                        />
+                        /> */}
                         <div>
                             <div style={{ fontWeight: 500 }}>{safeGetString(details.otherUser?.name) || 'Unknown User'}</div>
                             <div style={{ fontSize: 12 }}>{safeGetString(details.otherUser?.email) || 'No email'}</div>

@@ -512,7 +512,7 @@ const Users: React.FC = () => {
                   else if (!Number.isNaN(n)) setGiftAmount(Math.max(1, Math.floor(n)));
                 }}
               />
-              <div className="text-muted small mt-1">Enter a positive integer.</div>
+
             </Form.Group>
           </Form>
           <div className="d-flex justify-content-end gap-3 mt-3">
