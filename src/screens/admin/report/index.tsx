@@ -211,7 +211,7 @@ const Report: React.FC = () => {
                         }}
                         onClick={row?.status === 'deleted' ? undefined : () => handleShowDeleteModal(row)}
                     >
-                        <Icon icon="icon-park-outline:close-one" width={16} height={16} className="text-danger" />
+                        <Icon icon="icon-park-outline:close-one" width={20} height={20} className="text-danger" />
                     </span>
                 </OverlayTrigger>
             ),

@@ -538,24 +538,14 @@ const UserView: React.FC = () => {
     // Error state
     if (error) {
         return (
-            <Card>
-                <Card.Header className="d-flex align-items-center justify-content-between flex-wrap">
-                    <h5>User Details</h5>
-                    <Link className="btn btn-primary px-4 py-2 h-auto" to="/users">
-                        Back
-                    </Link>
-                </Card.Header>
-                <Card.Body>
-                    <Alert variant="danger" className="text-center">
-                        <Icon icon="mdi:alert" width={48} height={48} className="mb-2" />
-                        <h6>Error Loading User</h6>
-                        <p>{error}</p>
-                        <Button variant="outline-primary" onClick={fetchUserData}>
-                            Try Again
-                        </Button>
-                    </Alert>
-                </Card.Body>
-            </Card>
+            <div className="text-center p-4">
+                <Alert variant="danger">
+                    User details not found
+                </Alert>
+                <Link to="/users" className="btn btn-primary">
+                    Back to Users
+                </Link>
+            </div>
         );
     }
 
