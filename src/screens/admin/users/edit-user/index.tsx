@@ -477,18 +477,24 @@ const EditUser: React.FC = () => {
                     } : null,
                     onChange: handlePlaceSelect,
                     placeholder: "Search for a location...",
-                    isDisabled: isSubmitting
+                    isDisabled: isSubmitting,
+                    styles: {
+                      control: (provided: any) => ({
+                        ...provided,
+                        height: '52px'
+                      })
+                    }
                   }}
                 />
 
               </Form.Group>
             </Col>
-            <Col lg={12}>
+            {/* <Col lg={12}>
               <Form.Group className="mb-3 form-group">
                 <Form.Label>About</Form.Label>
                 <Form.Control as="textarea" rows={3} value={about} onChange={(e) => setAbout(e.target.value)} placeholder="Enter about you" />
               </Form.Group>
-            </Col>
+            </Col> */}
             <Col lg={12}>
               <Form.Group className="mb-3 form-group">
                 <Form.Label><b>Lifestyle & Interests</b></Form.Label>

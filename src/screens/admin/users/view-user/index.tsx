@@ -628,11 +628,6 @@ const UserView: React.FC = () => {
                                                 <p>{userData.age || 'N/A'}</p>
                                             </div>
 
-                                            {/* Gender */}
-                                            <div className="tablefilelist_grid">
-                                                <h4>Gender</h4>
-                                                <p>{userData.gender ? userData.gender.charAt(0).toUpperCase() + userData.gender.slice(1) : 'N/A'}</p>
-                                            </div>
 
                                             {/* Phone number */}
                                             <div className="tablefilelist_grid">
