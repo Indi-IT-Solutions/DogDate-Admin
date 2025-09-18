@@ -695,33 +695,29 @@ const UserView: React.FC = () => {
                                             {/* Free Features (Gifted Matches) */}
                                             <div className="tablefilelist_grid">
                                                 <h4>Free Matches</h4>
-                                                {giftTotals ? (
-                                                    <div>
+                                                {(() => {
+                                                    // Filter only items with amount > 0
+                                                    const validGiftItems = giftItems.filter((g: any) => g.amount > 0);
 
-                                                        {giftItems.length > 0 ? (
+                                                    if (validGiftItems.length > 0) {
+                                                        return (
                                                             <div className="border rounded p-2" style={{ maxHeight: 180, overflowY: 'auto' }}>
-                                                                {giftItems.map((g: any) => (
-                                                                    g.amount > 0 ? (
-                                                                        <div key={g._id} className="d-flex justify-content-between py-1">
-                                                                            <div>
-                                                                                <strong>{g.amount}</strong> match(es)
-                                                                            </div>
-                                                                            <div className="text-muted small">
-                                                                                {g.expires_at ? `Expires: ${new Date(g.expires_at).toLocaleDateString()}` : 'No expiry'}
-                                                                            </div>
+                                                                {validGiftItems.map((g: any) => (
+                                                                    <div key={g._id} className="d-flex justify-content-between py-1">
+                                                                        <div>
+                                                                            <strong>{g.amount}</strong> match(es)
                                                                         </div>
-                                                                    ) : (
-                                                                        <div className="text-muted">No free matches gifted.</div>
-                                                                    )
+                                                                        <div className="text-muted small">
+                                                                            {g.expires_at ? `Expires: ${new Date(g.expires_at).toLocaleDateString()}` : 'No expiry'}
+                                                                        </div>
+                                                                    </div>
                                                                 ))}
                                                             </div>
-                                                        ) : (
-                                                            <div className="text-muted">No free matches gifted.</div>
-                                                        )}
-                                                    </div>
-                                                ) : (
-                                                    <div className="text-muted">No free matches gifted.</div>
-                                                )}
+                                                        );
+                                                    } else {
+                                                        return <div className="text-muted">No free matches gifted.</div>;
+                                                    }
+                                                })()}
                                             </div>
 
                                         </Col>
