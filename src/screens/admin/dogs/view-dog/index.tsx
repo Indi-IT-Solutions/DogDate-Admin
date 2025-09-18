@@ -2,7 +2,7 @@ import { IMAGES } from "@/contants/images";
 import React, { useState, useEffect } from "react";
 import DataTable from "react-data-table-component";
 import { Button, Card, Col, Modal, Row, Tab, Tabs, Alert, Spinner, Badge } from "react-bootstrap";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import { DogService } from "@/services";
 import type { Dog } from "@/types/api.types";
@@ -16,7 +16,7 @@ const ViewDog: React.FC = () => {
     const [dogData, setDogData] = useState<Dog | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string>("");
-
+    const navigate = useNavigate();
     // Breeding data state
     const [breedingData, setBreedingData] = useState<any[]>([]);
     const [breedingLoading, setBreedingLoading] = useState<boolean>(false);
@@ -400,9 +400,9 @@ const ViewDog: React.FC = () => {
             <Card>
                 <Card.Header className="d-flex align-items-center justify-content-between flex-wrap">
                     <h5>Dog Details</h5>
-                    <Link className="btn btn-primary px-4 py-2 h-auto" to="/dogs">
+                    <Button className="btn btn-primary px-4 py-2 h-auto" onClick={() => navigate(-1)}>
                         Back
-                    </Link>
+                    </Button>
                 </Card.Header>
 
                 <Card.Body className="taledtl_div">

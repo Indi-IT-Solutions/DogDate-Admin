@@ -49,7 +49,7 @@ export const showError = (title: string, message?: string) => {
         <div class="mb-3">
           <i class="mdi mdi-close-circle" style="font-size: 3rem; color: #dc3545;"></i>
         </div>
-        <h3>${title}</h3>
+        <h5>${title}</h5>
         ${message ? `<p>${message}</p>` : ''}
       </div>
     `,

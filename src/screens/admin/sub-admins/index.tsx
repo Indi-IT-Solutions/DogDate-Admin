@@ -49,7 +49,7 @@ const SubAdmins: React.FC = () => {
             cell: (row: any) => <span className={`badge ${row.status === 'active' ? 'bg-success' : 'bg-danger'}`}>{row.status}</span>
         },
         {
-            name: 'Allowed Routes',
+            name: 'Allowed Tabs',
             cell: (row: any) => {
                 const list: string[] = row.allowed_routes || [];
                 const labelFor = (r: string) => r === '/pages' ? 'CMS' : r;
@@ -57,7 +57,7 @@ const SubAdmins: React.FC = () => {
                     <div className="d-flex gap-1 flex-wrap">
                         {list.slice(0, 4).map((r: string, i: number) => (
                             <span className="badge bg-secondary" key={i}>
-                                {labelFor(r)}
+                                {labelFor(r).replace('/', '')}
                             </span>
                         ))}
                         {list.length > 4 && (
@@ -169,7 +169,7 @@ const SubAdmins: React.FC = () => {
                         <Col md={6}><h5 className="mb-0">Sub Admins</h5></Col>
                         <Col md={6} className="text-end">
                             <InputGroup className="mb-2 justify-content-end">
-                                <Form.Control style={{ maxWidth: 260 }} placeholder="Search by name or email" value={search} onChange={(e) => setSearch(e.target.value)} />
+                                <Form.Control style={{ maxWidth: 260, borderRadius: '8px' }} placeholder="Search by name or email" value={search} onChange={(e) => setSearch(e.target.value)} />
                                 <Button variant="primary" className='ms-2' onClick={() => navigate('/sub-admins/add')}>
                                     <Icon icon="mdi:plus" className="me-1" /> Add Sub Admin
                                 </Button>

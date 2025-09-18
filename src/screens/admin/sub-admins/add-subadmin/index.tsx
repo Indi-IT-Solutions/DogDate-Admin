@@ -3,6 +3,7 @@ import { Row, Col, Card, Form, Button, Badge } from 'react-bootstrap';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { SubAdminService } from '@/services';
 import AppLoaderbtn from '@/components/Apploaderbtn';
+import { showError } from '@/utils/sweetAlert';
 
 const ALL_ROUTE_OPTIONS: { label: string; value: string }[] = [
     { label: 'Dashboard', value: '/dashboard' },
@@ -114,6 +115,8 @@ const AddSubAdmin: React.FC = () => {
                 : await SubAdminService.create(payload);
             if (res.status === 1) {
                 navigate('/sub-admins');
+            } else {
+                showError(res.message);
             }
         } finally {
             setSubmitting(false);
