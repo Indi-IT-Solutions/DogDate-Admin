@@ -299,55 +299,60 @@ const Users: React.FC = () => {
               <Icon icon="ri:eye-line" width={20} height={20} className="text-primary" />
             </Link>
           </OverlayTrigger>
-          <OverlayTrigger
-            placement="top"
-            overlay={<Tooltip id="edit-tooltip">Edit</Tooltip>}
-          >
-            <Link to={`/users/edit-user?id=${row._id}`}>
-              <Icon icon="tabler:edit" width={20} height={20} className="text-warning" />
-            </Link>
-          </OverlayTrigger>
-          {row.register_type === 'google' || row.register_type === 'apple' ? (
-            <OverlayTrigger
-              placement="top"
-              overlay={<Tooltip id="password-tooltip">Password reset not available for Google/Apple users</Tooltip>}
-            >
-              <span>
-                <Icon
-                  icon="mdi:lock"
-                  width={20}
-                  height={20}
-                  className="text-muted"
-                  style={{ cursor: 'not-allowed', opacity: 0.5 }}
-                />
-              </span>
-            </OverlayTrigger>
-          ) : (
-            <OverlayTrigger
-              placement="top"
-              overlay={<Tooltip id="password-tooltip">Reset Password</Tooltip>}
-            >
-              <Link to="javascript:void(0)" onClick={() => handleShow1(row)}>
-                <Icon icon="mdi:lock" width={20} height={20} className="text-success" />
-              </Link>
-            </OverlayTrigger>
+          {(row.status !== 'deleted' && row.status !== 'delete_request_by_user') && (
+            <>
+
+              <OverlayTrigger
+                placement="top"
+                overlay={<Tooltip id="edit-tooltip">Edit</Tooltip>}
+              >
+                <Link to={`/users/edit-user?id=${row._id}`}>
+                  <Icon icon="tabler:edit" width={20} height={20} className="text-warning" />
+                </Link>
+              </OverlayTrigger>
+              {row.register_type === 'google' || row.register_type === 'apple' ? (
+                <OverlayTrigger
+                  placement="top"
+                  overlay={<Tooltip id="password-tooltip">Password reset not available for Google/Apple users</Tooltip>}
+                >
+                  <span>
+                    <Icon
+                      icon="mdi:lock"
+                      width={20}
+                      height={20}
+                      className="text-muted"
+                      style={{ cursor: 'not-allowed', opacity: 0.5 }}
+                    />
+                  </span>
+                </OverlayTrigger>
+              ) : (
+                <OverlayTrigger
+                  placement="top"
+                  overlay={<Tooltip id="password-tooltip">Reset Password</Tooltip>}
+                >
+                  <Link to="javascript:void(0)" onClick={() => handleShow1(row)}>
+                    <Icon icon="mdi:lock" width={20} height={20} className="text-success" />
+                  </Link>
+                </OverlayTrigger>
+              )}
+              <OverlayTrigger
+                placement="top"
+                overlay={<Tooltip id="delete-tooltip">Delete</Tooltip>}
+              >
+                <Link to="javascript:void(0)" onClick={() => handleShow(row)}>
+                  <Icon icon="icon-park-outline:close-one" width={20} height={20} className="text-danger" />
+                </Link>
+              </OverlayTrigger>
+              <OverlayTrigger
+                placement="top"
+                overlay={<Tooltip id="gift-tooltip">Give Free Matches</Tooltip>}
+              >
+                <Link to="javascript:void(0)" onClick={() => handleOpenGift(row)}>
+                  <Icon icon="mdi:gift" width={20} height={20} className="text-info" />
+                </Link>
+              </OverlayTrigger>
+            </>
           )}
-          <OverlayTrigger
-            placement="top"
-            overlay={<Tooltip id="delete-tooltip">Delete</Tooltip>}
-          >
-            <Link to="javascript:void(0)" onClick={() => handleShow(row)}>
-              <Icon icon="icon-park-outline:close-one" width={20} height={20} className="text-danger" />
-            </Link>
-          </OverlayTrigger>
-          <OverlayTrigger
-            placement="top"
-            overlay={<Tooltip id="gift-tooltip">Give Free Matches</Tooltip>}
-          >
-            <Link to="javascript:void(0)" onClick={() => handleOpenGift(row)}>
-              <Icon icon="mdi:gift" width={20} height={20} className="text-info" />
-            </Link>
-          </OverlayTrigger>
         </div>
       ),
     },

@@ -81,7 +81,7 @@ export interface User {
     registration_priority_status: 'not_selected' | 'selected' | 'completed';
     email_notifications: boolean;
     push_notifications: boolean;
-    status: 'active' | 'inactive' | 'blocked' | 'deleted';
+    status: 'active' | 'inactive' | 'blocked' | 'deleted' | 'delete_request_by_user';
     terms_and_conditions: boolean;
     profile_picture?: {
         file_path: string;

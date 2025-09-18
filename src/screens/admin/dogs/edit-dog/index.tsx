@@ -600,7 +600,7 @@ const EditDog: React.FC = () => {
                                 </Form.Group>
                             </Col>
 
-                            <Col md={4}>
+                            {/* <Col md={4}>
                                 <Form.Group className="mb-3 form-group">
                                     <Form.Label>Status</Form.Label>
                                     <Form.Select value={status} onChange={(e) => setStatus(e.target.value)}>
@@ -608,7 +608,7 @@ const EditDog: React.FC = () => {
                                         <option value="inactive">Inactive</option>
                                     </Form.Select>
                                 </Form.Group>
-                            </Col>
+                            </Col> */}
                             <Col md={4}>
                                 <Form.Group className="mb-3 form-group">
                                     <Form.Label>Profile Status</Form.Label>

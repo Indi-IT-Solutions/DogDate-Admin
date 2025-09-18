@@ -244,40 +244,28 @@ const Dogs: React.FC = () => {
                             <Icon icon="ri:eye-line" width={20} height={20} className="text-primary" />
                         </Link>
                     </OverlayTrigger>
-                    <OverlayTrigger
-                        placement="top"
-                        overlay={<Tooltip id={`edit-tooltip-${row._id}`}>Edit</Tooltip>}
-                    >
-                        <Link to={`/dogs/edit-dog?id=${row._id}`}>
-                            <Icon icon="tabler:edit" width={20} height={20} className="text-warning" />
-                        </Link>
-                    </OverlayTrigger>
-                    {/* <OverlayTrigger
-                        placement="top"
-                        overlay={
-                            <Tooltip id={`status-tooltip-${row._id}`}>
-                                {row.status === "active" ? "Deactivate" : "Activate"}
-                            </Tooltip>
-                        }
-                    >
-                        <Link to="#" onClick={e => { e.preventDefault(); handleShow(row); }}>
-                            <Icon
-                                icon={row.status === "active" ? "material-symbols-light:block" : "mdi:check-circle-outline"}
-                                width={22}
-                                height={22}
-                                className={row.status === "active" ? "text-danger" : "text-success"}
-                            />
-                        </Link>
-                    </OverlayTrigger> */}
                     {row.status !== 'deleted' && (
-                        <OverlayTrigger
-                            placement="top"
-                            overlay={<Tooltip id={`delete-tooltip-${row._id}`}>Delete</Tooltip>}
-                        >
-                            <Link to="javascript:void(0)" onClick={() => handleShowDeleteModal(row)}>
-                                <Icon icon="icon-park-outline:close-one" width={20} height={20} className="text-danger" />
-                            </Link>
-                        </OverlayTrigger>
+                        <>
+                            <OverlayTrigger
+                                placement="top"
+                                overlay={<Tooltip id={`edit-tooltip-${row._id}`}>Edit</Tooltip>}
+                            >
+                                <Link to={`/dogs/edit-dog?id=${row._id}`}>
+                                    <Icon icon="tabler:edit" width={20} height={20} className="text-warning" />
+                                </Link>
+                            </OverlayTrigger>
+
+
+                            <OverlayTrigger
+                                placement="top"
+                                overlay={<Tooltip id={`delete-tooltip-${row._id}`}>Delete</Tooltip>}
+                            >
+                                <Link to="javascript:void(0)" onClick={() => handleShowDeleteModal(row)}>
+                                    <Icon icon="icon-park-outline:close-one" width={20} height={20} className="text-danger" />
+                                </Link>
+                            </OverlayTrigger>
+                        </>
+
                     )}
                 </div>
             ),
