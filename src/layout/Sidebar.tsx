@@ -164,11 +164,11 @@ const Sidebar: React.FC = () => {
           title: "Dog Likes",
           link: "/pages/dog-likes",
         },
-        // {
-        //   id: "ContentManagementMain",
-        //   title: "Content Management",
-        //   link: "/pages/content-management",
-        // },
+        {
+          id: "ContentManagementMain",
+          title: "Content Management",
+          link: "/pages/content-management",
+        },
       ],
     },
     {

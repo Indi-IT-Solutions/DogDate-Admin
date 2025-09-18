@@ -4,29 +4,31 @@ import { Icon } from "@iconify/react";
 import DataTable, { TableColumn } from "react-data-table-component";
 import { Editor } from 'react-draft-wysiwyg';
 import { ContentState, EditorState, convertToRaw, convertFromRaw } from 'draft-js';
+import draftToHtml from 'draftjs-to-html';
+import htmlToDraft from 'html-to-draftjs';
 import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css';
 import { PageService, Page } from "@/services";
 import { Link } from "react-router-dom";
 import AppLoader from "@/components/Apploader";
 import AppLoaderbtn from "@/components/Apploaderbtn";
 
-const formatDate = (dateString: string): string => {
-  const date = new Date(dateString);
-  return date.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  });
-};
 
 const convertDescriptionToEditorState = (description: string | any): EditorState => {
   try {
     if (typeof description === 'string') {
-      return EditorState.createWithContent(
-        ContentState.createFromText(description)
-      );
+      // If it's HTML string, convert to editor state
+      if (description.includes('<') && description.includes('>')) {
+        const contentBlock = htmlToDraft(description);
+        const contentState = ContentState.createFromBlockArray(contentBlock.contentBlocks);
+        return EditorState.createWithContent(contentState);
+      } else {
+        // Plain text
+        return EditorState.createWithContent(
+          ContentState.createFromText(description)
+        );
+      }
     } else if (description && typeof description === 'object') {
-      // Handle Draft.js content state
+      // Handle Draft.js content state (legacy format)
       return EditorState.createWithContent(convertFromRaw(description));
     } else {
       return EditorState.createWithContent(
@@ -41,10 +43,10 @@ const convertDescriptionToEditorState = (description: string | any): EditorState
   }
 };
 
-const convertEditorStateToDescription = (editorState: EditorState): any => {
+const convertEditorStateToDescription = (editorState: EditorState): string => {
   const contentState = editorState.getCurrentContent();
-  const rawContent = convertToRaw(contentState);
-  return rawContent;
+  const htmlString = draftToHtml(convertToRaw(contentState));
+  return htmlString;
 };
 
 const Pages: React.FC = () => {
@@ -113,6 +115,8 @@ const Pages: React.FC = () => {
       // Convert editor state to description
       const description = convertEditorStateToDescription(editorState);
 
+      console.log('🔍 Saving HTML description:', description);
+
       await PageService.updatePage(selectedPage._id, { description });
       setSuccess('Page updated successfully');
 
@@ -172,9 +176,6 @@ const Pages: React.FC = () => {
     <React.Fragment>
       <Row>
         <Col lg={12}>
-
-
-
           <div className="d-flex justify-content-between align-items-center mb-3">
             <h5 className="text-dark">Content Management</h5>
             <div className="d-flex gap-2">
@@ -277,7 +278,7 @@ const Pages: React.FC = () => {
         </Modal.Body>
         <Modal.Footer>
           <Button
-            variant="outline-secondary"
+            variant="secondary"
             onClick={handleCloseModal}
             disabled={saving}
           >
