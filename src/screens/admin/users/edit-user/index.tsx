@@ -419,7 +419,7 @@ const EditUser: React.FC = () => {
                 </div>
               </Form.Group>
             </Col>
-            <Col lg={12}>
+            <Col lg={6}>
               <Form.Group className="mb-3 form-group">
                 <Form.Label>Full Name</Form.Label>
                 <Form.Control type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Enter full name or nickname" />
@@ -550,7 +550,7 @@ const EditUser: React.FC = () => {
                 </div>
               </Form.Group>
             </Col>
-            <Col lg={12}>
+            <Col lg={6}>
               <Form.Group className="mb-3 form-group">
                 <Form.Label>Status</Form.Label>
                 <Form.Select value={status} onChange={(e) => setStatus(e.target.value)}>

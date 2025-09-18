@@ -185,7 +185,7 @@ const Payments: React.FC = () => {
 
             cell: (row: PaymentHistory) => (
                 <span className="text-dark" style={{ fontWeight: 600 }}>
-                    ${(row?.paid_price / 1000).toFixed(2)}
+                    £{(row?.paid_price / 1000).toFixed(2)}
                 </span>
             ),
         },

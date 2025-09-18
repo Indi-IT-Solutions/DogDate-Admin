@@ -83,7 +83,7 @@ const SubAdmins: React.FC = () => {
                     {row.status === 'active' ? (
                         <OverlayTrigger
                             placement="top"
-                            overlay={<Tooltip id="ban-tooltip">Block Admin</Tooltip>}
+                            overlay={<Tooltip id="ban-tooltip">Block</Tooltip>}
                         >
                             <Link to="javascript:void(0)" onClick={async () => {
                                 const { showConfirmation, showSuccess } = await import('@/utils/sweetAlert');
@@ -129,7 +129,7 @@ const SubAdmins: React.FC = () => {
                     )}
                     <OverlayTrigger
                         placement="top"
-                        overlay={<Tooltip id="delete-tooltip">Delete Admin</Tooltip>}
+                        overlay={<Tooltip id="delete-tooltip">Delete</Tooltip>}
                     >
                         <Link to="javascript:void(0)" onClick={async () => {
                             const { showConfirmation, showSuccess, showError } = await import('@/utils/sweetAlert');

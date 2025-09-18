@@ -112,7 +112,7 @@ export interface Dog {
     available_for_breeding: boolean;
     breed_classification: 'purebred' | 'mixed';
     profile_status: 'submitted' | 'approved' | 'rejected';
-    status: 'active' | 'inactive';
+    status: 'active' | 'inactive' | 'deleted';
     registration_priority_status: 'not_selected' | 'selected' | 'completed';
     profile_picture?: {
         file_path: string;

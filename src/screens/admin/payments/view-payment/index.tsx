@@ -270,7 +270,7 @@ const ViewPayment: React.FC = () => {
                                     <div className="tablefilelist_grid">
                                         <h4>Amount</h4>
                                         <p className="text-success" style={{ fontWeight: 600, fontSize: 18 }}>
-                                            ${(paymentData.paid_price / 1000).toFixed(2)}
+                                            £{(paymentData.paid_price / 1000).toFixed(2)}
                                         </p>
                                     </div>
                                     {/* Status */}

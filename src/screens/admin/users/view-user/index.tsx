@@ -394,7 +394,7 @@ const UserView: React.FC = () => {
             cell: (row: any) => {
                 const amount = row.paid_price ? (row.paid_price / 1000).toFixed(2) : '0.00';
                 return (
-                    <span className="text-dark" style={{ fontWeight: 600, fontSize: '13px' }}>${amount}</span>
+                    <span className="text-dark" style={{ fontWeight: 600, fontSize: '13px' }}>£{amount}</span>
                 );
             },
         },

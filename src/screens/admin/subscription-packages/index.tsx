@@ -9,7 +9,7 @@ import AppLoader from "@/components/Apploader";
 
 // Helper function to format amount
 const formatAmount = (amount: number): string => {
-    return amount === 0 ? "Free" : `$${amount.toFixed(2)}`;
+    return amount === 0 ? "Free" : `$£{amount.toFixed(2)}`;
 };
 
 
@@ -431,7 +431,7 @@ const SubscriptionPackages: React.FC = () => {
                             <Row>
                                 <Col md={6}>
                                     <Form.Group className="mb-3 form-group">
-                                        <Form.Label>Amount ($) *</Form.Label>
+                                        <Form.Label>Amount (£) *</Form.Label>
                                         <Form.Control
                                             type="number"
                                             name="amount"
