@@ -1,6 +1,7 @@
 import { Icon } from "@iconify/react/dist/iconify.js";
 import { Row, Col } from "react-bootstrap";
-import { DashboardStats } from "@/services";
+import { DashboardStats, AuthService } from "@/services";
+import { usePermissions } from "@/context/PermissionsContext";
 
 interface StatsProps {
     data?: DashboardStats;
@@ -22,6 +23,13 @@ const defaultStats = {
 
 const Stats: React.FC<StatsProps> = ({ data = defaultStats }) => {
     const formatDollars = (cents: number) => `£${(Number(cents || 0) / 1000).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    const { allowedRoutes } = usePermissions();
+
+    // Check if user has payments permission
+    const user = AuthService.getCurrentUser();
+    const isAdmin = (user as any)?.type === 'admin';
+    const hasPaymentsPermission = isAdmin || allowedRoutes.includes('/payments');
+
     const statsData = [
         {
             title: "Total Users",
@@ -37,33 +45,20 @@ const Stats: React.FC<StatsProps> = ({ data = defaultStats }) => {
             bgColor: "#FFF3D5",
             iconColor: "#FEC53D"
         },
-        // {
-        //     title: "Breedings Completed",
-        //     value: data.breedings_completed.toLocaleString(),
-        //     icon: "mdi:dog-service",
-        //     bgColor: "#D5E9FF",
-        //     iconColor: "#0F66CC"
-        // },
-        // {
-        //     title: "Playmates Completed",
-        //     value: data.playmates_completed.toLocaleString(),
-        //     icon: "mdi:dog-side",
-        //     bgColor: "#FFE1E1",
-        //     iconColor: "#FF4D4D"
-        // },
-        {
+        // Only show revenue if user has payments permission
+        ...(hasPaymentsPermission ? [{
             title: "Revenue",
             value: formatDollars(data.total_revenue),
             icon: "qlementine-icons:money-16",
             bgColor: "#D8FFE1",
             iconColor: "#1F8F39"
-        }
+        }] : [])
     ];
 
     return (
         <Row className="g-3 stats-row">
             {statsData.map((stat, index) => (
-                <Col className="col-md-4 mb-0" key={index}>
+                <Col className={`${'col-md-4'} mb-0`} key={index}>
                     <div className="card">
                         <div className="card-body d-flex justify-content-between align-items-center">
                             <div className="flex-grow-1">

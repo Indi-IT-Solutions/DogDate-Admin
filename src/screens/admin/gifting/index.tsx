@@ -93,15 +93,25 @@ const Gifting: React.FC = () => {
                                     <Form.Control placeholder="Search users by name or email" value={userSearch} onChange={(e) => setUserSearch(e.target.value)} />
                                     {!!userResults.length && (
                                         <div className="border rounded p-2 mt-2" style={{ maxHeight: 220, overflowY: 'auto' }}>
-                                            {userResults.map((u: any) => (
-                                                <div key={u._id} className="d-flex justify-content-between align-items-center py-1">
-                                                    <div>
-                                                        <strong>{u.name}</strong>
-                                                        <div className="text-muted small">{u.email}</div>
+                                            {userResults.map((u: any) => {
+                                                const isAlreadySelected = selectedUsers.find(x => x._id === u._id);
+                                                return (
+                                                    <div key={u._id} className="d-flex justify-content-between align-items-center py-1">
+                                                        <div>
+                                                            <strong>{u.name}</strong>
+                                                            <div className="text-muted small">{u.email}</div>
+                                                        </div>
+                                                        <Button
+                                                            size="sm"
+                                                            variant={isAlreadySelected ? "outline-success" : "outline-primary"}
+                                                            disabled={isAlreadySelected}
+                                                            onClick={() => addUser(u)}
+                                                        >
+                                                            {isAlreadySelected ? 'Added' : 'Add'}
+                                                        </Button>
                                                     </div>
-                                                    <Button size="sm" variant="outline-primary" onClick={() => addUser(u)}>Add</Button>
-                                                </div>
-                                            ))}
+                                                );
+                                            })}
                                         </div>
                                     )}
                                 </Form.Group>

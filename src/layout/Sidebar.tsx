@@ -25,6 +25,7 @@ const Sidebar: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [openSubmenu, setOpenSubmenu] = useState(null);
   const location = useLocation();
+  const { allowedRoutes } = usePermissions();
 
   useEffect(() => {
     const handleResize = () => {
@@ -192,7 +193,6 @@ const Sidebar: React.FC = () => {
   ];
 
   // Permissions-based filtering
-  const { allowedRoutes } = usePermissions();
   const user = AuthService.getCurrentUser();
   const isAdmin = (user as any)?.type === 'admin';
 

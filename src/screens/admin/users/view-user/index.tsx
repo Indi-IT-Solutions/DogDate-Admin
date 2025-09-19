@@ -2,32 +2,26 @@ import { IMAGES } from "@/contants/images";
 import React, { useState, useEffect } from "react";
 import DataTable from "react-data-table-component";
 import { Button, Card, Col, Modal, OverlayTrigger, Row, Tab, Tabs, Tooltip, Alert } from "react-bootstrap";
-import { Link, useSearchParams, useNavigate } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import Matches from "../matches";
-import { UserService, RedeemableCoinService, type User } from "@/services";
-import { getUserProfileImage, getDogProfileImage } from "@/utils/imageUtils";
+import { UserService, RedeemableCoinService, type User, AuthService } from "@/services";
+import { getUserProfileImage } from "@/utils/imageUtils";
 import { formatDate } from "@/utils/dateUtils";
 import AppLoader from "@/components/Apploader";
+import { usePermissions } from "@/context/PermissionsContext";
 
 
-interface Dog {
-    id: number;
-    image: string;
-    name: string;
-    type: string;
-    breed: string;
-    gender: string;
-    age: string;
-    color: string;
-    addedOn: string;
-    status: "Active" | "Inactive";
-}
 
 const UserView: React.FC = () => {
     const [searchParams] = useSearchParams();
-    const navigate = useNavigate();
     const userId = searchParams.get('id');
+    const { allowedRoutes } = usePermissions();
+
+    // Check if user has payments permission
+    const user = AuthService.getCurrentUser();
+    const isAdmin = (user as any)?.type === 'admin';
+    const hasPaymentsPermission = isAdmin || allowedRoutes.includes('/payments');
 
     // State for user data
     const [userData, setUserData] = useState<User | null>(null);
@@ -55,10 +49,7 @@ const UserView: React.FC = () => {
     });
 
     // State for gifted matches
-    const [giftTotals, setGiftTotals] = useState<{ total_gifted: number; available: number; redeemed: number } | null>(null);
     const [giftItems, setGiftItems] = useState<any[]>([]);
-    const [giftLoading, setGiftLoading] = useState(false);
-    const [giftError, setGiftError] = useState<string>("");
 
     // Other states
     const [key, setKey] = useState<string>("dogs");
@@ -178,23 +169,14 @@ const UserView: React.FC = () => {
     const fetchUserGifts = async () => {
         if (!userId) return;
         try {
-            setGiftLoading(true);
-            setGiftError("");
             const res: any = await RedeemableCoinService.listByUser(userId);
             if (res.status === 1) {
-                setGiftTotals(res.data?.totals || { total_gifted: 0, available: 0, redeemed: 0 });
                 setGiftItems(res.data?.items || []);
             } else {
-                setGiftTotals(null);
                 setGiftItems([]);
-                setGiftError(res.message || 'Failed to fetch gifted matches');
             }
         } catch (err: any) {
-            setGiftTotals(null);
             setGiftItems([]);
-            setGiftError(err.message || 'Failed to fetch gifted matches');
-        } finally {
-            setGiftLoading(false);
         }
     };
 
@@ -839,96 +821,98 @@ const UserView: React.FC = () => {
                             </Row>
                         </Tab>
 
-                        <Tab eventKey="payments" title="Payments">
-                            <Row>
-                                <Col md={12}>
-                                    {paymentsError && (
-                                        <Alert variant="danger" className="mb-3">
-                                            {paymentsError}
-                                        </Alert>
-                                    )}
+                        {hasPaymentsPermission && (
+                            <Tab eventKey="payments" title="Payments">
+                                <Row>
+                                    <Col md={12}>
+                                        {paymentsError && (
+                                            <Alert variant="danger" className="mb-3">
+                                                {paymentsError}
+                                            </Alert>
+                                        )}
 
-                                    <div className="text-end mb-3">
-                                        <input
-                                            type="text"
-                                            placeholder="Search payments..."
-                                            className="searchfield"
-                                            value={searchText}
-                                            onChange={(e) => setSearchText(e.target.value)}
-                                        />
-                                    </div>
+                                        <div className="text-end mb-3">
+                                            <input
+                                                type="text"
+                                                placeholder="Search payments..."
+                                                className="searchfield"
+                                                value={searchText}
+                                                onChange={(e) => setSearchText(e.target.value)}
+                                            />
+                                        </div>
 
-                                    <DataTable
-                                        columns={paymentsColumns as any}
-                                        data={paymentsData}
-                                        pagination
-                                        responsive
-                                        className="custom-table"
-                                        progressPending={paymentsLoading}
-                                        progressComponent={<AppLoader size={150} />}
-                                        noDataComponent={
-                                            <div className="text-center py-4">
-                                                <Icon icon="mdi:credit-card-off" width={48} height={48} className="text-muted mb-2" />
-                                                <p className="text-muted">
-                                                    {paymentsLoading ? 'Loading payments...' : 'No payments found for this user'}
-                                                </p>
-                                                {!paymentsLoading && paymentsPagination.totalRows === 0 && (
-                                                    <small className="text-muted">This user hasn't made any payments yet</small>
-                                                )}
-                                            </div>
-                                        }
-                                        customStyles={{
-                                            table: {
-                                                style: {
-                                                    fontSize: '12px',
-                                                    width: '100%',
-                                                    maxWidth: '100%'
-                                                }
-                                            },
-                                            headRow: {
-                                                style: {
-                                                    fontSize: '12px',
-                                                    fontWeight: '600',
-                                                    backgroundColor: '#f8f9fa',
-                                                    height: '65px'
-                                                }
-                                            },
-                                            headCells: {
-                                                style: {
-                                                    fontSize: '12px',
-                                                    fontWeight: '600',
-                                                    padding: '10px 8px',
-                                                    textAlign: 'left'
-                                                }
-                                            },
-                                            cells: {
-                                                style: {
-                                                    fontSize: '12px',
-                                                    padding: '10px 8px',
-                                                    textAlign: 'left'
-                                                }
-                                            },
-                                            rows: {
-                                                style: {
-                                                    height: '50px',
-                                                    '&:nth-of-type(odd)': {
-                                                        backgroundColor: '#f8f9fa'
+                                        <DataTable
+                                            columns={paymentsColumns as any}
+                                            data={paymentsData}
+                                            pagination
+                                            responsive
+                                            className="custom-table"
+                                            progressPending={paymentsLoading}
+                                            progressComponent={<AppLoader size={150} />}
+                                            noDataComponent={
+                                                <div className="text-center py-4">
+                                                    <Icon icon="mdi:credit-card-off" width={48} height={48} className="text-muted mb-2" />
+                                                    <p className="text-muted">
+                                                        {paymentsLoading ? 'Loading payments...' : 'No payments found for this user'}
+                                                    </p>
+                                                    {!paymentsLoading && paymentsPagination.totalRows === 0 && (
+                                                        <small className="text-muted">This user hasn't made any payments yet</small>
+                                                    )}
+                                                </div>
+                                            }
+                                            customStyles={{
+                                                table: {
+                                                    style: {
+                                                        fontSize: '12px',
+                                                        width: '100%',
+                                                        maxWidth: '100%'
+                                                    }
+                                                },
+                                                headRow: {
+                                                    style: {
+                                                        fontSize: '12px',
+                                                        fontWeight: '600',
+                                                        backgroundColor: '#f8f9fa',
+                                                        height: '65px'
+                                                    }
+                                                },
+                                                headCells: {
+                                                    style: {
+                                                        fontSize: '12px',
+                                                        fontWeight: '600',
+                                                        padding: '10px 8px',
+                                                        textAlign: 'left'
+                                                    }
+                                                },
+                                                cells: {
+                                                    style: {
+                                                        fontSize: '12px',
+                                                        padding: '10px 8px',
+                                                        textAlign: 'left'
+                                                    }
+                                                },
+                                                rows: {
+                                                    style: {
+                                                        height: '50px',
+                                                        '&:nth-of-type(odd)': {
+                                                            backgroundColor: '#f8f9fa'
+                                                        }
                                                     }
                                                 }
-                                            }
-                                        }}
-                                    />
+                                            }}
+                                        />
 
-                                    {paymentsPagination.totalRows > 0 && (
-                                        <div className="mt-3 text-center">
-                                            <small className="text-muted">
-                                                Showing {paymentsData.length} of {paymentsPagination.totalRows} payments
-                                            </small>
-                                        </div>
-                                    )}
-                                </Col>
-                            </Row>
-                        </Tab>
+                                        {paymentsPagination.totalRows > 0 && (
+                                            <div className="mt-3 text-center">
+                                                <small className="text-muted">
+                                                    Showing {paymentsData.length} of {paymentsPagination.totalRows} payments
+                                                </small>
+                                            </div>
+                                        )}
+                                    </Col>
+                                </Row>
+                            </Tab>
+                        )}
 
                     </Tabs>
                 </Card.Body>
