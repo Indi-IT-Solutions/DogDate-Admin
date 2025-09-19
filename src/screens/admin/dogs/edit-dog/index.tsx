@@ -234,24 +234,25 @@ const EditDog: React.FC = () => {
 
     const handleEditSpecificDoc = (field: 'breed_certification' | 'vaccination_certification' | 'flea_documents' | 'pedigree', file: File | null, title?: string) => {
         if (!file) return;
-        // mark existing file for removal if present
-        const existing = existingFiles[field]?.[0];
-        if (existing && existing._id) {
-            setRemoveFileIds(prev => prev.includes(existing._id) ? prev : [...prev, existing._id]);
-        }
 
         if (field === 'pedigree' && title) {
-            // Handle pedigree with title
+            // Handle pedigree with title - don't remove existing files, just add new one
             setPendingHealthDocs(prev => [...prev, { title, file }]);
         } else {
+            // For other document types, mark existing file for removal if present
+            const existing = existingFiles[field]?.[0];
+            if (existing && existing._id) {
+                setRemoveFileIds(prev => prev.includes(existing._id) ? prev : [...prev, existing._id]);
+            }
+
             // replace in UI preview
             const url = URL.createObjectURL(file);
             setNewFilePreviews(prev => ({ ...prev, [field]: url }));
             setNewFiles((prev: Record<string, File[]>) => { const next = { ...prev, [field]: [file] }; newFilesRef.current = next; return next; });
-        }
 
-        // clear existingFiles bucket to avoid double rendering
-        setExistingFiles((prev: any) => ({ ...prev, [field]: [] }));
+            // clear existingFiles bucket to avoid double rendering (only for non-pedigree)
+            setExistingFiles((prev: any) => ({ ...prev, [field]: [] }));
+        }
     };
 
     const addPendingHealthDoc = (fileOverride?: File, titleOverride?: string) => {
@@ -289,6 +290,9 @@ const EditDog: React.FC = () => {
         if (!mime) return 'image';
         if (mime.startsWith('image/')) return 'image';
         if (mime === 'application/pdf') return 'pdf';
+        if (mime.startsWith('video/')) {
+            throw new Error('Video files are not allowed in document uploads. Please use images or PDF files only.');
+        }
         // Default to image for any other file type
         return 'image';
     };
@@ -310,7 +314,15 @@ const EditDog: React.FC = () => {
                 // upload
                 await AWSService.uploadMultipleFilesToS3(map?.map((m: any, idx: number) => ({ presignedUrl: m.presignedUrl, file: files[idx] })));
                 // group
-                groups.push({ relation_field: field, files: map?.map((m: any) => ({ file_path: m.fileUrl, file_type: normalizeFileType(m.file_type) })) });
+                groups.push({
+                    relation_field: field, files: map?.map((m: any) => {
+                        try {
+                            return { file_path: m.fileUrl, file_type: normalizeFileType(m.file_type) };
+                        } catch (error: any) {
+                            throw new Error(error.message);
+                        }
+                    })
+                });
             }
             // handle titled health documents and pedigree documents separately
             if (pendingHealthDocs.length > 0) {
@@ -324,7 +336,15 @@ const EditDog: React.FC = () => {
                     if (pres.status === 1) {
                         const map: any = pres.data ? pres.data : [];
                         await AWSService.uploadMultipleFilesToS3(map?.map((m: any, idx: number) => ({ presignedUrl: m.presignedUrl, file: healthDocs[idx].file })));
-                        groups.push({ relation_field: 'health_document', files: map?.map((m: any, idx: number) => ({ title: healthDocs[idx].title, file_path: m.fileUrl, file_type: normalizeFileType(m.file_type) })) });
+                        groups.push({
+                            relation_field: 'health_document', files: map?.map((m: any, idx: number) => {
+                                try {
+                                    return { title: healthDocs[idx].title, file_path: m.fileUrl, file_type: normalizeFileType(m.file_type) };
+                                } catch (error: any) {
+                                    throw new Error(error.message);
+                                }
+                            })
+                        });
                     }
                 }
 
@@ -335,7 +355,15 @@ const EditDog: React.FC = () => {
                     if (pres.status === 1) {
                         const map: any = pres.data ? pres.data : [];
                         await AWSService.uploadMultipleFilesToS3(map?.map((m: any, idx: number) => ({ presignedUrl: m.presignedUrl, file: pedigreeDocs[idx].file })));
-                        groups.push({ relation_field: 'pedigree', files: map?.map((m: any, idx: number) => ({ title: pedigreeDocs[idx].title, file_path: m.fileUrl, file_type: normalizeFileType(m.file_type) })) });
+                        groups.push({
+                            relation_field: 'pedigree', files: map?.map((m: any, idx: number) => {
+                                try {
+                                    return { title: pedigreeDocs[idx].title, file_path: m.fileUrl, file_type: normalizeFileType(m.file_type) };
+                                } catch (error: any) {
+                                    throw new Error(error.message);
+                                }
+                            })
+                        });
                     }
                 }
             }
@@ -364,11 +392,15 @@ const EditDog: React.FC = () => {
             errors.push('Flea Documents are required');
         }
 
-        // Check pedigree
-        const hasPedigree = existingFiles.pedigree?.length > 0 ||
-            newFiles.pedigree?.length > 0;
-        if (!hasPedigree) {
-            errors.push('Pedigree is required');
+        // Check pedigree only for breeding profile
+        if (profileType === 'breeding') {
+            const hasExistingPedigree = existingFiles.pedigree?.length > 0;
+            const hasNewPedigree = newFiles.pedigree?.length > 0;
+            const hasPendingPedigree = pendingHealthDocs.some(doc => doc.title.toLowerCase().includes('pedigree'));
+
+            if (!hasExistingPedigree && !hasNewPedigree && !hasPendingPedigree) {
+                errors.push('Pedigree is required for breeding profiles');
+            }
         }
 
         // Check breed certification only for breeding profile
@@ -806,9 +838,11 @@ const EditDog: React.FC = () => {
                                             <ul className="mb-0 small">
                                                 <li>Vaccination Certification <span className="text-danger">*</span></li>
                                                 <li>Flea Documents <span className="text-danger">*</span></li>
-                                                <li>Pedigree <span className="text-danger">*</span></li>
                                                 {profileType === 'breeding' && (
-                                                    <li>Breed Certification <span className="text-danger">*</span></li>
+                                                    <>
+                                                        <li>Breed Certification <span className="text-danger">*</span></li>
+                                                        <li>Pedigree <span className="text-danger">*</span></li>
+                                                    </>
                                                 )}
                                             </ul>
                                         </div>
@@ -853,10 +887,12 @@ const EditDog: React.FC = () => {
                                                 </Col>
                                             ))}
                                             {[
-                                                ...(profileType === 'breeding' ? [{ key: 'breed_certification', label: 'Breed Certification', required: true }] : []),
+                                                ...(profileType === 'breeding' ? [
+                                                    { key: 'breed_certification', label: 'Breed Certification', required: true },
+                                                    { key: 'pedigree', label: 'Pedigree', required: true }
+                                                ] : []),
                                                 { key: 'vaccination_certification', label: 'Vaccination Certification', required: true },
-                                                { key: 'flea_documents', label: 'Flea Documents', required: true },
-                                                { key: 'pedigree', label: 'Pedigree', required: true }
+                                                { key: 'flea_documents', label: 'Flea Documents', required: true }
                                             ].map(({ key, label, required }) => {
                                                 const preview = newFilePreviews[key];
                                                 const hasExisting = existingFiles[key]?.length > 0;
@@ -947,41 +983,43 @@ const EditDog: React.FC = () => {
                                             </div>
                                         </div>
 
-                                        {/* Pedigree Document Section */}
-                                        <div className="mt-3">
-                                            <div style={{ border: '1px dashed #dee2e6', borderRadius: '12px', padding: '16px', background: '#f8f9fa' }}>
-                                                <h6 className="mb-2">Pedigree Document <span className="text-danger">*</span></h6>
-                                                <p className="text-muted small mb-2">Pedigree documents must include a descriptive title (e.g., "AKC Pedigree", "Registration Certificate")</p>
-                                                <Row className="g-2 align-items-end">
-                                                    <Col md={8}>
-                                                        <Form.Label className="mb-1">Pedigree Document Title</Form.Label>
-                                                        <Form.Control
-                                                            value={pedigreeDocTitle}
-                                                            onChange={(e) => setPedigreeDocTitle(e.target.value)}
-                                                            placeholder="e.g. AKC Pedigree, Registration Certificate"
-                                                        />
-                                                    </Col>
-                                                    <Col md={4} className="pb-1 d-flex justify-content-end">
-                                                        <input id="add_pedigree_file_input" type="file" accept="image/*,application/pdf" hidden onChange={(e) => {
-                                                            const f = (e.target as HTMLInputElement).files?.[0] || null;
-                                                            if (f && pedigreeDocTitle.trim()) {
-                                                                handleEditSpecificDoc('pedigree', f, pedigreeDocTitle.trim());
-                                                                setPedigreeDocTitle('');
-                                                            }
-                                                        }} />
-                                                        <Button variant="primary" onClick={() => {
-                                                            if (!pedigreeDocTitle.trim()) {
-                                                                showError('Error', 'Please enter a pedigree document title first');
-                                                                return;
-                                                            }
-                                                            (document.getElementById('add_pedigree_file_input') as HTMLInputElement)?.click();
-                                                        }}>
-                                                            <Icon icon="mdi:file-plus-outline" width={18} height={18} className="me-1" /> Add Pedigree
-                                                        </Button>
-                                                    </Col>
-                                                </Row>
+                                        {/* Pedigree Document Section - Only for Breeding */}
+                                        {profileType === 'breeding' && (
+                                            <div className="mt-3">
+                                                <div style={{ border: '1px dashed #dee2e6', borderRadius: '12px', padding: '16px', background: '#f8f9fa' }}>
+                                                    <h6 className="mb-2">Pedigree Document <span className="text-danger">*</span></h6>
+                                                    <p className="text-muted small mb-2">Pedigree documents must include a descriptive title (e.g., "AKC Pedigree", "Registration Certificate")</p>
+                                                    <Row className="g-2 align-items-end">
+                                                        <Col md={8}>
+                                                            <Form.Label className="mb-1">Pedigree Document Title</Form.Label>
+                                                            <Form.Control
+                                                                value={pedigreeDocTitle}
+                                                                onChange={(e) => setPedigreeDocTitle(e.target.value)}
+                                                                placeholder="e.g. AKC Pedigree, Registration Certificate"
+                                                            />
+                                                        </Col>
+                                                        <Col md={4} className="pb-1 d-flex justify-content-end">
+                                                            <input id="add_pedigree_file_input" type="file" accept="image/*,application/pdf" hidden onChange={(e) => {
+                                                                const f = (e.target as HTMLInputElement).files?.[0] || null;
+                                                                if (f && pedigreeDocTitle.trim()) {
+                                                                    handleEditSpecificDoc('pedigree', f, pedigreeDocTitle.trim());
+                                                                    setPedigreeDocTitle('');
+                                                                }
+                                                            }} />
+                                                            <Button variant="primary" onClick={() => {
+                                                                if (!pedigreeDocTitle.trim()) {
+                                                                    showError('Error', 'Please enter a pedigree document title first');
+                                                                    return;
+                                                                }
+                                                                (document.getElementById('add_pedigree_file_input') as HTMLInputElement)?.click();
+                                                            }}>
+                                                                <Icon icon="mdi:file-plus-outline" width={18} height={18} className="me-1" /> Add Pedigree
+                                                            </Button>
+                                                        </Col>
+                                                    </Row>
+                                                </div>
                                             </div>
-                                        </div>
+                                        )}
                                         {pendingHealthDocs.length > 0 && (
                                             <div className="mt-2">
                                                 <div className="text-muted small mb-1">Pending Documents</div>
