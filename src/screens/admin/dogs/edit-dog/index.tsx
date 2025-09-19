@@ -414,8 +414,6 @@ const EditDog: React.FC = () => {
                                     <Form.Select value={gender} onChange={(e) => setGender(e.target.value)}>
                                         <option value="male">Male</option>
                                         <option value="female">Female</option>
-                                        <option value="neutered male">Neutered Male</option>
-                                        <option value="spayed female">Spayed Female</option>
                                     </Form.Select>
                                 </Form.Group>
                             </Col>
@@ -609,7 +607,7 @@ const EditDog: React.FC = () => {
                                     </Form.Select>
                                 </Form.Group>
                             </Col> */}
-                            <Col md={4}>
+                            {/* <Col md={4}>
                                 <Form.Group className="mb-3 form-group">
                                     <Form.Label>Profile Status</Form.Label>
                                     <Form.Select value={profileStatus} onChange={(e) => setProfileStatus(e.target.value)}>
@@ -618,8 +616,8 @@ const EditDog: React.FC = () => {
                                         <option value="rejected">Rejected</option>
                                     </Form.Select>
                                 </Form.Group>
-                            </Col>
-                            <Col md={4} className="d-flex align-items-center">
+                            </Col> */}
+                            <Col md={12} className="d-flex align-items-center">
                                 <Form.Check type="switch" id="available_for_breeding" label="Available for breeding" checked={availableForBreeding} onChange={(e) => setAvailableForBreeding(e.target.checked)} />
                             </Col>
 

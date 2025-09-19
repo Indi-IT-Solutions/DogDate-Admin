@@ -268,11 +268,11 @@ const EditUser: React.FC = () => {
         name: name.trim(),
         email: email.trim(),
         age: ageRange,
-        address: {
-          full_address: location,
-          city: location.split(', ')[1] || "",
-          country: location.split(', ').pop() || ""
-        },
+        // address: {
+        //   full_address: location,
+        //   city: location.split(', ')[1] || "",
+        //   country: location.split(', ').pop() || ""
+        // },
         about,
         hobbies,
         meetup_availability: meetUpAvailability,
@@ -284,11 +284,11 @@ const EditUser: React.FC = () => {
         name: name.trim(),
         email: email.trim(),
         age: ageRange,
-        address: {
-          full_address: location,
-          city: location.split(', ')[1] || "",
-          country: location.split(', ').pop() || ""
-        },
+        // address: {
+        //   full_address: location,
+        //   city: location.split(', ')[1] || "",
+        //   country: location.split(', ').pop() || ""
+        // },
         about,
         hobbies,
         meetup_availability: meetUpAvailability,
@@ -468,7 +468,7 @@ const EditUser: React.FC = () => {
               <Form.Group className="mb-3 form-group">
                 <Form.Label>Location</Form.Label>
 
-                <GooglePlacesAutocomplete
+                {/* <GooglePlacesAutocomplete
                   apiKey={'AIzaSyCLS0dQQTGrB4Mf4FyQjbHdEM3_2k94uoE'}
                   selectProps={{
                     value: location ? {
@@ -485,6 +485,13 @@ const EditUser: React.FC = () => {
                       })
                     }
                   }}
+                /> */}
+                <Form.Control
+                  type="text"
+                  value={location}
+                  disabled={true}
+                  // onChange={(e) => setPhoneNumber(e.target.value)}
+                  placeholder="Enter location"
                 />
 
               </Form.Group>
@@ -557,7 +564,6 @@ const EditUser: React.FC = () => {
                   <option value="">Select status</option>
                   <option value="active">Active</option>
                   <option value="inactive">Inactive</option>
-                  <option value="blocked">Blocked</option>
                 </Form.Select>
               </Form.Group>
             </Col>
