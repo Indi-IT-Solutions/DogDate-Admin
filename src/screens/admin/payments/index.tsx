@@ -73,7 +73,7 @@ const Payments: React.FC = () => {
             wrap: true,
             cell: (row: PaymentHistory) => (
                 <span className="text-primary" style={{ fontWeight: 500, fontSize: 12 }}>
-                    {row?.purchase_id || 'N/A'}
+                    {row?.transaction_id || 'N/A'}
                 </span>
             ),
         },
