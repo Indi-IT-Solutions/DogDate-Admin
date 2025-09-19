@@ -18,6 +18,8 @@ const Gifting: React.FC = () => {
     const [selectedUsers, setSelectedUsers] = React.useState<any[]>([]);
     const [giftAmount, setGiftAmount] = React.useState<number | ''>('');
     const [submitting, setSubmitting] = React.useState(false);
+    const [showUserResults, setShowUserResults] = React.useState(false);
+    const searchRef = React.useRef<HTMLDivElement>(null);
 
     const fetchList = async (p = 1, l = 10, s?: string) => {
         try {
@@ -50,21 +52,46 @@ const Gifting: React.FC = () => {
     React.useEffect(() => {
         const t = setTimeout(async () => {
             const s = userSearch.trim();
-            if (!s) { setUserResults([]); return; }
+            if (!s) {
+                setUserResults([]);
+                setShowUserResults(false);
+                return;
+            }
             try {
                 const res: any = await UserService.getUsers({ page: 1, limit: 10, search: s });
-                if (res?.status === 1) setUserResults(res?.data || []);
-                else setUserResults([]);
+                if (res?.status === 1) {
+                    setUserResults(res?.data || []);
+                    setShowUserResults(true);
+                } else {
+                    setUserResults([]);
+                    setShowUserResults(false);
+                }
             } catch {
                 setUserResults([]);
+                setShowUserResults(false);
             }
         }, 400);
         return () => clearTimeout(t);
     }, [userSearch]);
 
+    // Handle click outside to hide search results
+    React.useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+                setShowUserResults(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
+
     const addUser = (u: any) => {
         if (selectedUsers.find(x => x._id === u._id)) return;
         setSelectedUsers(prev => [...prev, u]);
+        setShowUserResults(false);
     };
     const removeUser = (id: string) => setSelectedUsers(prev => prev.filter(x => x._id !== id));
 
@@ -90,30 +117,41 @@ const Gifting: React.FC = () => {
                             <Col md={6} className="mb-3">
                                 <Form.Group className='mb-3 form-group'>
                                     <Form.Label>Add users to gift</Form.Label>
-                                    <Form.Control placeholder="Search users by name or email" value={userSearch} onChange={(e) => setUserSearch(e.target.value)} />
-                                    {!!userResults.length && (
-                                        <div className="border rounded p-2 mt-2" style={{ maxHeight: 220, overflowY: 'auto' }}>
-                                            {userResults.map((u: any) => {
-                                                const isAlreadySelected = selectedUsers.find(x => x._id === u._id);
-                                                return (
-                                                    <div key={u._id} className="d-flex justify-content-between align-items-center py-1">
-                                                        <div>
-                                                            <strong>{u.name}</strong>
-                                                            <div className="text-muted small">{u.email}</div>
+                                    <div ref={searchRef}>
+                                        <Form.Control
+                                            placeholder="Search users by name or email"
+                                            value={userSearch}
+                                            onChange={(e) => setUserSearch(e.target.value)}
+                                            onClick={() => {
+                                                if (userSearch.trim() && userResults.length > 0) {
+                                                    setShowUserResults(true);
+                                                }
+                                            }}
+                                        />
+                                        {showUserResults && !!userResults.length && (
+                                            <div className="border rounded p-2 mt-2" style={{ maxHeight: 220, overflowY: 'auto' }}>
+                                                {userResults.map((u: any) => {
+                                                    const isAlreadySelected = selectedUsers.find(x => x._id === u._id);
+                                                    return (
+                                                        <div key={u._id} className="d-flex justify-content-between align-items-center py-1">
+                                                            <div>
+                                                                <strong>{u.name}</strong>
+                                                                <div className="text-muted small">{u.email}</div>
+                                                            </div>
+                                                            <Button
+                                                                size="sm"
+                                                                variant={isAlreadySelected ? "outline-success" : "outline-primary"}
+                                                                disabled={isAlreadySelected}
+                                                                onClick={() => addUser(u)}
+                                                            >
+                                                                {isAlreadySelected ? 'Added' : 'Add'}
+                                                            </Button>
                                                         </div>
-                                                        <Button
-                                                            size="sm"
-                                                            variant={isAlreadySelected ? "outline-success" : "outline-primary"}
-                                                            disabled={isAlreadySelected}
-                                                            onClick={() => addUser(u)}
-                                                        >
-                                                            {isAlreadySelected ? 'Added' : 'Add'}
-                                                        </Button>
-                                                    </div>
-                                                );
-                                            })}
-                                        </div>
-                                    )}
+                                                    );
+                                                })}
+                                            </div>
+                                        )}
+                                    </div>
                                 </Form.Group>
                             </Col>
                             <Col md={6} className="mb-3">
