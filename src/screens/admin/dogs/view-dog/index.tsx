@@ -487,10 +487,9 @@ const ViewDog: React.FC = () => {
                                         <h4>Favorite Dog Treat</h4>
                                         <p>{dogData?.favorite_dog_treat}</p>
                                     </div>
-                                    {/* <div className="tablefilelist_grid">
-                                        <h4>Breeding Price</h4>
-                                        <p>${dogData.breeding_price}</p>
-                                    </div> */}
+                                    {/* {dogData?.gender === 'male' && dogData?.breeding_price && (
+                                      
+                                    )} */}
                                     <div className="tablefilelist_grid">
                                         <h4>Available for Breeding?</h4>
                                         <p>
@@ -498,7 +497,14 @@ const ViewDog: React.FC = () => {
                                                 {dogData.available_for_breeding ? 'Yes' : 'No'}
                                             </Badge>
                                         </p>
+
                                     </div>
+                                    {dogData?.gender === 'male' && dogData?.profile_type == "breeding" && (
+                                        <div className="tablefilelist_grid">
+                                            <h4>Breeding Price</h4>
+                                            <p>£{dogData.breeding_price}</p>
+                                        </div>
+                                    )}
                                     <div className="tablefilelist_grid">
                                         <h4>Status</h4>
                                         <p>

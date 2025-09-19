@@ -180,7 +180,7 @@ const Account: React.FC<AccountProps> = ({ data = [], onRefresh }) => {
                                 <h3>Confirm Account</h3>
                                 <p>
                                     Are you sure you want to approve this account request for <strong>{selectedRequest?.user.name}</strong>? <br />
-                                    This action will allow the user to access the platform.
+                                    This action will make the dog visible to other users.
                                 </p>
                             </>
                         ) : (

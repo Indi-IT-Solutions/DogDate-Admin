@@ -1,7 +1,7 @@
 import React from 'react';
-import { Card, Row, Col, Form, Button, Spinner, Modal } from 'react-bootstrap';
+import { Card, Row, Col, Form, Button, Modal } from 'react-bootstrap';
 import { Icon } from '@iconify/react/dist/iconify.js';
-import { useSearchParams, Link } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { DogService, AWSService, DogCharacterService, DogLikeService, BreedService } from '@/services';
 import { showError, showSuccess, handleApiError } from '@/utils/sweetAlert';
 import { IMAGES } from '@/contants/images';
@@ -42,6 +42,7 @@ const EditDog: React.FC = () => {
     const [pendingHealthDocs, setPendingHealthDocs] = React.useState<Array<{ title: string; file: File }>>([]);
     const [healthDocTitle, setHealthDocTitle] = React.useState<string>('');
     const [healthDocFile, setHealthDocFile] = React.useState<File | null>(null);
+    const [pedigreeDocTitle, setPedigreeDocTitle] = React.useState<string>('');
     const [preview, setPreview] = React.useState<{ visible: boolean; url: string; title?: string }>({ visible: false, url: '' });
 
     const openPreview = (url: string, title?: string) => setPreview({ visible: true, url, title });
@@ -231,17 +232,24 @@ const EditDog: React.FC = () => {
         });
     };
 
-    const handleEditSpecificDoc = (field: 'breed_certification' | 'vaccination_certification' | 'flea_documents' | 'pedigree', file: File | null) => {
+    const handleEditSpecificDoc = (field: 'breed_certification' | 'vaccination_certification' | 'flea_documents' | 'pedigree', file: File | null, title?: string) => {
         if (!file) return;
         // mark existing file for removal if present
         const existing = existingFiles[field]?.[0];
         if (existing && existing._id) {
             setRemoveFileIds(prev => prev.includes(existing._id) ? prev : [...prev, existing._id]);
         }
-        // replace in UI preview
-        const url = URL.createObjectURL(file);
-        setNewFilePreviews(prev => ({ ...prev, [field]: url }));
-        setNewFiles((prev: Record<string, File[]>) => { const next = { ...prev, [field]: [file] }; newFilesRef.current = next; return next; });
+
+        if (field === 'pedigree' && title) {
+            // Handle pedigree with title
+            setPendingHealthDocs(prev => [...prev, { title, file }]);
+        } else {
+            // replace in UI preview
+            const url = URL.createObjectURL(file);
+            setNewFilePreviews(prev => ({ ...prev, [field]: url }));
+            setNewFiles((prev: Record<string, File[]>) => { const next = { ...prev, [field]: [file] }; newFilesRef.current = next; return next; });
+        }
+
         // clear existingFiles bucket to avoid double rendering
         setExistingFiles((prev: any) => ({ ...prev, [field]: [] }));
     };
@@ -280,8 +288,8 @@ const EditDog: React.FC = () => {
     const normalizeFileType = (mime: string): string => {
         if (!mime) return 'image';
         if (mime.startsWith('image/')) return 'image';
-        if (mime.startsWith('video/')) return 'video';
         if (mime === 'application/pdf') return 'pdf';
+        // Default to image for any other file type
         return 'image';
     };
 
@@ -304,15 +312,31 @@ const EditDog: React.FC = () => {
                 // group
                 groups.push({ relation_field: field, files: map?.map((m: any) => ({ file_path: m.fileUrl, file_type: normalizeFileType(m.file_type) })) });
             }
-            // handle titled health documents separately
+            // handle titled health documents and pedigree documents separately
             if (pendingHealthDocs.length > 0) {
-                const req = { files: pendingHealthDocs.map(d => ({ file_name: d.file.name, file_type: d.file.type })) } as any;
-                const pres = await AWSService.generateMultiplePresignedUrls(req);
-                console.log('presprespresprespres :', pres);
-                if (pres.status === 1) {
-                    const map: any = pres.data ? pres.data : [];
-                    await AWSService.uploadMultipleFilesToS3(map?.map((m: any, idx: number) => ({ presignedUrl: m.presignedUrl, file: pendingHealthDocs[idx].file })));
-                    groups.push({ relation_field: 'health_document', files: map?.map((m: any, idx: number) => ({ title: pendingHealthDocs[idx].title, file_path: m.fileUrl, file_type: normalizeFileType(m.file_type) })) });
+                const healthDocs = pendingHealthDocs.filter(d => !d.title.toLowerCase().includes('pedigree'));
+                const pedigreeDocs = pendingHealthDocs.filter(d => d.title.toLowerCase().includes('pedigree'));
+
+                // Handle health documents
+                if (healthDocs.length > 0) {
+                    const req = { files: healthDocs.map(d => ({ file_name: d.file.name, file_type: d.file.type })) } as any;
+                    const pres = await AWSService.generateMultiplePresignedUrls(req);
+                    if (pres.status === 1) {
+                        const map: any = pres.data ? pres.data : [];
+                        await AWSService.uploadMultipleFilesToS3(map?.map((m: any, idx: number) => ({ presignedUrl: m.presignedUrl, file: healthDocs[idx].file })));
+                        groups.push({ relation_field: 'health_document', files: map?.map((m: any, idx: number) => ({ title: healthDocs[idx].title, file_path: m.fileUrl, file_type: normalizeFileType(m.file_type) })) });
+                    }
+                }
+
+                // Handle pedigree documents
+                if (pedigreeDocs.length > 0) {
+                    const req = { files: pedigreeDocs.map(d => ({ file_name: d.file.name, file_type: d.file.type })) } as any;
+                    const pres = await AWSService.generateMultiplePresignedUrls(req);
+                    if (pres.status === 1) {
+                        const map: any = pres.data ? pres.data : [];
+                        await AWSService.uploadMultipleFilesToS3(map?.map((m: any, idx: number) => ({ presignedUrl: m.presignedUrl, file: pedigreeDocs[idx].file })));
+                        groups.push({ relation_field: 'pedigree', files: map?.map((m: any, idx: number) => ({ title: pedigreeDocs[idx].title, file_path: m.fileUrl, file_type: normalizeFileType(m.file_type) })) });
+                    }
                 }
             }
             return groups;
@@ -323,8 +347,52 @@ const EditDog: React.FC = () => {
         return [];
     };
 
+    const validateRequiredDocuments = () => {
+        const errors: string[] = [];
+
+        // Check vaccination certification
+        const hasVaccinationCert = existingFiles.vaccination_certification?.length > 0 ||
+            newFiles.vaccination_certification?.length > 0;
+        if (!hasVaccinationCert) {
+            errors.push('Vaccination Certification is required');
+        }
+
+        // Check flea documents
+        const hasFleaDocs = existingFiles.flea_documents?.length > 0 ||
+            newFiles.flea_documents?.length > 0;
+        if (!hasFleaDocs) {
+            errors.push('Flea Documents are required');
+        }
+
+        // Check pedigree
+        const hasPedigree = existingFiles.pedigree?.length > 0 ||
+            newFiles.pedigree?.length > 0;
+        if (!hasPedigree) {
+            errors.push('Pedigree is required');
+        }
+
+        // Check breed certification only for breeding profile
+        if (profileType === 'breeding') {
+            const hasBreedCert = existingFiles.breed_certification?.length > 0 ||
+                newFiles.breed_certification?.length > 0;
+            if (!hasBreedCert) {
+                errors.push('Breed Certification is required for breeding profiles');
+            }
+        }
+
+        return errors;
+    };
+
     const handleSave = async () => {
         if (!dogId) return;
+
+        // Validate required documents
+        const validationErrors = validateRequiredDocuments();
+        if (validationErrors.length > 0) {
+            showError('Missing Required Documents', validationErrors.join('\n'));
+            return;
+        }
+
         try {
             setSaving(true);
             const add_files = await uploadNewFiles();
@@ -357,6 +425,8 @@ const EditDog: React.FC = () => {
                 newFilesRef.current = {};
                 setNewFilePreviews({});
                 setRemoveFileIds([]);
+                setHealthDocTitle('');
+                setPedigreeDocTitle('');
 
                 // refetch to reflect newly uploaded docs/files
                 const refreshed: any = await DogService.getDogById(dogId);
@@ -617,9 +687,9 @@ const EditDog: React.FC = () => {
                                     </Form.Select>
                                 </Form.Group>
                             </Col> */}
-                            <Col md={12} className="d-flex align-items-center">
+                            {/* <Col md={12} className="d-flex align-items-center">
                                 <Form.Check type="switch" id="available_for_breeding" label="Available for breeding" checked={availableForBreeding} onChange={(e) => setAvailableForBreeding(e.target.checked)} />
-                            </Col>
+                            </Col> */}
 
                             <Col md={12}>
                                 <h6 className="mt-2">Files</h6>
@@ -640,7 +710,7 @@ const EditDog: React.FC = () => {
                                                         />
                                                     </div>
                                                     <div style={{ position: 'absolute', right: 12, bottom: 12 }}>
-                                                        <input id="change_profile_picture_input" type="file" accept="image/*" hidden onChange={(e) => handleEditProfilePicture((e.target as HTMLInputElement).files?.[0] || null)} />
+                                                        <input id="change_profile_picture_input" type="file" accept="image/*,application/pdf" hidden onChange={(e) => handleEditProfilePicture((e.target as HTMLInputElement).files?.[0] || null)} />
                                                         <Button size="sm" onClick={(e) => { e.stopPropagation(); (document.getElementById('change_profile_picture_input') as HTMLInputElement)?.click(); }}>
                                                             Change profile picture
                                                         </Button>
@@ -678,7 +748,7 @@ const EditDog: React.FC = () => {
                                                                 <Icon icon="mdi:cloud-download-outline" width={16} height={16} />
                                                             </button>
                                                         )}
-                                                        <input id={`edit_picture_${idx}_input`} type="file" accept="image/*" hidden onChange={(e) => handleEditPictureAtIndex(idx, (e.target as HTMLInputElement).files?.[0] || null)} />
+                                                        <input id={`edit_picture_${idx}_input`} type="file" accept="image/*,application/pdf" hidden onChange={(e) => handleEditPictureAtIndex(idx, (e.target as HTMLInputElement).files?.[0] || null)} />
                                                         <button
                                                             type="button"
                                                             onClick={(e) => { e.stopPropagation(); (document.getElementById(`edit_picture_${idx}_input`) as HTMLInputElement)?.click(); }}
@@ -695,7 +765,7 @@ const EditDog: React.FC = () => {
                                                     <div style={{ position: 'relative', width: '100%', aspectRatio: '1', border: '2px dashed #dee2e6', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', background: '#f8f9fa' }}
                                                         onClick={() => (document.getElementById('add_pictures_input') as HTMLInputElement)?.click()}>
                                                         <Icon icon="mdi:plus" width={28} height={28} />
-                                                        <input id="add_pictures_input" type="file" accept="image/*" multiple hidden onChange={(e) => handleNewFilesChange('pictures', (e.target as HTMLInputElement).files)} />
+                                                        <input id="add_pictures_input" type="file" accept="image/*,application/pdf" multiple hidden onChange={(e) => handleNewFilesChange('pictures', (e.target as HTMLInputElement).files)} />
                                                     </div>
                                                 </Col>
                                             )}
@@ -731,6 +801,17 @@ const EditDog: React.FC = () => {
 
                                     <Col md={6}>
                                         <h6 className="mb-2 mt-3">Documents</h6>
+                                        <div className="alert alert-info mb-3">
+                                            <h6 className="mb-2">Required Documents:</h6>
+                                            <ul className="mb-0 small">
+                                                <li>Vaccination Certification <span className="text-danger">*</span></li>
+                                                <li>Flea Documents <span className="text-danger">*</span></li>
+                                                <li>Pedigree <span className="text-danger">*</span></li>
+                                                {profileType === 'breeding' && (
+                                                    <li>Breed Certification <span className="text-danger">*</span></li>
+                                                )}
+                                            </ul>
+                                        </div>
                                         <Row className="mt-1">
                                             {Array.isArray(existingFiles.health_document) && existingFiles.health_document.map((doc: any, idx: number) => (
                                                 <Col md={6} className="mb-3" key={doc._id || idx}>
@@ -759,7 +840,7 @@ const EditDog: React.FC = () => {
                                                                 <Icon icon="mdi:cloud-download-outline" width={16} height={16} />
                                                             </button>
                                                         )}
-                                                        <input id={`edit_health_doc_${idx}_input`} type="file" hidden onChange={(e) => handleEditHealthDocAtIndex(idx, doc, (e.target as HTMLInputElement).files?.[0] || null)} />
+                                                        <input id={`edit_health_doc_${idx}_input`} type="file" accept="image/*,application/pdf" hidden onChange={(e) => handleEditHealthDocAtIndex(idx, doc, (e.target as HTMLInputElement).files?.[0] || null)} />
                                                         <button
                                                             type="button"
                                                             onClick={() => (document.getElementById(`edit_health_doc_${idx}_input`) as HTMLInputElement)?.click()}
@@ -771,14 +852,28 @@ const EditDog: React.FC = () => {
                                                     </div>
                                                 </Col>
                                             ))}
-                                            {[{ key: 'breed_certification', label: 'Breed Certification' }, { key: 'vaccination_certification', label: 'Vaccination Certification' }, { key: 'flea_documents', label: 'Flea Documents' }, { key: 'pedigree', label: 'Pedigree' }].map(({ key, label }) => {
+                                            {[
+                                                ...(profileType === 'breeding' ? [{ key: 'breed_certification', label: 'Breed Certification', required: true }] : []),
+                                                { key: 'vaccination_certification', label: 'Vaccination Certification', required: true },
+                                                { key: 'flea_documents', label: 'Flea Documents', required: true },
+                                                { key: 'pedigree', label: 'Pedigree', required: true }
+                                            ].map(({ key, label, required }) => {
                                                 const preview = newFilePreviews[key];
                                                 const hasExisting = existingFiles[key]?.length > 0;
                                                 const viewUrl = preview || (hasExisting ? existingFiles[key][0]?.file_path : undefined);
+                                                const documentTitle = hasExisting ? existingFiles[key][0]?.title : null;
                                                 return (
                                                     <Col md={6} className="mb-3" key={key}>
-                                                        <div style={{ position: 'relative', border: '1px solid #dee2e6', borderRadius: '12px', padding: '12px' }}>
-                                                            <p className="text-center" style={{ fontSize: '12px', marginBottom: 8 }}>{label}</p>
+                                                        <div style={{ position: 'relative', border: `1px solid ${required && !viewUrl ? '#dc3545' : '#dee2e6'}`, borderRadius: '12px', padding: '12px' }}>
+                                                            <p className="text-center" style={{ fontSize: '12px', marginBottom: 8 }}>
+                                                                {label}
+                                                                {required && <span className="text-danger ms-1">*</span>}
+                                                            </p>
+                                                            {documentTitle && (
+                                                                <p className="text-center text-muted" style={{ fontSize: '10px', marginBottom: 4 }}>
+                                                                    {documentTitle}
+                                                                </p>
+                                                            )}
                                                             {viewUrl ? (
                                                                 <div className="text-center">
                                                                     <a href={viewUrl} target="_blank" rel="noreferrer" className="btn btn-outline-secondary btn-sm">View</a>
@@ -786,7 +881,7 @@ const EditDog: React.FC = () => {
                                                             ) : (
                                                                 <span className="text-muted small d-block mb-2 text-center">No file</span>
                                                             )}
-                                                            <input id={`edit_${key}_input`} type="file" hidden onChange={(e) => handleEditSpecificDoc(key as any, (e.target as HTMLInputElement).files?.[0] || null)} />
+                                                            <input id={`edit_${key}_input`} type="file" accept="image/*,application/pdf" hidden onChange={(e) => handleEditSpecificDoc(key as any, (e.target as HTMLInputElement).files?.[0] || null)} />
                                                             <button
                                                                 type="button"
                                                                 onClick={() => (document.getElementById(`edit_${key}_input`) as HTMLInputElement)?.click()}
@@ -851,22 +946,64 @@ const EditDog: React.FC = () => {
                                                 </Row>
                                             </div>
                                         </div>
+
+                                        {/* Pedigree Document Section */}
+                                        <div className="mt-3">
+                                            <div style={{ border: '1px dashed #dee2e6', borderRadius: '12px', padding: '16px', background: '#f8f9fa' }}>
+                                                <h6 className="mb-2">Pedigree Document <span className="text-danger">*</span></h6>
+                                                <p className="text-muted small mb-2">Pedigree documents must include a descriptive title (e.g., "AKC Pedigree", "Registration Certificate")</p>
+                                                <Row className="g-2 align-items-end">
+                                                    <Col md={8}>
+                                                        <Form.Label className="mb-1">Pedigree Document Title</Form.Label>
+                                                        <Form.Control
+                                                            value={pedigreeDocTitle}
+                                                            onChange={(e) => setPedigreeDocTitle(e.target.value)}
+                                                            placeholder="e.g. AKC Pedigree, Registration Certificate"
+                                                        />
+                                                    </Col>
+                                                    <Col md={4} className="pb-1 d-flex justify-content-end">
+                                                        <input id="add_pedigree_file_input" type="file" accept="image/*,application/pdf" hidden onChange={(e) => {
+                                                            const f = (e.target as HTMLInputElement).files?.[0] || null;
+                                                            if (f && pedigreeDocTitle.trim()) {
+                                                                handleEditSpecificDoc('pedigree', f, pedigreeDocTitle.trim());
+                                                                setPedigreeDocTitle('');
+                                                            }
+                                                        }} />
+                                                        <Button variant="primary" onClick={() => {
+                                                            if (!pedigreeDocTitle.trim()) {
+                                                                showError('Error', 'Please enter a pedigree document title first');
+                                                                return;
+                                                            }
+                                                            (document.getElementById('add_pedigree_file_input') as HTMLInputElement)?.click();
+                                                        }}>
+                                                            <Icon icon="mdi:file-plus-outline" width={18} height={18} className="me-1" /> Add Pedigree
+                                                        </Button>
+                                                    </Col>
+                                                </Row>
+                                            </div>
+                                        </div>
                                         {pendingHealthDocs.length > 0 && (
                                             <div className="mt-2">
-                                                <div className="text-muted small mb-1">Pending Health Documents</div>
+                                                <div className="text-muted small mb-1">Pending Documents</div>
                                                 <Row>
-                                                    {pendingHealthDocs.map((d, i) => (
-                                                        <Col md={6} className="mb-2" key={`${d.title}-${i}`}>
-                                                            <Card>
-                                                                <Card.Body className="text-center">
-                                                                    <p style={{ fontSize: '12px', marginBottom: 8 }}>{d.title}</p>
-                                                                    <div className="mt-1">
-                                                                        <Button variant="outline-danger" size="sm" onClick={() => removePendingHealthDoc(i)}>Remove</Button>
-                                                                    </div>
-                                                                </Card.Body>
-                                                            </Card>
-                                                        </Col>
-                                                    ))}
+                                                    {pendingHealthDocs.map((d, i) => {
+                                                        const isPedigree = d.title.toLowerCase().includes('pedigree');
+                                                        return (
+                                                            <Col md={6} className="mb-2" key={`${d.title}-${i}`}>
+                                                                <Card>
+                                                                    <Card.Body className="text-center">
+                                                                        <p style={{ fontSize: '12px', marginBottom: 8 }}>
+                                                                            {d.title}
+                                                                            {isPedigree && <span className="text-danger ms-1">*</span>}
+                                                                        </p>
+                                                                        <div className="mt-1">
+                                                                            <Button variant="outline-danger" size="sm" onClick={() => removePendingHealthDoc(i)}>Remove</Button>
+                                                                        </div>
+                                                                    </Card.Body>
+                                                                </Card>
+                                                            </Col>
+                                                        );
+                                                    })}
                                                 </Row>
                                             </div>
                                         )}

@@ -628,7 +628,8 @@ const UserView: React.FC = () => {
                                             {/* Location */}
                                             <div className="tablefilelist_grid">
                                                 <h4>Location</h4>
-                                                <p>{userData.address?.city || userData.address?.full_address || 'N/A'}</p>
+                                                <p>{userData.address?.city || userData.address?.full_address || 'N/A'}, {userData?.address?.pin || ''}
+                                                </p>
                                             </div>
 
 

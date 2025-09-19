@@ -26,7 +26,7 @@ const RevenueStatsChart: React.FC<RevenueStatsChartProps> = ({ data }) => {
     return (
         <div>
             <div className="dropSelect_option">
-                <h3 className="mb-0">Revenue Stats <span style={{ fontWeight: 400, fontSize: 14, color: '#888' }}>(Total Income per Month, USD)</span></h3>
+                <h3 className="mb-0">Revenue Stats <span style={{ fontWeight: 400, fontSize: 14, color: '#888' }}>(Total Income per Month, GBP)</span></h3>
             </div>
             <ResponsiveContainer width="100%" height={400}>
                 <BarChart data={chartData}>
@@ -56,7 +56,7 @@ const RevenueStatsChart: React.FC<RevenueStatsChartProps> = ({ data }) => {
                     <Bar
                         dataKey="income"
                         fill="#4bbff9"
-                        name="Total Income (USD)"
+                        name="Total Income (GBP)"
                     />
                 </BarChart>
             </ResponsiveContainer>
